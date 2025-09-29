@@ -1,0 +1,12 @@
+# AI
+.claude/
+
+#IDEs
+.idea
+
+# MAC
+.DS_Store
+
+# General temp files
+*.tmp
+*.temp

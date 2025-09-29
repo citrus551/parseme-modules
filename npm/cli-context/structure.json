@@ -1,0 +1,11 @@
+[
+  {
+    "path": "src/test.ts",
+    "type": "test",
+    "exports": ["testFunction"],
+    "imports": [],
+    "functions": ["testFunction"],
+    "classes": [],
+    "routes": []
+  }
+]

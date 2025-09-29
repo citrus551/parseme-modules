@@ -1,0 +1,273 @@
+import { readFileSync, existsSync } from 'fs';
+import { readFile, writeFile } from 'fs/promises';
+import { join, extname } from 'path';
+
+import type { GeneratorOptions } from './types.js';
+
+export interface ParsemeConfigFile extends GeneratorOptions {
+  // Output configuration
+  outputPath?: string;
+  contextDir?: string;
+
+  // Analysis configuration
+  rootDir?: string;
+  includePatterns?: string[];
+  excludePatterns?: string[];
+  maxDepth?: number;
+
+  // Git integration
+  includeGitInfo?: boolean;
+
+  // CLI behavior
+  readmeSuggestion?: boolean;
+
+  // Content customization
+  sections?: {
+    overview?: boolean;
+    architecture?: boolean;
+    routes?: boolean;
+    dependencies?: boolean;
+    git?: boolean;
+    fileStructure?: boolean;
+  };
+
+  // Documentation style
+  style?: {
+    includeLineNumbers?: boolean;
+    includeFileStats?: boolean;
+    groupByType?: boolean;
+    sortOrder?: 'alphabetical' | 'type' | 'size';
+  };
+
+  // Size limits for AI compatibility
+  limits?: {
+    maxLinesPerFile?: number;
+    maxCharsPerFile?: number;
+    maxFilesPerContext?: number;
+    truncateStrategy?: 'truncate' | 'split' | 'summarize';
+  };
+}
+
+export class ParsemeConfig {
+  private readonly config: ParsemeConfigFile;
+
+  constructor(config: Partial<ParsemeConfigFile> = {}) {
+    this.config = this.mergeWithDefaults(config);
+  }
+
+  static async fromFileWithOptions(
+    configPath?: string,
+    cliOptions: Partial<ParsemeConfigFile> = {},
+  ): Promise<ParsemeConfig> {
+    const configFromFile = await ParsemeConfig.fromFile(configPath);
+    const mergedConfig = {
+      ...configFromFile.get(),
+      ...cliOptions, // CLI options take priority
+    };
+    return new ParsemeConfig(mergedConfig);
+  }
+
+  static async fromFile(configPath?: string): Promise<ParsemeConfig> {
+    const defaultPaths = [
+      'parseme.config.ts',
+      'parseme.config.js',
+      'parseme.config.json',
+      '.parsemerc.ts',
+      '.parsemerc.js',
+      '.parsemerc.json',
+      '.parsemerc',
+    ];
+
+    const paths = configPath ? [configPath] : defaultPaths;
+
+    for (const path of paths) {
+      try {
+        const ext = extname(path);
+
+        if (ext === '.js' || ext === '.ts') {
+          // Dynamic import for JS/TS config files
+          const fullPath = path.startsWith('/') ? path : join(process.cwd(), path);
+
+          if (ext === '.ts') {
+            // For TypeScript files, try to import directly first
+            // This works if the user has transpiled their TS config to JS or is using tsx/ts-node
+            try {
+              const module = await import(fullPath);
+              const config = module.default || module;
+              return new ParsemeConfig(config);
+            } catch {
+              // If direct import fails, suggest using .js instead
+              console.warn(`Could not load TypeScript config file: ${path}`);
+              console.warn(`Consider using a .js config file or ensure tsx/ts-node is available`);
+            }
+          } else {
+            // JavaScript files
+            const module = await import(fullPath);
+            const config = module.default || module;
+            return new ParsemeConfig(config);
+          }
+        } else {
+          // JSON config files
+          const content = await readFile(path, 'utf-8');
+          const config = JSON.parse(content);
+          return new ParsemeConfig(config);
+        }
+      } catch {
+        // Continue to next path
+      }
+    }
+
+    // Return default config if no file found
+    return new ParsemeConfig();
+  }
+
+  private mergeWithDefaults(config: Partial<ParsemeConfigFile>): ParsemeConfigFile {
+    const rootDir = config.rootDir || process.cwd();
+
+    return {
+      // Output
+      outputPath: config.outputPath || 'PARSEME.md',
+      contextDir: config.contextDir || 'parseme-context',
+
+      // Analysis
+      rootDir,
+      maxDepth: config.maxDepth || 10,
+      excludePatterns: this.mergeExcludePatterns(config.excludePatterns, rootDir),
+      includePatterns: config.includePatterns || [
+        'src/**/*.ts',
+        'src/**/*.js',
+        'src/**/*.tsx',
+        'src/**/*.jsx',
+        'lib/**/*.ts',
+        'lib/**/*.js',
+        'package.json',
+        'tsconfig.json',
+        'README.md',
+      ],
+
+      // Git
+      includeGitInfo: config.includeGitInfo ?? true,
+
+      // Sections
+      sections: {
+        overview: true,
+        architecture: true,
+        routes: true,
+        dependencies: true,
+        git: true,
+        fileStructure: true,
+        ...config.sections,
+      },
+
+      // Style
+      style: {
+        includeLineNumbers: false,
+        includeFileStats: true,
+        groupByType: true,
+        sortOrder: 'type',
+        ...config.style,
+      },
+
+      // Size limits
+      limits: {
+        maxLinesPerFile: config.limits?.maxLinesPerFile ?? 1000,
+        maxCharsPerFile: config.limits?.maxCharsPerFile ?? 50000, // ~15k tokens
+        maxFilesPerContext: config.limits?.maxFilesPerContext ?? 20,
+        truncateStrategy: config.limits?.truncateStrategy ?? 'truncate',
+      },
+    };
+  }
+
+  get(): ParsemeConfigFile {
+    return { ...this.config };
+  }
+
+  async save(path: string = 'parseme.config.js'): Promise<void> {
+    const ext = extname(path);
+
+    if (ext === '.js') {
+      // Generate JavaScript config file
+      const configContent = this.generateJSConfig();
+      await writeFile(path, configContent);
+    } else if (ext === '.ts') {
+      // Generate TypeScript config file
+      const configContent = this.generateTSConfig();
+      await writeFile(path, configContent);
+    } else {
+      // Generate JSON config file
+      await writeFile(path, JSON.stringify(this.config, null, 2));
+    }
+  }
+
+  private generateJSConfig(): string {
+    return `/** @type {import('parseme').ParsemeConfigFile} */
+export default ${JSON.stringify(this.config, null, 2)};
+`;
+  }
+
+  private generateTSConfig(): string {
+    return `import type { ParsemeConfigFile } from 'parseme';
+
+const config: ParsemeConfigFile = ${JSON.stringify(this.config, null, 2)};
+
+export default config;
+`;
+  }
+
+  private mergeExcludePatterns(configPatterns: string[] | undefined, rootDir: string): string[] {
+    const defaultPatterns = [
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '.git/**',
+      '**/*.log',
+      '**/*.tmp',
+      '**/.DS_Store',
+      '**/.*',
+    ];
+
+    // Priority: Config patterns > .gitignore patterns > Default patterns
+    if (configPatterns) {
+      return configPatterns;
+    }
+
+    // Try to read .gitignore patterns
+    const gitignorePatterns = this.readGitignorePatterns(rootDir);
+    if (gitignorePatterns.length > 0) {
+      // Merge gitignore patterns with critical defaults
+      const criticalDefaults = ['node_modules/**', '.git/**'];
+      return [...new Set([...criticalDefaults, ...gitignorePatterns])];
+    }
+
+    return defaultPatterns;
+  }
+
+  private readGitignorePatterns(rootDir: string): string[] {
+    try {
+      const gitignorePath = join(rootDir, '.gitignore');
+      if (!existsSync(gitignorePath)) {
+        return [];
+      }
+
+      const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
+
+      return gitignoreContent
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter((line: string) => line && !line.startsWith('#'))
+        .map((pattern: string) => {
+          // Convert gitignore patterns to glob patterns
+          if (pattern.endsWith('/')) {
+            return pattern + '**';
+          }
+          if (!pattern.includes('/') && !pattern.includes('*')) {
+            return '**/' + pattern;
+          }
+          return pattern;
+        });
+    } catch {
+      return [];
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "name": "parseme",
+  "version": "0.0.2",
+  "description": "Adds a PARSEME.md file—a README.md for AI agents—to your project, providing context and structure for automated tools.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "parseme": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "npm": ">=10.8.2",
+    "node": ">=20.19.5"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "format": "prettier . --ignore-unknown --write",
+    "format:check": "prettier . --ignore-unknown --check",
+    "lint": "eslint --config ./eslint.config.js --fix",
+    "lint:check": "eslint --config ./eslint.config.js --no-fix --max-warnings 0",
+    "test": "node --test --experimental-test-coverage tests/**/*.test.ts",
+    "test:unit": "node --test tests/unit/**/*.test.ts",
+    "test:integration": "node --test tests/integration/**/*.test.ts",
+    "test:watch": "node --test --watch tests/**/*.test.ts",
+    "test:coverage": "node --test --experimental-test-coverage tests/**/*.test.ts",
+    "prepare": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ai",
+    "context",
+    "ast",
+    "parser",
+    "typescript",
+    "javascript",
+    "cli",
+    "agent"
+  ],
+  "author": "citrus551",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/citrus551/parseme-modules.git"
+  },
+  "bugs": {
+    "url": "https://github.com/citrus551/parseme-modules/issues"
+  },
+  "homepage": "https://github.com/citrus551/parseme-modules#readme",
+  "dependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/parser": "^7.28.4",
+    "@babel/traverse": "^7.28.4",
+    "@babel/types": "^7.28.4",
+    "commander": "^14.0.1",
+    "glob": "^11.0.3",
+    "ignore": "^7.0.5"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.28.4",
+    "@tsconfig/node-lts": "^22.0.2",
+    "@types/babel__traverse": "^7.28.0",
+    "@types/node": "^24.5.0",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1"
+  }
+}
