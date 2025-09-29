@@ -1,12 +1,12 @@
 {
-  "name": "parseme",
+  "name": "@parseme/cli",
   "version": "0.0.2",
   "description": "Adds a PARSEME.md file—a README.md for AI agents—to your project, providing context and structure for automated tools.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "parseme": "./dist/cli.js"
+    "parseme": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -74,5 +74,8 @@
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
