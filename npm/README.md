@@ -6,7 +6,7 @@ PARSEME analyzes your TypeScript/JavaScript projects and generates a PARSEME.md 
 
 ## Development Status
 
-**This project is currently in active development and beta phase.**
+**This project is currently in active development and pre-alpha phase.**
 
 The core functionality is working, but expect:
 

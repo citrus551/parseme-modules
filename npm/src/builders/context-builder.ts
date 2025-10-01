@@ -143,7 +143,7 @@ export class ContextBuilder {
       '\n\n\n' +
       this.buildSummarySection(context, linkPath) +
       '\n\n\n' +
-      (gitInfo ? this.buildGitSection(gitInfo): '');
+      (gitInfo ? this.buildGitSection(gitInfo) : '');
     const contextFiles: {
       [key: string]: string;
       structure: string;
@@ -462,7 +462,7 @@ A comprehensive list of all discovered API endpoints is available at \`${linkPat
 
     return result;
   }
- 
+
   private buildDetailedFramework(framework: ProjectInfo['framework']): string {
     if (!framework) {
       return '';
