@@ -104,7 +104,9 @@ export class ParsemeGenerator {
 
     if (context.context) {
       for (const [filename, content] of Object.entries(context.context)) {
-        await writeFile(join(parsemeDir, `${filename}.json`), content);
+        // Use .md extension for markdown files, .json for others
+        const extension = filename === 'gitDiff' || filename === 'files' ? '.md' : '.json';
+        await writeFile(join(parsemeDir, `${filename}${extension}`), content);
       }
     }
   }

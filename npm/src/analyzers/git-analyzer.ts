@@ -14,12 +14,13 @@ export class GitAnalyzer {
       // Check if this is a git repository
       await execAsync('git rev-parse --git-dir', { cwd: rootDir });
 
-      const [branch, lastCommit, status, changedFiles, origin] = await Promise.all([
+      const [branch, lastCommit, status, changedFiles, origin, diffStat] = await Promise.all([
         this.getCurrentBranch(rootDir),
         this.getLastCommit(rootDir),
         this.getStatus(rootDir),
         this.getChangedFiles(rootDir),
         this.getOrigin(rootDir),
+        this.getDiffStat(rootDir),
       ]);
 
       return {
@@ -28,6 +29,7 @@ export class GitAnalyzer {
         status,
         changedFiles,
         origin,
+        diffStat,
       };
     } catch {
       // Not a git repository or git not available
@@ -77,6 +79,15 @@ export class GitAnalyzer {
   private async getOrigin(rootDir: string): Promise<string | undefined> {
     try {
       const { stdout } = await execAsync('git remote get-url origin', { cwd: rootDir });
+      return stdout.trim();
+    } catch {
+      return undefined;
+    }
+  }
+
+  private async getDiffStat(rootDir: string): Promise<string | undefined> {
+    try {
+      const { stdout } = await execAsync('git diff --stat', { cwd: rootDir });
       return stdout.trim();
     } catch {
       return undefined;
