@@ -141,9 +141,9 @@ export class ContextBuilder {
       '\n\n\n' +
       this.buildProjectOverview(projectInfo) +
       '\n\n\n' +
-      (gitInfo ? this.buildGitSection(gitInfo) + '\n\n\n' : '') +
-      this.buildSummarySection(context, linkPath);
-
+      this.buildSummarySection(context, linkPath) +
+      '\n\n\n' +
+      (gitInfo ? this.buildGitSection(gitInfo): '');
     const contextFiles: {
       [key: string]: string;
       structure: string;
@@ -206,18 +206,16 @@ export class ContextBuilder {
   }
 
   private buildHeader(linkPath: string): string {
-    return `## Intro
+    return `## PARSEME - AI Agent Context 
 Auto-generated project summary optimized for AI coding agents. This file provides complete project context without requiring full codebase traversal, designed for token efficiency.
 
 **Usage Instructions for AI Agents:**
 1. Read this PARSEME.md file completely first before accessing individual project files
-2. Use the provided file list (${linkPath}/files.md) to see all tracked files in the project
-3. Utilize the structure and AST data (${linkPath}/structure.json) for code analysis without manual parsing
-4. JSON sections contain structured data for programmatic consumption
-5. Dependency information enables tech stack understanding without checking package.json
-6. Only dive deeper into specific files after reviewing this summary
-
-This summary replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
+2. Basic project information, script availability and dependency information provides basic understanding of code base and tech stack without checking package.json
+3. Use the provided file list (${linkPath}/files.md) to see all tracked files in the project
+4. Utilize the structure and AST data (${linkPath}/structure.json) for code analysis without manual parsing
+5. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
+6. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
   }
 
   private buildProjectOverview(projectInfo: ProjectInfo): string {
@@ -464,7 +462,7 @@ A comprehensive list of all discovered API endpoints is available at \`${linkPat
 
     return result;
   }
-
+ 
   private buildDetailedFramework(framework: ProjectInfo['framework']): string {
     if (!framework) {
       return '';
