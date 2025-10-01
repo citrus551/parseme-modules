@@ -108,4 +108,5 @@ export interface GitInfo {
   lastCommit: string;
   changedFiles: string[];
   status: 'clean' | 'dirty';
+  origin?: string;
 }

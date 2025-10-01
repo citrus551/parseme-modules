@@ -120,9 +120,10 @@ export class ContextBuilder {
 
     const mainContent =
       this.buildHeader(projectInfo) +
-      '\n\n' +
+      '\n\n\n' +
       this.buildProjectOverview(projectInfo) +
-      '\n\n' +
+      '\n\n\n' +
+      (gitInfo ? this.buildGitSection(gitInfo) + '\n\n\n' : '') +
       this.buildSummarySection(context);
 
     const contextFiles: {
@@ -185,20 +186,54 @@ export class ContextBuilder {
   }
 
   private buildHeader(projectInfo: ProjectInfo): string {
-    return `# ${projectInfo.name}
+    return `## Intro
+Auto-generated project summary optimized for AI coding agents. This file provides complete project context without requiring full codebase traversal, designed for token efficiency.
 
-*AI-Generated Project Context*
+**Usage Instructions for AI Agents:**
+1. Read this PARSEME.md file completely first before accessing individual project files
+2. Use the provided file map (parseme-context/map.json) to locate specific files of interest
+3. Utilize the TypeScript AST data (parseme-context/ast.json) for code analysis without manual parsing
+4. JSON sections contain structured data for programmatic consumption
+5. Dependency information enables tech stack understanding without checking package.json
+6. Only dive deeper into specific files after reviewing this summary
 
-${projectInfo.description || 'No description available.'}`;
+This summary replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
   }
 
   private buildProjectOverview(projectInfo: ProjectInfo): string {
-    return `## Project Overview
+    let content = `## Basic Project Information
 
-- **Type**: ${projectInfo.type} project
-- **Package Manager**: ${projectInfo.packageManager}
-- **Framework**: ${projectInfo.framework?.name || 'None detected'}
-- **Version**: ${projectInfo.version || 'Not specified'}`;
+**Project:** ${projectInfo.name}${projectInfo.version ? ` v${projectInfo.version}` : ''}
+**Description:** ${projectInfo.description || 'No description available.'}
+**Type:** ${projectInfo.type} project
+**Package Manager:** ${projectInfo.packageManager}
+**Framework:** ${projectInfo.framework?.name || 'None detected'}`;
+
+    // Add main entry point if available
+    if (projectInfo.entryPoints && projectInfo.entryPoints.length > 0) {
+      content += `\n**Main Entry Point:** ${projectInfo.entryPoints[0]}`;
+    }
+
+    content += '\n';
+
+    // Add dependencies
+    const deps = Object.keys(projectInfo.dependencies);
+    if (deps.length > 0) {
+      content += '\n\n### Dependencies\n';
+      deps.forEach((dep) => {
+        content += `- ${dep}\n`;
+      });
+    }
+
+    // Add available scripts
+    if (projectInfo.scripts && Object.keys(projectInfo.scripts).length > 0) {
+      content += '\n### Available Scripts\n';
+      Object.entries(projectInfo.scripts).forEach(([name, script]) => {
+        content += `- **${name}**: \`${script}\`\n`;
+      });
+    }
+
+    return content;
   }
 
   private buildFrameworkSection(framework: ProjectInfo['framework']): string {
@@ -289,10 +324,19 @@ ${structure}`;
   private buildGitSection(gitInfo: GitInfo): string {
     return `## Git Information
 
-- **Branch**: ${gitInfo.branch}
-- **Status**: ${gitInfo.status}
-- **Last Commit**: ${gitInfo.lastCommit}
-${gitInfo.changedFiles.length > 0 ? `- **Changed Files**: ${gitInfo.changedFiles.join(', ')}` : ''}`;
+**State when PARSEME.md and all linked files were automatically generated:**
+
+- **Branch:** ${gitInfo.branch}
+- **Commit:** ${gitInfo.lastCommit}${gitInfo.origin ? `\n- **Origin:** ${gitInfo.origin}` : ''}
+
+### Git Diff Statistics
+Git diff statistics from the time of generation are available at \`parseme-context/gitDiff.md\`.
+
+**AI Agent Command:** To check for changes since generation, run:
+\`\`\`bash
+git diff --stat
+\`\`\`
+Compare the output with the baseline in \`parseme-context/gitDiff.json\` to detect any modifications.`;
   }
 
   private buildFooter(): string {
@@ -303,7 +347,6 @@ ${gitInfo.changedFiles.length > 0 ? `- **Changed Files**: ${gitInfo.changedFiles
 
   private buildSummarySection(context: BuildContext): string {
     const { fileAnalyses, contextDir, outputPath } = context;
-    const totalFiles = fileAnalyses.length;
     const routes = fileAnalyses.flatMap((f) => f.routes || []).length;
 
     // Calculate the relative path for the link in markdown
@@ -324,11 +367,19 @@ ${gitInfo.changedFiles.length > 0 ? `- **Changed Files**: ${gitInfo.changedFiles
       linkPath = contextDir;
     }
 
-    return `## Summary
+    let content = `## Project Structure
+A complete file map of all tracked files in the repository is available at \`${linkPath}/map.json\`. This map excludes files ignored by git and includes file paths for efficient navigation.
 
-This project contains ${totalFiles} analyzed files${routes > 0 ? ` with ${routes} API endpoints` : ''}.
 
-For detailed information, see the files in the \`${linkPath}/\` directory.`;
+## TypeScript AST
+A simplified Abstract Syntax Tree representation of all TypeScript files is available at \`${linkPath}/ast.json\`. This includes imports, exports, functions, classes, interfaces, and types for code analysis without manual parsing.`;
+
+    if (routes > 0) {
+      content += `\n\n\n## API Endpoints
+A comprehensive list of all discovered API endpoints is available at \`${linkPath}/apiEndpoints.md\`. This file contains detailed information about each endpoint including HTTP methods, paths, descriptions, and source file locations.`;
+    }
+
+    return content;
   }
 
   private buildDetailedStructure(fileAnalyses: FileAnalysis[]): string | Record<string, string> {
