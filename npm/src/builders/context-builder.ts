@@ -13,7 +13,7 @@ import type {
 interface BuildContext {
   projectInfo: ProjectInfo;
   fileAnalyses: FileAnalysis[];
-  gitInfo?: GitInfo;
+  gitInfo?: GitInfo | null;
   options: GeneratorOptions;
   contextDir?: string;
   outputPath?: string;

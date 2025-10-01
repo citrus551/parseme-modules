@@ -153,18 +153,16 @@ export function formatDate(date: Date): string {
       // Verify dependencies are mentioned (may be in dependencies section)
       assert.ok(parsemeContent.includes('express') || parsemeContent.includes('dependencies'));
 
-      // Verify files were analyzed (may show count instead of individual files)
+      // Verify new structure sections exist
+      assert.ok(parsemeContent.includes('Project Files') || parsemeContent.includes('files.md'));
       assert.ok(
-        parsemeContent.includes('analyzed files') ||
-          parsemeContent.includes('src/') ||
-          parsemeContent.includes('3 analyzed files'),
+        parsemeContent.includes('Project Structure & AST') ||
+          parsemeContent.includes('structure.json'),
       );
 
-      // Verify API routes were detected (may show count instead of individual routes)
+      // Verify API routes were detected
       assert.ok(
-        parsemeContent.includes('API endpoints') ||
-          parsemeContent.includes('endpoints') ||
-          parsemeContent.includes('2 API endpoints'),
+        parsemeContent.includes('API Endpoints') || parsemeContent.includes('api-endpoints.json'),
       );
     });
 

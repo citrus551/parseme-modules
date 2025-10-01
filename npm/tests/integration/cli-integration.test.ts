@@ -322,15 +322,12 @@ export function authMiddleware(req: any, res: any, next: any) {
       assert.ok(content.includes('complex-cli-project'));
       assert.ok(content.includes('express') || content.includes('typescript'));
 
-      // Verify the generator found multiple files (should be mentioned in summary)
-      assert.ok(content.includes('4 analyzed files') || content.includes('analyzed files'));
+      // Verify the new structure sections exist
+      assert.ok(content.includes('Project Files') || content.includes('files.md'));
+      assert.ok(content.includes('Project Structure & AST') || content.includes('structure.json'));
 
-      // Verify API endpoints were detected (from the summary we saw "4 API endpoints")
-      assert.ok(
-        content.includes('API endpoints') ||
-          content.includes('endpoints') ||
-          content.includes('4 analyzed files'),
-      );
+      // Verify API endpoints were detected
+      assert.ok(content.includes('API Endpoints') || content.includes('api-endpoints.json'));
     });
 
     test('should respect exclude patterns from CLI', async () => {

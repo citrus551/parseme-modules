@@ -262,7 +262,8 @@ export default config;
             return pattern + '**';
           }
           if (!pattern.includes('/') && !pattern.includes('*')) {
-            return '**/' + pattern;
+            // Convert simple names to match directory patterns
+            return pattern + '/**';
           }
           return pattern;
         });

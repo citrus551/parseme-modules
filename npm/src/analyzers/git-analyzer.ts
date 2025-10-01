@@ -9,7 +9,7 @@ const execAsync = promisify(exec);
 export class GitAnalyzer {
   constructor(private readonly config: ParsemeConfig) {}
 
-  async analyze(rootDir: string): Promise<GitInfo | undefined> {
+  async analyze(rootDir: string): Promise<GitInfo | null> {
     try {
       // Check if this is a git repository
       await execAsync('git rev-parse --git-dir', { cwd: rootDir });
@@ -33,7 +33,7 @@ export class GitAnalyzer {
       };
     } catch {
       // Not a git repository or git not available
-      return undefined;
+      return null;
     }
   }
 
@@ -91,28 +91,6 @@ export class GitAnalyzer {
       return stdout.trim();
     } catch {
       return undefined;
-    }
-  }
-
-  async getFileLastModified(filePath: string, rootDir: string): Promise<string | undefined> {
-    try {
-      const { stdout } = await execAsync(`git log -1 --format="%H %ai" -- "${filePath}"`, {
-        cwd: rootDir,
-      });
-      return stdout.trim();
-    } catch {
-      return undefined;
-    }
-  }
-
-  async getFileHistory(filePath: string, rootDir: string, limit: number = 5): Promise<string[]> {
-    try {
-      const { stdout } = await execAsync(`git log --oneline -${limit} -- "${filePath}"`, {
-        cwd: rootDir,
-      });
-      return stdout.split('\n').filter((line) => line.trim());
-    } catch {
-      return [];
     }
   }
 }

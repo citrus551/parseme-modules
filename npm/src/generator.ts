@@ -55,7 +55,7 @@ export class ParsemeGenerator {
     // Step 4: Get git information if enabled
     const gitInfo = configData.includeGitInfo
       ? await this.gitAnalyzer.analyze(configData.rootDir!)
-      : undefined;
+      : null;
 
     // Calculate final output path for link generation
     const finalOutputPath =
