@@ -6,14 +6,11 @@ import { Command } from 'commander';
 
 import { ParsemeConfig, type ParsemeConfigFile } from './config.js';
 import { ParsemeGenerator } from './generator.js';
-import { confirmPrompt, prompt } from './prompt.js';
+import { prompt } from './prompt.js';
 
 const program = new Command();
 
-async function promptForMissingConfig(
-  config: ParsemeConfigFile,
-  cliOptions: Partial<ParsemeConfigFile>,
-): Promise<ParsemeConfigFile> {
+async function promptForMissingConfig(config: ParsemeConfigFile): Promise<ParsemeConfigFile> {
   const finalConfig = { ...config };
 
   // Only prompt if running interactively (stdin is a TTY) and not in CI
@@ -56,7 +53,7 @@ program
         showWarnings: true,
         throwOnNotFound: true,
       });
-      const interactiveConfig = await promptForMissingConfig(configFromFile.get(), cliOptions);
+      const interactiveConfig = await promptForMissingConfig(configFromFile.get());
 
       // Merge: CLI options > interactive prompts > config file > defaults
       const finalConfig = {
@@ -82,7 +79,7 @@ program
   .command('init')
   .description('Initialize parseme configuration')
   .option('-f, --force', 'Overwrite existing config')
-  .option('--format <format>', 'Config format: js, ts, or json', 'js')
+  .option('--format <format>', 'Config format: json, ts, or js', 'json')
   .action(async (options) => {
     try {
       // Validate format
@@ -147,7 +144,9 @@ program
       console.log('Tip: Add this section to your README.md to help AI agents find the context:');
       console.log('');
       console.log('## Instructions For AI Agents');
-      console.log('This project includes AI-optimized documentation for efficient context providing:');
+      console.log(
+        'This project includes AI-optimized documentation for efficient context providing:',
+      );
       console.log('- `PARSEME.md` - Project overview with links to detailed context files');
       console.log(
         '- `parseme-context/` - Structured data files (AST analysis, dependencies, routes, git info)',
@@ -168,7 +167,7 @@ if (process.argv.length <= 2) {
         showWarnings: true,
         throwOnNotFound: true,
       });
-      const interactiveConfig = await promptForMissingConfig(configFromFile.get(), {});
+      const interactiveConfig = await promptForMissingConfig(configFromFile.get());
 
       const config = new ParsemeConfig(interactiveConfig);
       const generator = new ParsemeGenerator(config.get());

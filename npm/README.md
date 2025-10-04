@@ -138,6 +138,7 @@ npm install --save-dev parseme
    ```
 
 This creates:
+
 - `PARSEME.md` - Main overview with links to context files
 - `parseme-context/` - Structured data files (AST, dependencies, routes, git info)
 
@@ -148,17 +149,19 @@ PARSEME supports multiple configuration formats with automatic discovery and pri
 The `parseme init` command creates a minimal config with only your custom settings. Defaults are applied automatically at runtime.
 
 **Minimal config example** (created by `parseme init`):
+
 ```javascript
 /** @type {import('parseme').ParsemeConfigFile} */
 const config = {
   rootDir: 'src',
-  contextDir: 'docs/context'
+  contextDir: 'docs/context',
 };
 
 export default config;
 ```
 
 **Full config example** (all available options):
+
 ```javascript
 /** @type {import('parseme').ParsemeConfigFile} */
 const config = {
@@ -209,21 +212,18 @@ export default config;
 
 PARSEME supports three configuration formats with the following priority:
 
-1. **TypeScript** (`.ts`) - `parseme.config.ts`, `.parsemerc.ts`
-2. **JavaScript** (`.js`) - `parseme.config.js`, `.parsemerc.js`
-3. **JSON** (`.json`) - `parseme.config.json`, `.parsemerc.json`, `.parsemerc`
+1. **JSON** (`.json`) - `parseme.config.json`, `.parsemerc.json`, `.parsemerc`
+2. **TypeScript** (`.ts`) - `parseme.config.ts`, `.parsemerc.ts`
+3. **JavaScript** (`.js`) - `parseme.config.js`, `.parsemerc.js`
 
-#### JavaScript Configuration
+#### JSON Configuration
 
-```javascript
-/** @type {import('parseme').ParsemeConfigFile} */
-const config = {
-  outputPath: 'PARSEME.md',
-  includePatterns: ['src/**/*.ts'],
-  // ... other options
-};
-
-export default config;
+```json
+{
+  "outputPath": "PARSEME.md",
+  "contextDir": "parseme-context",
+  "includePatterns": ["src/**/*.ts"]
+}
 ```
 
 #### TypeScript Configuration
@@ -240,14 +240,17 @@ const config: ParsemeConfigFile = {
 export default config;
 ```
 
-#### JSON Configuration
+#### JavaScript Configuration
 
-```json
-{
-  "outputPath": "PARSEME.md",
-  "contextDir": "parseme-context",
-  "includePatterns": ["src/**/*.ts"]
-}
+```javascript
+/** @type {import('parseme').ParsemeConfigFile} */
+const config = {
+  outputPath: 'PARSEME.md',
+  includePatterns: ['src/**/*.ts'],
+  // ... other options
+};
+
+export default config;
 ```
 
 ### Configuration Priority
@@ -326,14 +329,14 @@ The context directory location can be customized via the `contextDir` configurat
 # Generate context (auto-detects config file)
 npx parseme
 
-# Initialize configuration (JavaScript by default)
+# Initialize configuration (JSON by default)
 npx parseme init
 
 # Initialize with TypeScript format
 npx parseme init --format ts
 
-# Initialize with JSON format
-npx parseme init --format json
+# Initialize with JavaScript format
+npx parseme init --format js
 
 # Use custom config file
 npx parseme --config custom.config.js
@@ -367,7 +370,7 @@ npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
 #### Init Command (`parseme init`)
 
 - `-f, --force` - Overwrite existing config
-- `--format <format>` - Config format: js, ts, or json (default: js)
+- `--format <format>` - Config format: json, ts, or js (default: json)
 
 ### Interactive Configuration
 
@@ -377,6 +380,7 @@ When running `parseme init` interactively (TTY, not CI), you'll be prompted to c
 - **Context directory** - Where to store context files (default: `parseme-context`)
 
 After initialization, setup tips are displayed:
+
 - Package.json script suggestion
 - Git hook integration suggestion
 - README.md section suggestion for AI agents
@@ -407,44 +411,6 @@ PARSEME automatically detects and provides specialized analysis for:
 
 - Route and middleware detection
 - Framework-specific patterns
-
-## Integration Examples
-
-### Basic Express Project
-
-```javascript
-// parseme.config.js
-export default {
-  includePatterns: ['src/**/*.js', 'routes/**/*.js', 'middleware/**/*.js'],
-  frameworks: {
-    express: {
-      detectMiddleware: true,
-      documentRoutes: true,
-    },
-  },
-};
-```
-
-### TypeScript NestJS Project
-
-```javascript
-// parseme.config.js
-export default {
-  includePatterns: ['src/**/*.ts', '!src/**/*.spec.ts'],
-  frameworks: {
-    nestjs: {
-      includeDecorators: true,
-      documentModules: true,
-    },
-  },
-  sections: {
-    overview: true,
-    architecture: true,
-    routes: true,
-    dependencies: true,
-  },
-};
-```
 
 ## Programmatic API
 

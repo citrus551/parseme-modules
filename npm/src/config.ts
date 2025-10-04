@@ -78,13 +78,13 @@ export class ParsemeConfig {
     },
   ): Promise<ParsemeConfig> {
     const defaultPaths = [
-      'parseme.config.ts',
-      'parseme.config.js',
       'parseme.config.json',
-      '.parsemerc.ts',
-      '.parsemerc.js',
       '.parsemerc.json',
       '.parsemerc',
+      'parseme.config.ts',
+      '.parsemerc.ts',
+      'parseme.config.js',
+      '.parsemerc.js',
     ];
 
     const paths = configPath ? [configPath] : defaultPaths;
