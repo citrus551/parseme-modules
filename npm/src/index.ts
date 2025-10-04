@@ -9,5 +9,5 @@ export type {
   RouteInfo,
   FileAnalysis,
   GitInfo,
+  ParsemeConfigFile,
 } from './types.js';
-export type { ParsemeConfigFile } from './config.js';

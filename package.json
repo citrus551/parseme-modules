@@ -1,6 +1,6 @@
 {
   "name": "parseme-modules",
-  "description": "Repo for parseme modules",
+  "description": "Repository for parseme modules",
   "scripts": {
     "prepare": "husky"
   },

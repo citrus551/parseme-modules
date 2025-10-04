@@ -6,9 +6,9 @@ import { FrameworkDetector } from './analyzers/framework-detector.js';
 import { GitAnalyzer } from './analyzers/git-analyzer.js';
 import { ProjectAnalyzer } from './analyzers/project-analyzer.js';
 import { ContextBuilder } from './builders/context-builder.js';
-import { ParsemeConfig, type ParsemeConfigFile } from './config.js';
+import { ParsemeConfig } from './config.js';
 
-import type { ContextOutput, GeneratorOptions } from './types.js';
+import type { ContextOutput, GeneratorOptions, ParsemeConfigFile } from './types.js';
 
 export class ParsemeGenerator {
   private readonly config: ParsemeConfig;

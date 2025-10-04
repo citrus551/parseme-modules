@@ -4,9 +4,11 @@ import { join } from 'path';
 
 import { Command } from 'commander';
 
-import { ParsemeConfig, type ParsemeConfigFile } from './config.js';
+import { ParsemeConfig } from './config.js';
 import { ParsemeGenerator } from './generator.js';
 import { prompt } from './prompt.js';
+
+import type { ParsemeConfigFile } from './types.js';
 
 const program = new Command();
 
