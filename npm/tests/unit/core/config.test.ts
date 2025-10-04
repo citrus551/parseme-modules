@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import { test, describe, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
-import { ParsemeConfig } from '../../../dist/config.js';
+import { ParsemeConfig } from '../../../dist/core/config.js';
 
 describe('ParsemeConfig', () => {
   const fixturesDir = join(import.meta.dirname, '../../fixtures');

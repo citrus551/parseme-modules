@@ -1,8 +1,8 @@
 import * as assert from 'node:assert';
 import { test, describe, beforeEach } from 'node:test';
 
-import { ProjectAnalyzer } from '../../../dist/analyzers/project-analyzer.js';
-import { ParsemeConfig } from '../../../dist/config.js';
+import { ProjectAnalyzer } from '../../../../dist/core/analyzers/project-analyzer.js';
+import { ParsemeConfig } from '../../../../dist/core/config.js';
 
 describe('ProjectAnalyzer', () => {
   let config: ParsemeConfig;

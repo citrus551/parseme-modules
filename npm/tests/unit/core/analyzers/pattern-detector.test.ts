@@ -3,8 +3,8 @@ import { test, describe, beforeEach } from 'node:test';
 
 import { parse } from '@babel/parser';
 
-import { PatternDetector } from '../../../dist/analyzers/pattern-detector.js';
-import { ParsemeConfig } from '../../../dist/config.js';
+import { PatternDetector } from '../../../../dist/core/analyzers/pattern-detector.js';
+import { ParsemeConfig } from '../../../../dist/core/config.js';
 
 describe('PatternDetector', () => {
   let detector: PatternDetector;

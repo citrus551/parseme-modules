@@ -2,9 +2,9 @@ import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
-import { ParsemeGenerator } from '../../../dist/generator.js';
+import { ParsemeGenerator } from '../../../dist/core/generator.js';
 
-import type { ProjectInfo, FileAnalysis, GitInfo } from '../../../dist/types.js';
+import type { ProjectInfo, FileAnalysis, GitInfo } from '../../../dist/core/types.js';
 
 describe('ParsemeGenerator', () => {
   let generator: ParsemeGenerator;

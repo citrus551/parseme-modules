@@ -2,13 +2,13 @@ import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
-import { ASTAnalyzer } from '../../../dist/analyzers/ast-analyzer.js';
-import { ParsemeConfig as parsemeConfig } from '../../../dist/config.js';
+import { ASTAnalyzer } from '../../../../dist/core/analyzers/ast-analyzer.js';
+import { ParsemeConfig as parsemeConfig } from '../../../../dist/core/config.js';
 
 describe('ASTAnalyzer', () => {
   let analyzer: ASTAnalyzer;
   let config: parsemeConfig;
-  const fixturesDir = join(import.meta.dirname, '../../fixtures');
+  const fixturesDir = join(import.meta.dirname, '../../../fixtures');
 
   beforeEach(() => {
     config = new parsemeConfig({
