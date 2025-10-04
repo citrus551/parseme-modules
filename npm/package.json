@@ -29,7 +29,6 @@
     "test:integration": "node --test tests/integration/**/*.test.ts",
     "test:watch": "node --test --watch tests/**/*.test.ts",
     "test:coverage": "node --test --experimental-test-coverage tests/**/*.test.ts",
-    "prepare": "npm run build",
     "clean": "rm -rf dist"
   },
   "keywords": [

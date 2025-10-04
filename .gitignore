@@ -1,12 +1,9 @@
-# AI
-.claude/
+# Dependency directories
+node_modules/
 
-#IDEs
+# Build output
+dist
+
+# IDE configs
+.claude
 .idea
-
-# MAC
-.DS_Store
-
-# General temp files
-*.tmp
-*.temp

@@ -25,10 +25,8 @@ Your feedback is **highly appreciated** and helps shape the future of this tool!
 
 ## Features
 
-- **Universal Pattern Detection** - Dynamic code analysis that works across any JavaScript/TypeScript framework
 - **Project Analysis** - AST-based code analysis with automatic endpoint, component, and service discovery
-- **Framework Agnostic** - No framework-specific dependencies - works with any codebase structure
-- **Configurable Output** - Multi-file context generation optimized for AI assistants
+- **Universal Pattern Detection** - Dynamic code analysis that works across many JavaScript/TypeScript frameworks
 - **Git Integration** - Includes repository status and change tracking
 - **Configurable** - Comprehensive configuration options via JavaScript, TypeScript, or JSON
 - **Dev Tool Integration** - Works seamlessly as an npm script
@@ -310,7 +308,7 @@ AI-friendly size limits to prevent token overflow:
 
 ## Output Format
 
-PARSEME always generates multi-file output:
+PARSEME always generates the following output files:
 
 - `PARSEME.md` - Main overview with links to context files (Markdown)
 - Context directory (default: `parseme-context/`) with structured data files:
