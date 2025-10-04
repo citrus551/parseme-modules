@@ -131,7 +131,11 @@ npm install --save-dev parseme
    npx parseme init
    ```
 
-2. **Add to your package.json scripts**:
+   This command will:
+   - Create a configuration file (`parseme.config.js` by default)
+   - Display setup tips for package.json scripts and git hooks
+
+2. **Add to your package.json scripts** (for easier manual execution or hook integration):
 
    ```json
    {
@@ -295,6 +299,12 @@ npx parseme init --format json
 
 # Use custom config file
 npx parseme --config custom.config.js
+
+# If added to package.json scripts, use npm run
+npm run parseme
+
+# Auto-generate context with git hooks (when configured)
+# Runs automatically after each commit
 
 # Override config with CLI flags
 npx parseme --output custom.md --context-dir docs/context --root ./src --no-git

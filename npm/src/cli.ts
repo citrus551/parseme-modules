@@ -61,7 +61,10 @@ program
         ...(options.readmeSuggestion === false && { readmeSuggestion: false }),
       };
 
-      const configFromFile = await ParsemeConfig.fromFile(options.config);
+      const configFromFile = await ParsemeConfig.fromFile(options.config, {
+        showWarnings: true,
+        throwOnNotFound: true,
+      });
       const interactiveConfig = await promptForMissingConfig(configFromFile.get(), cliOptions);
 
       // Merge: CLI options > interactive prompts > config file > defaults
@@ -74,9 +77,6 @@ program
       const generator = new ParsemeGenerator(config.get());
       await generator.generateToFile();
       console.log('Context generated successfully');
-      console.log(
-        'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
-      );
 
       const shouldShowReadmeSuggestion = finalConfig.readmeSuggestion !== false;
       if (shouldShowReadmeSuggestion) {
@@ -91,6 +91,10 @@ program
         console.log('');
       }
     } catch (error) {
+      if (error instanceof Error && error.message.includes('No configuration file found')) {
+        console.error(error.message);
+        process.exit(1);
+      }
       console.error('Failed to generate context:', error);
       process.exit(1);
     }
@@ -131,7 +135,12 @@ program
         console.log('For TypeScript configs, ensure tsx or ts-node is available to load .ts files');
       }
 
-      console.log('Add "parseme": "parseme" to your package.json scripts');
+      console.log(
+        'Tip: Add "parseme": "parseme" to your package.json scripts for easier manual execution or hook integration',
+      );
+      console.log(
+        'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
+      );
     } catch (error) {
       console.error('Failed to create configuration:', error);
       process.exit(1);
@@ -143,16 +152,16 @@ if (process.argv.length <= 2) {
   // Run the default action
   (async () => {
     try {
-      const configFromFile = await ParsemeConfig.fromFile();
+      const configFromFile = await ParsemeConfig.fromFile(undefined, {
+        showWarnings: true,
+        throwOnNotFound: true,
+      });
       const interactiveConfig = await promptForMissingConfig(configFromFile.get(), {});
 
       const config = new ParsemeConfig(interactiveConfig);
       const generator = new ParsemeGenerator(config.get());
       await generator.generateToFile();
       console.log('Context generated successfully');
-      console.log(
-        'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
-      );
 
       const shouldShowReadmeSuggestion = interactiveConfig.readmeSuggestion !== false;
       if (shouldShowReadmeSuggestion) {
@@ -167,8 +176,11 @@ if (process.argv.length <= 2) {
         console.log('');
       }
     } catch (error) {
+      if (error instanceof Error && error.message.includes('No configuration file found')) {
+        console.error(error.message);
+        process.exit(1);
+      }
       console.error('Failed to generate context:', error);
-      console.log('Run "parseme init" to create a configuration file');
       process.exit(1);
     }
   })();

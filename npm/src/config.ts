@@ -58,8 +58,9 @@ export class ParsemeConfig {
   static async fromFileWithOptions(
     configPath?: string,
     cliOptions: Partial<ParsemeConfigFile> = {},
+    options: { showWarnings?: boolean } = { showWarnings: true },
   ): Promise<ParsemeConfig> {
-    const configFromFile = await ParsemeConfig.fromFile(configPath);
+    const configFromFile = await ParsemeConfig.fromFile(configPath, options);
     const mergedConfig = {
       ...configFromFile.get(),
       ...cliOptions, // CLI options take priority
@@ -67,7 +68,13 @@ export class ParsemeConfig {
     return new ParsemeConfig(mergedConfig);
   }
 
-  static async fromFile(configPath?: string): Promise<ParsemeConfig> {
+  static async fromFile(
+    configPath?: string,
+    options: { showWarnings?: boolean; throwOnNotFound?: boolean } = {
+      showWarnings: true,
+      throwOnNotFound: false,
+    },
+  ): Promise<ParsemeConfig> {
     const defaultPaths = [
       'parseme.config.ts',
       'parseme.config.js',
@@ -79,6 +86,8 @@ export class ParsemeConfig {
     ];
 
     const paths = configPath ? [configPath] : defaultPaths;
+    let tsWarning: string | null = null;
+    let foundConfig = false;
 
     for (const path of paths) {
       try {
@@ -89,32 +98,48 @@ export class ParsemeConfig {
           const fullPath = path.startsWith('/') ? path : join(process.cwd(), path);
 
           if (ext === '.ts') {
-            // For TypeScript files, try to import directly first
-            // This works if the user has transpiled their TS config to JS or is using tsx/ts-node
-            try {
-              const module = await import(fullPath);
-              const config = module.default || module;
-              return new ParsemeConfig(config);
-            } catch {
-              // If direct import fails, suggest using .js instead
-              console.warn(`Could not load TypeScript config file: ${path}`);
-              console.warn(`Consider using a .js config file or ensure tsx/ts-node is available`);
+            // For TypeScript files, check if file exists first
+            if (existsSync(fullPath)) {
+              try {
+                const module = await import(fullPath);
+                const config = module.default || module;
+                foundConfig = true;
+                return new ParsemeConfig(config);
+              } catch {
+                // File exists but can't be loaded - save warning
+                tsWarning = path;
+              }
             }
           } else {
             // JavaScript files
             const module = await import(fullPath);
             const config = module.default || module;
+            foundConfig = true;
             return new ParsemeConfig(config);
           }
         } else {
           // JSON config files
           const content = await readFile(path, 'utf-8');
           const config = JSON.parse(content);
+          foundConfig = true;
           return new ParsemeConfig(config);
         }
       } catch {
         // Continue to next path
       }
+    }
+
+    // Handle case when no config found
+    if (!foundConfig) {
+      if (options.throwOnNotFound) {
+        throw new Error('No configuration file found. Run "parseme init" to create one.');
+      }
+      if (options.showWarnings) {
+        console.warn('No configuration file found. Run "parseme init" to create one.');
+      }
+    } else if (tsWarning && options.showWarnings) {
+      console.warn(`Could not load TypeScript config file: ${tsWarning}`);
+      console.warn(`Consider using a .js config file or ensure tsx/ts-node is available`);
     }
 
     // Return default config if no file found
