@@ -45,7 +45,6 @@ export class ParsemeConfig {
 
     const paths = configPath ? [configPath] : defaultPaths;
     let tsWarning: string | null = null;
-    let foundConfig = false;
 
     for (const path of paths) {
       try {
@@ -61,7 +60,6 @@ export class ParsemeConfig {
               try {
                 const module = await import(fullPath);
                 const config = module.default || module;
-                foundConfig = true;
                 return new ParsemeConfig(config);
               } catch {
                 // File exists but can't be loaded - save warning
@@ -72,14 +70,12 @@ export class ParsemeConfig {
             // JavaScript files
             const module = await import(fullPath);
             const config = module.default || module;
-            foundConfig = true;
             return new ParsemeConfig(config);
           }
         } else {
           // JSON config files
           const content = await readFile(path, 'utf-8');
           const config = JSON.parse(content);
-          foundConfig = true;
           return new ParsemeConfig(config);
         }
       } catch {
@@ -88,14 +84,13 @@ export class ParsemeConfig {
     }
 
     // Handle case when no config found
-    if (!foundConfig) {
-      if (options.throwOnNotFound) {
-        throw new Error('No configuration file found. Run "parseme init" to create one.');
-      }
-      if (options.showWarnings) {
-        console.warn('No configuration file found. Run "parseme init" to create one.');
-      }
-    } else if (tsWarning && options.showWarnings) {
+    if (options.throwOnNotFound) {
+      throw new Error('No configuration file found. Run "parseme init" to create one.');
+    }
+    if (options.showWarnings) {
+      console.warn('No configuration file found. Run "parseme init" to create one.');
+    }
+    if (tsWarning && options.showWarnings) {
       console.warn(`Could not load TypeScript config file: ${tsWarning}`);
       console.warn(`Consider using a .js config file or ensure tsx/ts-node is available`);
     }

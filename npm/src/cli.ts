@@ -14,14 +14,6 @@ const program = new Command();
 
 async function promptForMissingConfig(config: ParsemeConfigFile): Promise<ParsemeConfigFile> {
   const finalConfig = { ...config };
-
-  // Only prompt if running interactively (stdin is a TTY) and not in CI
-  if (!process.stdin.isTTY || process.env.CI) {
-    return finalConfig;
-  }
-
-  // No prompts needed anymore - all handled in init command
-
   return finalConfig;
 }
 
