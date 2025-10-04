@@ -6,7 +6,7 @@ import { Command } from 'commander';
 
 import { ParsemeConfig, type ParsemeConfigFile } from './config.js';
 import { ParsemeGenerator } from './generator.js';
-import { confirmPrompt } from './prompt.js';
+import { confirmPrompt, prompt } from './prompt.js';
 
 const program = new Command();
 
@@ -21,14 +21,7 @@ async function promptForMissingConfig(
     return finalConfig;
   }
 
-  // Prompt for README suggestion if not set via CLI or config
-  if (cliOptions.readmeSuggestion === undefined && config.readmeSuggestion === undefined) {
-    const wantReadmeSuggestion = await confirmPrompt(
-      'Show README.md section suggestion for AI agents?',
-      true,
-    );
-    finalConfig.readmeSuggestion = wantReadmeSuggestion;
-  }
+  // No prompts needed anymore - all handled in init command
 
   return finalConfig;
 }
@@ -46,7 +39,6 @@ program
   .option('--exclude <patterns...>', 'Exclude patterns (glob)')
   .option('--no-git', 'Disable git information')
   .option('--max-depth <number>', 'Maximum directory depth', parseInt)
-  .option('--no-readme-suggestion', 'Disable README.md section suggestion')
   .action(async (options) => {
     try {
       // Convert CLI options to config format
@@ -58,7 +50,6 @@ program
         ...(options.exclude && { excludePatterns: options.exclude }),
         ...(options.git === false && { includeGitInfo: false }),
         ...(options.maxDepth && { maxDepth: options.maxDepth }),
-        ...(options.readmeSuggestion === false && { readmeSuggestion: false }),
       };
 
       const configFromFile = await ParsemeConfig.fromFile(options.config, {
@@ -77,19 +68,6 @@ program
       const generator = new ParsemeGenerator(config.get());
       await generator.generateToFile();
       console.log('Context generated successfully');
-
-      const shouldShowReadmeSuggestion = finalConfig.readmeSuggestion !== false;
-      if (shouldShowReadmeSuggestion) {
-        console.log('Tip: Add this section to your README.md to help AI agents find the context:');
-        console.log('');
-        console.log('## For AI Assistants');
-        console.log('This project includes AI-optimized documentation:');
-        console.log('- `PARSEME.md` - Main project context and overview');
-        console.log(
-          '- `parseme-context/` - Detailed JSON files with code structure, dependencies, and git info',
-        );
-        console.log('');
-      }
     } catch (error) {
       if (error instanceof Error && error.message.includes('No configuration file found')) {
         console.error(error.message);
@@ -114,7 +92,6 @@ program
       }
 
       const configPath = join(process.cwd(), `parseme.config.${options.format}`);
-      const config = new ParsemeConfig();
 
       // Check if config already exists
       if (!options.force) {
@@ -128,6 +105,31 @@ program
         }
       }
 
+      // Build config with only user-specified values
+      const userConfig: Partial<ParsemeConfigFile> = {};
+
+      // Only prompt if interactive (TTY) and not in CI
+      if (process.stdin.isTTY && !process.env.CI) {
+        // Ask about root directory
+        const rootDirAnswer = await prompt({
+          message: 'Root directory to analyze',
+          defaultValue: './',
+        });
+        if (rootDirAnswer !== './') {
+          userConfig.rootDir = rootDirAnswer;
+        }
+
+        // Ask about context directory path
+        const contextDirAnswer = await prompt({
+          message: 'Context directory path',
+          defaultValue: 'parseme-context',
+        });
+        if (contextDirAnswer !== 'parseme-context') {
+          userConfig.contextDir = contextDirAnswer;
+        }
+      }
+
+      const config = new ParsemeConfig(userConfig);
       await config.save(configPath);
       console.log(`Configuration file created at ${configPath}`);
 
@@ -141,6 +143,16 @@ program
       console.log(
         'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
       );
+      console.log('');
+      console.log('Tip: Add this section to your README.md to help AI agents find the context:');
+      console.log('');
+      console.log('## Instructions For AI Agents');
+      console.log('This project includes AI-optimized documentation for efficient context providing:');
+      console.log('- `PARSEME.md` - Project overview with links to detailed context files');
+      console.log(
+        '- `parseme-context/` - Structured data files (AST analysis, dependencies, routes, git info)',
+      );
+      console.log('');
     } catch (error) {
       console.error('Failed to create configuration:', error);
       process.exit(1);
@@ -162,19 +174,6 @@ if (process.argv.length <= 2) {
       const generator = new ParsemeGenerator(config.get());
       await generator.generateToFile();
       console.log('Context generated successfully');
-
-      const shouldShowReadmeSuggestion = interactiveConfig.readmeSuggestion !== false;
-      if (shouldShowReadmeSuggestion) {
-        console.log('Tip: Add this section to your README.md to help AI agents find the context:');
-        console.log('');
-        console.log('## For AI Assistants');
-        console.log('This project includes AI-optimized documentation:');
-        console.log('- `PARSEME.md` - Main project context and overview');
-        console.log(
-          '- `parseme-context/` - Detailed JSON files with code structure, dependencies, and git info',
-        );
-        console.log('');
-      }
     } catch (error) {
       if (error instanceof Error && error.message.includes('No configuration file found')) {
         console.error(error.message);

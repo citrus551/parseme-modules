@@ -30,20 +30,20 @@ Your feedback is **highly appreciated** and helps shape the future of this tool!
 - **Framework Agnostic** - No framework-specific dependencies - works with any codebase structure
 - **Configurable Output** - Multi-file context generation optimized for AI assistants
 - **Git Integration** - Includes repository status and change tracking
-- **Highly Configurable** - Comprehensive configuration options via JavaScript, TypeScript, or JSON
+- **Configurable** - Comprehensive configuration options via JavaScript, TypeScript, or JSON
 - **Dev Tool Integration** - Works seamlessly as an npm script
 
-### 🔍 **What PARSEME Detects**
+### **What PARSEME Detects**
 
 PARSEME uses AST analysis to identify:
 
-- **📡 API Endpoints** - HTTP routes, GraphQL resolvers, RPC methods
-- **🧩 Components** - UI components across all major frameworks
-- **⚙️ Services** - Business logic classes and service functions
-- **📋 Data Models** - Interfaces, types, schemas, DTOs
-- **🔗 Middleware** - Request/response handlers and interceptors
-- **🛠️ Utilities** - Helper functions, hooks, composables
-- **📁 Project Structure** - Organized by detected patterns and purpose
+- **API Endpoints** - HTTP routes, GraphQL resolvers, RPC methods
+- **Components** - UI components across all major frameworks
+- **Services** - Business logic classes and service functions
+- **Data Models** - Interfaces, types, schemas, DTOs
+- **Middleware** - Request/response handlers and interceptors
+- **Utilities** - Helper functions, hooks, composables
+- **Project Structure** - Organized by detected patterns and purpose
 
 ## **Language Support**
 
@@ -54,9 +54,9 @@ PARSEME uses AST analysis to identify:
 
 ## Supported Projects
 
-PARSEME aims to automatically analyse any JavaScript or TypeScript project:
+PARSEME aims to automatically analyse any JavaScript or TypeScript project like:
 
-### 🖥️ **Backend APIs**
+### **Backend APIs**
 
 - **NestJS** - Controllers, services, decorators, dependency injection
 - **Express.js** - Routes, middleware, error handlers
@@ -65,7 +65,7 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project:
 - **Hapi.js** - Route configuration, server plugins
 - **Custom frameworks** - Any HTTP endpoint patterns
 
-### 🎨 **Frontend Applications**
+### **Frontend Applications**
 
 - **React** - Components (functional & class), hooks, JSX patterns
 - **Vue.js** - Components (Composition & Options API), composables
@@ -74,48 +74,26 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project:
 - **Lit** - Web components, custom elements
 - **Vanilla JS/TS** - Any component or module patterns
 
-### 📦 **NPM Packages & Libraries**
+### **NPM Packages & Libraries**
 
 - **TypeScript libraries** - Interfaces, types, utility functions
 - **JavaScript utilities** - Helper functions, class libraries
 - **Node.js modules** - CommonJS and ES modules
 - **Monorepo packages** - Lerna, Nx, Rush, Turborepo
 
-### 🛠️ **Development Tools**
+### **Development Tools**
 
 - **CLI applications** - Command-line tools and scripts
 - **Build tools** - Webpack plugins, Vite configurations
 - **Desktop applications** - Electron, Tauri apps
 - **Testing utilities** - Jest plugins, test helpers
 
-### 🏗️ **Fullstack Frameworks**
+### **Fullstack Frameworks**
 
 - **Next.js** - Pages, API routes, middleware, components
 - **Nuxt.js** - Vue-based fullstack applications
 - **SvelteKit** - Svelte-based fullstack applications
 - **Remix** - React-based fullstack applications
--
-
-## Development Status
-
-**This project is currently in active development and beta phase.**
-
-The core functionality is working, but expect:
-
-- Breaking changes in configuration format
-- API modifications as the interface gets refined
-- Additional features being added regularly
-- Possible bugs and edge cases
-
-### Feedback Welcome!
-
-Your feedback is **highly appreciated** and helps shape the future of this tool! Please:
-
-- [Report bugs or issues](https://github.com/citrus551/parseme-modules/issues)
-- [Suggest features or improvements](https://github.com/citrus551/parseme-modules/discussions)
-- For other inquiries, contact: mail.citrus551@passmail.net
-- Share your use cases and experiences
-- Star the repo if you find it useful
 
 ## Installation
 
@@ -131,11 +109,18 @@ npm install --save-dev parseme
    npx parseme init
    ```
 
-   This command will:
-   - Create a configuration file (`parseme.config.js` by default)
-   - Display setup tips for package.json scripts and git hooks
+   You'll be prompted for:
+   - Root directory to analyze (default: `./`)
+   - Context directory path (default: `parseme-context`)
 
-2. **Add to your package.json scripts** (for easier manual execution or hook integration):
+   A minimal config file will be created with only your custom settings.
+
+   Setup tips will be displayed:
+   - How to add parseme script to package.json
+   - How to integrate with git hooks
+   - README section to help AI agents find context
+
+2. **Add to your package.json scripts** (optional, for easier execution):
 
    ```json
    {
@@ -148,34 +133,57 @@ npm install --save-dev parseme
 3. **Generate context**:
    ```bash
    npm run parseme
+   # or
+   npx parseme
    ```
 
-This will create a `PARSEME.md` file and a `parseme-context/` directory with comprehensive project context.
+This creates:
+- `PARSEME.md` - Main overview with links to context files
+- `parseme-context/` - Structured data files (AST, dependencies, routes, git info)
 
 ## Configuration
 
 PARSEME supports multiple configuration formats with automatic discovery and priority handling.
 
+The `parseme init` command creates a minimal config with only your custom settings. Defaults are applied automatically at runtime.
+
+**Minimal config example** (created by `parseme init`):
 ```javascript
 /** @type {import('parseme').ParsemeConfigFile} */
-export default {
+const config = {
+  rootDir: 'src',
+  contextDir: 'docs/context'
+};
+
+export default config;
+```
+
+**Full config example** (all available options):
+```javascript
+/** @type {import('parseme').ParsemeConfigFile} */
+const config = {
   // Output settings
   outputPath: 'PARSEME.md',
-  contextDir: 'parseme-context', // or "docs/context", "/absolute/path"
+  contextDir: 'parseme-context',
 
   // Analysis settings
+  rootDir: './',
   includePatterns: ['src/**/*.ts', 'src/**/*.js', 'package.json'],
   excludePatterns: ['node_modules/**', 'dist/**', '**/*.test.ts'],
+  maxDepth: 10,
+
+  // Git integration
+  includeGitInfo: true,
 
   // AI-friendly size limits
   limits: {
     maxLinesPerFile: 1000,
     maxCharsPerFile: 50000,
     maxFilesPerContext: 20,
-    truncateStrategy: 'split', // or 'truncate'
+    truncateStrategy: 'truncate', // 'truncate' | 'split' | 'summarize'
   },
 
-  // Content sections
+  // Content sections (all default to true)
   sections: {
     overview: true,
     architecture: true,
@@ -184,7 +192,17 @@ export default {
     git: true,
     fileStructure: true,
   },
+
+  // Style options
+  style: {
+    includeLineNumbers: false,
+    includeFileStats: true,
+    groupByType: true,
+    sortOrder: 'type', // 'alphabetical' | 'type' | 'size'
+  },
 };
+
+export default config;
 ```
 
 ### Configuration File Formats & Priority
@@ -194,6 +212,19 @@ PARSEME supports three configuration formats with the following priority:
 1. **TypeScript** (`.ts`) - `parseme.config.ts`, `.parsemerc.ts`
 2. **JavaScript** (`.js`) - `parseme.config.js`, `.parsemerc.js`
 3. **JSON** (`.json`) - `parseme.config.json`, `.parsemerc.json`, `.parsemerc`
+
+#### JavaScript Configuration
+
+```javascript
+/** @type {import('parseme').ParsemeConfigFile} */
+const config = {
+  outputPath: 'PARSEME.md',
+  includePatterns: ['src/**/*.ts'],
+  // ... other options
+};
+
+export default config;
+```
 
 #### TypeScript Configuration
 
@@ -223,7 +254,7 @@ export default config;
 
 Configuration values are resolved in the following order (highest to lowest priority):
 
-1. **CLI flags** - `--output`, `--root`, `--include`, etc.
+1. **CLI flags** - `--output`, `--root`, `--config`, etc.
 2. **Config file** - Based on file format priority above
 3. **Default values** - Built-in sensible defaults
 
@@ -233,52 +264,59 @@ Configuration values are resolved in the following order (highest to lowest prio
 
 #### Output Settings
 
-- `outputPath` - Where to save the main PARSEME.md file (default: "PARSEME.md")
-- `contextDir` - Directory for detailed context files (default: "parseme-context")
+- `outputPath` - Where to save the main PARSEME.md file (default: `"PARSEME.md"`)
+- `contextDir` - Directory for detailed context files (default: `"parseme-context"`)
 
 #### Analysis Settings
 
-- `rootDir` - Project root directory (default: current directory)
-- `includePatterns` - Glob patterns for files to analyze
-- `excludePatterns` - Glob patterns for files to ignore
-- `maxDepth` - Maximum directory depth to traverse
+- `rootDir` - Project root directory (default: `process.cwd()`)
+- `includePatterns` - Glob patterns for files to analyze (default: `['src/**/*.ts', 'src/**/*.js', 'src/**/*.tsx', 'src/**/*.jsx', 'lib/**/*.ts', 'lib/**/*.js', 'package.json', 'tsconfig.json', 'README.md']`)
+- `excludePatterns` - Glob patterns for files to ignore (default: from `.gitignore` or `['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '.git/**', '**/*.log', '**/*.tmp', '**/.DS_Store', '**/.*']`)
+- `maxDepth` - Maximum directory depth to traverse (default: `10`)
 
-#### Framework Settings
+#### Git Integration
 
-Configure framework-specific analysis:
-
-- **Express**: `detectMiddleware`, `documentRoutes`
-- **NestJS**: `includeDecorators`, `documentModules`
-- **Fastify**: `includePlugins`
+- `includeGitInfo` - Include git repository information (default: `true`)
 
 #### Content Sections
 
-Toggle which sections to include:
+Toggle which sections to include in the output (all default to `true`):
 
-- `overview` - Project overview and metadata
-- `architecture` - File type breakdown
-- `routes` - API endpoints and routing
-- `dependencies` - Package dependencies
-- `git` - Repository information
-- `fileStructure` - Detailed file listing
+- `sections.overview` - Project overview and metadata
+- `sections.architecture` - File type breakdown
+- `sections.routes` - API endpoints and routing
+- `sections.dependencies` - Package dependencies
+- `sections.git` - Repository information
+- `sections.fileStructure` - Detailed file listing
 
 #### Style Options
 
-- `includeLineNumbers` - Add line numbers to code references
-- `includeFileStats` - Include file statistics
-- `groupByType` - Group files by detected type
-- `sortOrder` - "alphabetical", "type", or "size"
+- `style.includeLineNumbers` - Add line numbers to code references (default: `false`)
+- `style.includeFileStats` - Include file statistics (default: `true`)
+- `style.groupByType` - Group files by detected type (default: `true`)
+- `style.sortOrder` - Sort order: `"alphabetical"`, `"type"`, or `"size"` (default: `"type"`)
+
+#### Size Limits
+
+AI-friendly size limits to prevent token overflow:
+
+- `limits.maxLinesPerFile` - Maximum lines per file (default: `1000`)
+- `limits.maxCharsPerFile` - Maximum characters per file (default: `50000`)
+- `limits.maxFilesPerContext` - Maximum files per context (default: `20`)
+- `limits.truncateStrategy` - Strategy: `"truncate"`, `"split"`, or `"summarize"` (default: `"truncate"`)
 
 ## Output Format
 
 PARSEME always generates multi-file output:
 
-- `PARSEME.md` - Main overview and summary (Markdown format)
-- Context directory (default: `parseme-context/`) with detailed JSON files:
-  - `structure.json` - Detailed AST analysis with file exports, imports, functions, and classes
-  - `routes.json` - API routes documentation with methods, paths, and handlers
-  - `dependencies.json` - Production dependency analysis with package versions
-  - `git.json` - Git repository information with branch, status, and changed files
+- `PARSEME.md` - Main overview with links to context files (Markdown)
+- Context directory (default: `parseme-context/`) with structured data files:
+  - `files.md` - Complete list of analyzed files (Markdown)
+  - `structure.json` - AST analysis with exports, imports, functions, and classes (JSON)
+  - `api-endpoints.json` - API routes with methods, paths, and handlers (JSON, only if routes detected)
+  - `dependencies.json` - Production dependencies with versions (JSON)
+  - `framework.json` - Framework details if detected (JSON, optional)
+  - `gitDiff.md` - Git diff statistics from generation time (Markdown, if git enabled)
 
 The context directory location can be customized via the `contextDir` configuration option.
 
@@ -315,6 +353,8 @@ npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
 
 ### CLI Options
 
+#### Main Command (`parseme`)
+
 - `-c, --config <path>` - Config file path
 - `-o, --output <path>` - Output file path
 - `-r, --root <path>` - Root directory to analyze
@@ -323,29 +363,23 @@ npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
 - `--exclude <patterns...>` - Exclude patterns (glob)
 - `--no-git` - Disable git information
 - `--max-depth <number>` - Maximum directory depth
-- `--no-readme-suggestion` - Disable README.md section suggestion
+
+#### Init Command (`parseme init`)
+
+- `-f, --force` - Overwrite existing config
+- `--format <format>` - Config format: js, ts, or json (default: js)
 
 ### Interactive Configuration
 
-When the README suggestion setting is not configured and you're running parseme interactively, you'll be prompted to configure:
+When running `parseme init` interactively (TTY, not CI), you'll be prompted to configure:
 
-- **README suggestion** - Whether to show the README.md section suggestion for AI agents
+- **Root directory** - Directory to analyze (default: `./`)
+- **Context directory** - Where to store context files (default: `parseme-context`)
 
-The prompt is automatically disabled in:
-
-- CI environments (when `CI=true`)
-- Non-interactive terminals (no TTY)
-- When the value is explicitly provided via CLI flags or config files
-
-Example interactive session:
-
-```
-$ npx parseme
-
-Show README.md section suggestion for AI agents? [y]: y
-
-Context generated successfully
-```
+After initialization, setup tips are displayed:
+- Package.json script suggestion
+- Git hook integration suggestion
+- README.md section suggestion for AI agents
 
 ## Framework Support
 

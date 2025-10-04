@@ -50,8 +50,10 @@ export interface ParsemeConfigFile extends GeneratorOptions {
 
 export class ParsemeConfig {
   private readonly config: ParsemeConfigFile;
+  private readonly userConfig: Partial<ParsemeConfigFile>;
 
   constructor(config: Partial<ParsemeConfigFile> = {}) {
+    this.userConfig = { ...config }; // Store original user config
     this.config = this.mergeWithDefaults(config);
   }
 
@@ -219,21 +221,25 @@ export class ParsemeConfig {
       const configContent = this.generateTSConfig();
       await writeFile(path, configContent);
     } else {
-      // Generate JSON config file
-      await writeFile(path, JSON.stringify(this.config, null, 2));
+      // Generate JSON config file - only save user config, not defaults
+      await writeFile(path, JSON.stringify(this.userConfig, null, 2));
     }
   }
 
   private generateJSConfig(): string {
+    // Only export user-specified config, not defaults
     return `/** @type {import('parseme').ParsemeConfigFile} */
-export default ${JSON.stringify(this.config, null, 2)};
+const config = ${JSON.stringify(this.userConfig, null, 2)};
+
+export default config;
 `;
   }
 
   private generateTSConfig(): string {
+    // Only export user-specified config, not defaults
     return `import type { ParsemeConfigFile } from 'parseme';
 
-const config: ParsemeConfigFile = ${JSON.stringify(this.config, null, 2)};
+const config: ParsemeConfigFile = ${JSON.stringify(this.userConfig, null, 2)};
 
 export default config;
 `;
