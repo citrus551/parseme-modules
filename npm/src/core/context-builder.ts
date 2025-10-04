@@ -1,6 +1,6 @@
 import { relative, dirname } from 'path';
 
-import type { ParsemeConfig } from '../config.js';
+import type { ParsemeConfig } from './config.js';
 import type {
   ContextOutput,
   ProjectInfo,
@@ -8,7 +8,7 @@ import type {
   GitInfo,
   GeneratorOptions,
   RouteInfo,
-} from '../types.js';
+} from './types.js';
 
 interface BuildContext {
   projectInfo: ProjectInfo;

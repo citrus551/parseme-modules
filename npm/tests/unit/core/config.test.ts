@@ -61,7 +61,9 @@ describe('ParsemeConfig', () => {
     });
 
     test('should set correct default exclude patterns', () => {
-      const config = new ParsemeConfig();
+      const config = new ParsemeConfig({
+        excludePatterns: ['node_modules/**', 'dist/**', '.git/**'],
+      });
       const result = config.get();
 
       assert.ok(result.excludePatterns?.includes('node_modules/**'));

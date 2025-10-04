@@ -5,8 +5,8 @@ import { ASTAnalyzer } from './analyzers/ast-analyzer.js';
 import { FrameworkDetector } from './analyzers/framework-detector.js';
 import { GitAnalyzer } from './analyzers/git-analyzer.js';
 import { ProjectAnalyzer } from './analyzers/project-analyzer.js';
-import { ContextBuilder } from './builders/context-builder.js';
 import { ParsemeConfig } from './config.js';
+import { ContextBuilder } from './context-builder.js';
 
 import type { ContextOutput, GeneratorOptions, ParsemeConfigFile } from './types.js';
 

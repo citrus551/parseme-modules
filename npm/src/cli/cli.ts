@@ -4,11 +4,11 @@ import { join } from 'path';
 
 import { Command } from 'commander';
 
-import { ParsemeConfig } from './config.js';
-import { ParsemeGenerator } from './generator.js';
 import { prompt } from './prompt.js';
+import { ParsemeConfig } from '../core/config.js';
+import { ParsemeGenerator } from '../core/generator.js';
 
-import type { ParsemeConfigFile } from './types.js';
+import type { ParsemeConfigFile } from '../core/types.js';
 
 const program = new Command();
 
@@ -110,7 +110,7 @@ program
         userConfig.contextDir = contextDirAnswer;
 
         // Ask about exclude patterns
-        const defaultExcludePatterns = ['node_modules/**', '.git/**'];
+        const defaultExcludePatterns = ['node_modules/**', 'dist/**', '.git/**'];
         const excludePatternsAnswer = await prompt({
           message:
             'Exclude patterns (comma-separated glob patterns, patterns from .gitignore will be ignored by default as well)',

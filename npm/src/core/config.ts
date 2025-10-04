@@ -197,17 +197,7 @@ export default config;
   }
 
   private mergeExcludePatterns(configPatterns: string[] | undefined, rootDir: string): string[] {
-    const defaultPatterns = [
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      'coverage/**',
-      '.git/**',
-      '**/*.log',
-      '**/*.tmp',
-      '**/.DS_Store',
-      '**/.*',
-    ];
+    const excludePatterns: string[] = [];
 
     // Priority: Config patterns > .gitignore patterns > Default patterns
     if (configPatterns) {
@@ -220,7 +210,7 @@ export default config;
       return gitignorePatterns;
     }
 
-    return defaultPatterns;
+    return excludePatterns;
   }
 
   private readGitignorePatterns(rootDir: string): string[] {

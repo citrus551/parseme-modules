@@ -1,6 +1,6 @@
 // Main exports for the parseme package
-export { ParsemeGenerator } from './generator.js';
-export { ParsemeConfig } from './config.js';
+export { ParsemeGenerator } from './core/generator.js';
+export { ParsemeConfig } from './core/config.js';
 export type {
   GeneratorOptions,
   ContextOutput,
@@ -10,4 +10,4 @@ export type {
   FileAnalysis,
   GitInfo,
   ParsemeConfigFile,
-} from './types.js';
+} from './core/types.js';
