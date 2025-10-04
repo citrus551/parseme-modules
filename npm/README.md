@@ -110,8 +110,8 @@ npm install --save-dev parseme
    ```
 
    You'll be prompted for:
-   - Root directory to analyze (default: `./`)
    - Context directory path (default: `parseme-context`)
+   - Exclude patterns (default: `node_modules/**`, `.git/**` - patterns from `.gitignore` will be ignored by default as well)
 
    A minimal config file will be created with only your custom settings.
 
@@ -153,8 +153,8 @@ The `parseme init` command creates a minimal config with only your custom settin
 ```javascript
 /** @type {import('parseme').ParsemeConfigFile} */
 const config = {
-  rootDir: 'src',
-  contextDir: 'docs/context',
+  contextDir: 'parseme-context',
+  excludePatterns: ['node_modules/**', '.git/**'],
 };
 
 export default config;
@@ -274,7 +274,7 @@ Configuration values are resolved in the following order (highest to lowest prio
 
 - `rootDir` - Project root directory (default: `process.cwd()`)
 - `includePatterns` - Glob patterns for files to analyze (default: `['src/**/*.ts', 'src/**/*.js', 'src/**/*.tsx', 'src/**/*.jsx', 'lib/**/*.ts', 'lib/**/*.js', 'package.json', 'tsconfig.json', 'README.md']`)
-- `excludePatterns` - Glob patterns for files to ignore (default: from `.gitignore` or `['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '.git/**', '**/*.log', '**/*.tmp', '**/.DS_Store', '**/.*']`)
+- `excludePatterns` - Glob patterns for files to ignore (default: `['node_modules/**', '.git/**']` plus patterns from `.gitignore` if available)
 - `maxDepth` - Maximum directory depth to traverse (default: `10`)
 
 #### Git Integration
@@ -376,8 +376,8 @@ npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
 
 When running `parseme init` interactively (TTY, not CI), you'll be prompted to configure:
 
-- **Root directory** - Directory to analyze (default: `./`)
 - **Context directory** - Where to store context files (default: `parseme-context`)
+- **Exclude patterns** - Comma-separated glob patterns (default: `node_modules/**`, `.git/**` - patterns from `.gitignore` will be ignored by default as well)
 
 After initialization, setup tips are displayed:
 

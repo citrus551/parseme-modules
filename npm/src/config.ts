@@ -266,9 +266,7 @@ export default config;
     // Try to read .gitignore patterns
     const gitignorePatterns = this.readGitignorePatterns(rootDir);
     if (gitignorePatterns.length > 0) {
-      // Merge gitignore patterns with critical defaults
-      const criticalDefaults = ['node_modules/**', '.git/**'];
-      return [...new Set([...criticalDefaults, ...gitignorePatterns])];
+      return gitignorePatterns;
     }
 
     return defaultPatterns;

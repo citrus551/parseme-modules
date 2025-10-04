@@ -107,23 +107,26 @@ program
 
       // Only prompt if interactive (TTY) and not in CI
       if (process.stdin.isTTY && !process.env.CI) {
-        // Ask about root directory
-        const rootDirAnswer = await prompt({
-          message: 'Root directory to analyze',
-          defaultValue: './',
-        });
-        if (rootDirAnswer !== './') {
-          userConfig.rootDir = rootDirAnswer;
-        }
-
         // Ask about context directory path
         const contextDirAnswer = await prompt({
           message: 'Context directory path',
           defaultValue: 'parseme-context',
         });
-        if (contextDirAnswer !== 'parseme-context') {
-          userConfig.contextDir = contextDirAnswer;
-        }
+        // Always set context directory to what user entered (or default if they pressed enter)
+        userConfig.contextDir = contextDirAnswer;
+
+        // Ask about exclude patterns
+        const defaultExcludePatterns = ['node_modules/**', '.git/**'];
+        const excludePatternsAnswer = await prompt({
+          message:
+            'Exclude patterns (comma-separated glob patterns, patterns from .gitignore will be ignored by default as well)',
+          defaultValue: defaultExcludePatterns.join(', '),
+        });
+        // Always set exclude patterns to what user entered (or defaults if they pressed enter)
+        userConfig.excludePatterns = excludePatternsAnswer
+          .split(',')
+          .map((p) => p.trim())
+          .filter((p) => p.length > 0);
       }
 
       const config = new ParsemeConfig(userConfig);
