@@ -106,6 +106,7 @@ describe('ParsemeGenerator', () => {
       const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
 
       mock.method(projectAnalyzer, 'analyze', async () => mockProjectInfo);
+      mock.method(projectAnalyzer, 'getAllProjectFiles', async () => ['src/index.ts']);
       mock.method(astAnalyzer, 'analyzeProject', async () => mockFileAnalyses);
       mock.method(frameworkDetector, 'detect', async () => ({
         name: 'Express',
@@ -151,6 +152,7 @@ describe('ParsemeGenerator', () => {
         dependencies: {},
         devDependencies: {},
       }));
+      mock.method(projectAnalyzer, 'getAllProjectFiles', async () => []);
       mock.method(astAnalyzer, 'analyzeProject', async () => []);
       mock.method(frameworkDetector, 'detect', async () => undefined);
       mock.method(contextBuilder, 'build', () => ({
@@ -180,6 +182,7 @@ describe('ParsemeGenerator', () => {
         dependencies: {},
         devDependencies: {},
       }));
+      mock.method(projectAnalyzer, 'getAllProjectFiles', async () => []);
       mock.method(astAnalyzer, 'analyzeProject', async () => []);
       mock.method(frameworkDetector, 'detect', async () => undefined);
 

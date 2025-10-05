@@ -57,6 +57,7 @@ describe('ContextBuilder', () => {
       const context = builder.build({
         projectInfo: mockProjectInfo,
         fileAnalyses: mockFileAnalyses,
+        allFiles: ['src/components/Button.tsx'],
         gitInfo: mockGitInfo,
         options: {},
       });
@@ -82,6 +83,7 @@ describe('ContextBuilder', () => {
       const context = builder.build({
         projectInfo: mockProjectInfo,
         fileAnalyses: mockFileAnalyses,
+        allFiles: [],
         gitInfo: null,
         options: {},
       });
@@ -104,6 +106,7 @@ describe('ContextBuilder', () => {
       const context = builder.build({
         projectInfo: mockProjectInfo,
         fileAnalyses: [],
+        allFiles: [],
         gitInfo: null,
         options: {},
       });

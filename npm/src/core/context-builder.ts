@@ -13,6 +13,7 @@ import type {
 interface BuildContext {
   projectInfo: ProjectInfo;
   fileAnalyses: FileAnalysis[];
+  allFiles: string[];
   gitInfo?: GitInfo | null;
   options: GeneratorOptions;
   contextDir?: string;
@@ -167,8 +168,8 @@ export class ContextBuilder {
       }
     };
 
-    // Files list (markdown)
-    contextFiles.files = this.buildFilesList(limitedFileAnalyses);
+    // Files list (markdown) - all files in project, not just analyzed ones
+    contextFiles.files = this.buildFilesList(context.allFiles);
 
     // Detailed structure (JSON with AST)
     const structureResult = this.buildDetailedStructure(limitedFileAnalyses);
@@ -382,12 +383,12 @@ A comprehensive list of all discovered API endpoints is available at \`${linkPat
     return content;
   }
 
-  private buildFilesList(fileAnalyses: FileAnalysis[]): string {
+  private buildFilesList(allFiles: string[]): string {
     let content = `# Project Files\n\n`;
-    content += `This is a complete list of all analyzed files in the project.\n\n`;
+    content += `This is a complete list of all files in the project (excluding files matching exclude patterns).\n\n`;
 
-    fileAnalyses.forEach((file) => {
-      content += `- ${file.path}\n`;
+    allFiles.forEach((file) => {
+      content += `- ${file}\n`;
     });
 
     return content;

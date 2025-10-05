@@ -1,11 +1,19 @@
 import { readFile, access, readdir, stat } from 'fs/promises';
-import { join, basename } from 'path';
+import { join, basename, relative } from 'path';
+
+import ignore from 'ignore';
 
 import type { ParsemeConfig } from '../config.js';
 import type { ProjectInfo, ProjectCategory } from '../types.js';
 
 export class ProjectAnalyzer {
-  constructor(private readonly config: ParsemeConfig) {}
+  private readonly ig: ReturnType<typeof ignore>;
+
+  constructor(private readonly config: ParsemeConfig) {
+    this.ig = ignore();
+    const configData = this.config.get();
+    this.ig.add(configData.excludePatterns || []);
+  }
 
   async analyze(rootDir: string): Promise<ProjectInfo> {
     const packageJsonPath = join(rootDir, 'package.json');
@@ -45,7 +53,7 @@ export class ProjectAnalyzer {
 
   private async detectProjectType(rootDir: string): Promise<'typescript' | 'javascript' | 'mixed'> {
     try {
-      const files = await this.getFilesRecursive(rootDir, 2); // Only check 2 levels deep
+      const files = await this.getFilesRecursive(rootDir, rootDir, 2); // Only check 2 levels deep
 
       const tsFiles = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts'));
       const jsFiles = files.filter((f) => f.endsWith('.js'));
@@ -82,7 +90,11 @@ export class ProjectAnalyzer {
     return 'npm';
   }
 
-  private async getFilesRecursive(dir: string, maxDepth: number): Promise<string[]> {
+  private async getFilesRecursive(
+    dir: string,
+    rootDir: string,
+    maxDepth: number,
+  ): Promise<string[]> {
     if (maxDepth <= 0) {
       return [];
     }
@@ -93,12 +105,19 @@ export class ProjectAnalyzer {
 
       for (const entry of entries) {
         const fullPath = join(dir, entry);
+        const relativePath = relative(rootDir, fullPath);
+
+        // Skip if ignored by exclude patterns
+        if (this.ig.ignores(relativePath)) {
+          continue;
+        }
+
         const stats = await stat(fullPath);
 
         if (stats.isFile()) {
           files.push(fullPath);
         } else if (stats.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
-          files.push(...(await this.getFilesRecursive(fullPath, maxDepth - 1)));
+          files.push(...(await this.getFilesRecursive(fullPath, rootDir, maxDepth - 1)));
         }
       }
 
@@ -237,5 +256,10 @@ export class ProjectAnalyzer {
     ];
 
     return appIndicators.some((indicator) => deps[indicator]);
+  }
+
+  async getAllProjectFiles(rootDir: string): Promise<string[]> {
+    const allFiles = await this.getFilesRecursive(rootDir, rootDir, Infinity);
+    return allFiles.map((file) => relative(rootDir, file));
   }
 }
