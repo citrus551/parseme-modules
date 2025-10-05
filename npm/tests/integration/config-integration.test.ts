@@ -3,8 +3,8 @@ import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
-import { ParsemeConfig as parsemeConfig } from '../../dist/config.js';
-import { ParsemeGenerator as parsemeGenerator } from '../../dist/generator.js';
+import { ParsemeConfig as parsemeConfig } from '../../dist/core/config.js';
+import { ParsemeGenerator as parsemeGenerator } from '../../dist/core/generator.js';
 
 describe('Configuration Integration', () => {
   const testDir = '/tmp/parseme-config-test';
@@ -29,7 +29,7 @@ describe('Configuration Integration', () => {
 export default {
   outputPath: 'CUSTOM.md',
   contextDir: 'custom-context',
-  includePatterns: ['src/**/*.ts', 'lib/**/*.js'],
+  analyzeFileTypes: ['ts', 'js'],
   excludePatterns: ['test/**'],
   maxDepth: 3,
   includeGitInfo: false,
@@ -58,7 +58,7 @@ export default {
       assert.strictEqual(result.sections?.routes, false);
       assert.strictEqual(result.sections?.git, false);
       assert.strictEqual(result.limits?.maxLinesPerFile, 100);
-      assert.deepStrictEqual(result.includePatterns, ['src/**/*.ts', 'lib/**/*.js']);
+      assert.deepStrictEqual(result.analyzeFileTypes, ['ts', 'js']);
     });
 
     test('should merge CLI options with config file', async () => {
@@ -97,7 +97,7 @@ export default {
       const configObject = {
         outputPath: 'JSON.md',
         maxDepth: 7,
-        includePatterns: ['**/*.json'],
+        analyzeFileTypes: ['json'],
         sections: {
           overview: false,
           dependencies: true,
@@ -114,7 +114,7 @@ export default {
       assert.strictEqual(result.maxDepth, 7);
       assert.strictEqual(result.sections?.overview, false);
       assert.strictEqual(result.sections?.dependencies, true);
-      assert.deepStrictEqual(result.includePatterns, ['**/*.json']);
+      assert.deepStrictEqual(result.analyzeFileTypes, ['json']);
     });
 
     test('should create and save config files in different formats', async () => {
@@ -162,7 +162,7 @@ export default {
       assert.strictEqual(result.contextDir, 'parseme-context');
       assert.strictEqual(result.maxDepth, 10);
       assert.strictEqual(result.includeGitInfo, true);
-      assert.ok(result.includePatterns?.includes('src/**/*.ts'));
+      assert.ok(result.analyzeFileTypes?.includes('ts'));
       assert.ok(result.excludePatterns?.includes('node_modules/**'));
     });
   });
@@ -173,7 +173,7 @@ export default {
 export default {
   rootDir: '${fixturesDir}',
   outputPath: 'TEST.md',
-  includePatterns: ['**/*.ts', '**/*.js'],
+  analyzeFileTypes: ['ts', 'js'],
   includeGitInfo: false
 };
 `;
@@ -293,7 +293,7 @@ export default {
       const configContent = `
 export default {
   rootDir: '${fixturesDir}',
-  includePatterns: ['**/*.ts'],
+  analyzeFileTypes: ['ts'],
   excludePatterns: ['**/express*'],
   includeGitInfo: false
 };

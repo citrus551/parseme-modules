@@ -8,7 +8,7 @@ export interface ProjectInfo {
   description?: string;
   type: 'typescript' | 'javascript' | 'mixed';
   category: ProjectCategory;
-  packageManager: 'npm' | 'yarn' | 'pnpm' | 'bun';
+  packageManager: 'unknown' | 'npm' | 'yarn' | 'pnpm' | 'bun';
   framework?: FrameworkInfo;
   buildTool?: BuildToolInfo;
   dependencies: Record<string, string>;

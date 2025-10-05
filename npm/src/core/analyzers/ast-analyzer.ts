@@ -25,7 +25,8 @@ export class ASTAnalyzer {
 
   async analyzeProject(rootDir: string): Promise<FileAnalysis[]> {
     const configData = this.config.get();
-    const patterns = configData.includePatterns || ['**/*.ts', '**/*.js'];
+    const fileTypes = configData.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'];
+    const patterns = fileTypes.map((type) => `**/*.${type}`);
 
     const files = await glob(patterns, {
       cwd: rootDir,

@@ -33,7 +33,7 @@ export class ProjectAnalyzer {
         name: basename(rootDir),
         type: await this.detectProjectType(rootDir),
         category: 'unknown',
-        packageManager: 'npm',
+        packageManager: 'unknown',
         dependencies: {},
         devDependencies: {},
         scripts: {},

@@ -35,7 +35,7 @@ export default {
   rootDir: '${projectDir}',
   outputPath: 'CLI-OUTPUT.md',
   contextDir: 'cli-context',
-  includePatterns: ['src/**/*.ts', 'package.json'],
+  analyzeFileTypes: ['ts'],
   includeGitInfo: false
 };
 `;
@@ -51,8 +51,8 @@ export function testFunction(): string {
       await writeFile(join(projectDir, 'src', 'test.ts'), sourceFile);
 
       // Import CLI classes directly instead of spawning process
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
-      const { ParsemeConfig: parsemeConfig } = await import('../../dist/config.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
+      const { ParsemeConfig: parsemeConfig } = await import('../../dist/core/config.js');
 
       const configPath = join(projectDir, 'parseme.config.js');
       const config = await parsemeConfig.fromFile(configPath);
@@ -105,8 +105,8 @@ export default {
         includeGitInfo: false,
       };
 
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
-      const { ParsemeConfig: parsemeConfig } = await import('../../dist/config.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
+      const { ParsemeConfig: parsemeConfig } = await import('../../dist/core/config.js');
 
       const configPath = join(projectDir, 'parseme.config.js');
       const config = await parsemeConfig.fromFileWithOptions(configPath, cliOptions);
@@ -137,7 +137,7 @@ export default {
     });
 
     test('should run init command and create config files', async () => {
-      const { ParsemeConfig: parsemeConfig } = await import('../../dist/config.js');
+      const { ParsemeConfig: parsemeConfig } = await import('../../dist/core/config.js');
 
       // Test JavaScript config creation
       const jsConfig = new parsemeConfig({
@@ -190,7 +190,7 @@ export default {
       await writeFile(configPath, existingConfig);
 
       // Simulate init command behavior
-      const { ParsemeConfig: parsemeConfig } = await import('../../dist/config.js');
+      const { ParsemeConfig: parsemeConfig } = await import('../../dist/core/config.js');
 
       // Check if file exists (simulating init command logic)
       let fileExists: boolean;
@@ -297,12 +297,12 @@ export function authMiddleware(req: any, res: any, next: any) {
       await writeFile(join(projectDir, 'src', 'controllers', 'user-controller.ts'), controllerFile);
       await writeFile(join(projectDir, 'src', 'middleware', 'auth.ts'), middlewareFile);
 
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
 
       const generator = new parsemeGenerator({
         rootDir: projectDir,
         outputPath: join(projectDir, 'COMPLEX.md'),
-        includePatterns: ['src/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 
@@ -346,11 +346,11 @@ export function authMiddleware(req: any, res: any, next: any) {
       await writeFile(join(projectDir, 'src', 'included.ts'), includedFile);
       await writeFile(join(projectDir, 'tests', 'excluded.ts'), excludedFile);
 
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
 
       const generator = new parsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         excludePatterns: ['tests/**'],
         includeGitInfo: false,
       });
@@ -369,7 +369,7 @@ export function authMiddleware(req: any, res: any, next: any) {
 
   describe('CLI error handling', () => {
     test('should handle missing config file gracefully', async () => {
-      const { ParsemeConfig: parsemeConfig } = await import('../../dist/config.js');
+      const { ParsemeConfig: parsemeConfig } = await import('../../dist/core/config.js');
 
       // Try to load non-existent config
       const config = await parsemeConfig.fromFile('/nonexistent/config.js');
@@ -381,7 +381,7 @@ export function authMiddleware(req: any, res: any, next: any) {
     });
 
     test('should handle invalid project directory', async () => {
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
 
       const generator = new parsemeGenerator({
         rootDir: '/completely/invalid/path',
@@ -402,7 +402,7 @@ export function authMiddleware(req: any, res: any, next: any) {
 
       await writeFile(join(projectDir, 'package.json'), malformedPackageJson);
 
-      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/generator.js');
+      const { ParsemeGenerator: parsemeGenerator } = await import('../../dist/core/generator.js');
 
       const generator = new parsemeGenerator({
         rootDir: projectDir,

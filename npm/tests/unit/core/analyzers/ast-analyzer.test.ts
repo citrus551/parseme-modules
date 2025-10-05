@@ -13,7 +13,7 @@ describe('ASTAnalyzer', () => {
   beforeEach(() => {
     config = new parsemeConfig({
       rootDir: fixturesDir,
-      includePatterns: ['**/*.ts', '**/*.js'],
+      analyzeFileTypes: ['ts', 'js'],
       excludePatterns: ['node_modules/**'],
     });
     analyzer = new ASTAnalyzer(config);
@@ -75,7 +75,7 @@ describe('ASTAnalyzer', () => {
     test('should respect exclude patterns', async () => {
       const configWithExcludes = new parsemeConfig({
         rootDir: fixturesDir,
-        includePatterns: ['**/*.ts', '**/*.js'],
+        analyzeFileTypes: ['ts', 'js'],
         excludePatterns: ['**/*express*'],
       });
       const analyzerWithExcludes = new ASTAnalyzer(configWithExcludes);

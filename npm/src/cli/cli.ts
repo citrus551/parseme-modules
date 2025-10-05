@@ -26,7 +26,7 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('-r, --root <path>', 'Root directory to analyze')
   .option('--context-dir <path>', 'Context directory path (default: parseme-context)')
-  .option('--include <patterns...>', 'Include patterns (glob)')
+  .option('--file-types <types...>', 'File types to analyze (e.g., ts tsx js jsx)')
   .option('--exclude <patterns...>', 'Exclude patterns (glob)')
   .option('--no-git', 'Disable git information')
   .option('--max-depth <number>', 'Maximum directory depth', parseInt)
@@ -37,7 +37,7 @@ program
         ...(options.output && { outputPath: options.output }),
         ...(options.root && { rootDir: options.root }),
         ...(options.contextDir && { contextDir: options.contextDir }),
-        ...(options.include && { includePatterns: options.include }),
+        ...(options.fileTypes && { analyzeFileTypes: options.fileTypes }),
         ...(options.exclude && { excludePatterns: options.exclude }),
         ...(options.git === false && { includeGitInfo: false }),
         ...(options.maxDepth && { maxDepth: options.maxDepth }),

@@ -3,7 +3,7 @@ export default {
   rootDir: './test-project',
   outputPath: 'PARSEME.md',
   contextDir: 'parseme-context',
-  includePatterns: ['src/**/*.ts', 'src/**/*.js', 'package.json'],
+  analyzeFileTypes: ['ts', 'js'],
   excludePatterns: ['node_modules/**', 'dist/**', '**/*.test.ts'],
   includeGitInfo: true,
   maxDepth: 5,

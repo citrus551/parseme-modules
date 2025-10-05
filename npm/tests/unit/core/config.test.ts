@@ -20,7 +20,7 @@ describe('ParsemeConfig', () => {
       assert.strictEqual(result.contextDir, 'parseme-context');
       assert.strictEqual(result.maxDepth, 10);
       assert.strictEqual(result.includeGitInfo, true);
-      assert.ok(result.includePatterns);
+      assert.ok(result.analyzeFileTypes);
       assert.ok(result.excludePatterns);
       assert.ok(result.sections);
       assert.ok(result.style);
@@ -50,14 +50,14 @@ describe('ParsemeConfig', () => {
       assert.strictEqual(result.contextDir, 'parseme-context');
     });
 
-    test('should set correct default include patterns', () => {
+    test('should set correct default file types', () => {
       const config = new ParsemeConfig();
       const result = config.get();
 
-      assert.ok(result.includePatterns?.includes('src/**/*.ts'));
-      assert.ok(result.includePatterns?.includes('src/**/*.js'));
-      assert.ok(result.includePatterns?.includes('package.json'));
-      assert.ok(result.includePatterns?.includes('tsconfig.json'));
+      assert.ok(result.analyzeFileTypes?.includes('ts'));
+      assert.ok(result.analyzeFileTypes?.includes('tsx'));
+      assert.ok(result.analyzeFileTypes?.includes('js'));
+      assert.ok(result.analyzeFileTypes?.includes('jsx'));
     });
 
     test('should set correct default exclude patterns', () => {
@@ -90,7 +90,7 @@ describe('ParsemeConfig', () => {
 
       assert.strictEqual(result.rootDir, './test-project');
       assert.strictEqual(result.maxDepth, 5);
-      assert.ok(result.includePatterns?.includes('src/**/*.ts'));
+      assert.ok(result.analyzeFileTypes?.includes('ts'));
       assert.strictEqual(result.limits?.maxLinesPerFile, 500);
     });
 
@@ -171,14 +171,18 @@ describe('ParsemeConfig', () => {
   });
 
   describe('mergeExcludePatterns', () => {
-    test('should use config patterns when provided', () => {
+    test('should merge gitignore patterns with config patterns', () => {
       const customPatterns = ['custom/**', 'exclude/**'];
       const config = new ParsemeConfig({
         excludePatterns: customPatterns,
       });
 
       const result = config.get();
-      assert.deepStrictEqual(result.excludePatterns, customPatterns);
+      // Should include both gitignore patterns and custom patterns
+      assert.ok(result.excludePatterns?.includes('custom/**'));
+      assert.ok(result.excludePatterns?.includes('exclude/**'));
+      // gitignore patterns should also be present
+      assert.ok(result.excludePatterns && result.excludePatterns.length > customPatterns.length);
     });
 
     test('should read .gitignore patterns when no config patterns', async () => {

@@ -43,7 +43,7 @@ describe('ProjectAnalyzer', () => {
       const result = await analyzer.analyze(tempDir);
 
       assert.strictEqual(result.name, 'path');
-      assert.strictEqual(result.packageManager, 'npm');
+      assert.strictEqual(result.packageManager, 'unknown');
       assert.deepStrictEqual(result.dependencies, {});
       assert.deepStrictEqual(result.devDependencies, {});
     });

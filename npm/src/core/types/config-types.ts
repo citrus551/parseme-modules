@@ -5,7 +5,7 @@ export interface GeneratorOptions {
   includeGitInfo?: boolean;
   maxDepth?: number;
   excludePatterns?: string[];
-  includePatterns?: string[];
+  analyzeFileTypes?: string[];
 }
 
 export interface ParsemeConfigFile extends GeneratorOptions {
@@ -15,7 +15,7 @@ export interface ParsemeConfigFile extends GeneratorOptions {
 
   // Analysis configuration
   rootDir?: string;
-  includePatterns?: string[];
+  analyzeFileTypes?: string[];
   excludePatterns?: string[];
   maxDepth?: number;
 

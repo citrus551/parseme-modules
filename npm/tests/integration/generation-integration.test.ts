@@ -3,7 +3,7 @@ import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
-import { ParsemeGenerator } from '../../dist/generator.js';
+import { ParsemeGenerator } from '../../dist/core/generator.js';
 
 describe('End-to-End Generation Integration', () => {
   const testDir = '/tmp/parseme-generation-test';
@@ -119,7 +119,7 @@ export function formatDate(date: Date): string {
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
         contextDir: join(projectDir, 'parseme-context'),
-        includePatterns: ['src/**/*.ts', 'lib/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         excludePatterns: ['node_modules/**', 'dist/**'],
         includeGitInfo: false, // Disable git for test
         maxDepth: 10,
@@ -207,7 +207,7 @@ module.exports = { processData };
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts', 'src/**/*.js', 'package.json'],
+        analyzeFileTypes: ['ts', 'js'],
         includeGitInfo: false,
       });
 
@@ -241,7 +241,7 @@ module.exports = { processData };
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 
@@ -264,7 +264,7 @@ module.exports = { processData };
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 
@@ -288,7 +288,7 @@ export function greet(name: string): string {
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 
@@ -318,7 +318,7 @@ export function greet(name: string): string {
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 
@@ -410,7 +410,7 @@ export function greet(name: string): string {
 
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        includePatterns: ['src/**/*.ts', 'package.json'],
+        analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
 

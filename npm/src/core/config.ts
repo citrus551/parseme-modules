@@ -111,17 +111,7 @@ export class ParsemeConfig {
       rootDir,
       maxDepth: config.maxDepth || 10,
       excludePatterns: this.mergeExcludePatterns(config.excludePatterns, rootDir),
-      includePatterns: config.includePatterns || [
-        'src/**/*.ts',
-        'src/**/*.js',
-        'src/**/*.tsx',
-        'src/**/*.jsx',
-        'lib/**/*.ts',
-        'lib/**/*.js',
-        'package.json',
-        'tsconfig.json',
-        'README.md',
-      ],
+      analyzeFileTypes: config.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'],
 
       // Git
       includeGitInfo: config.includeGitInfo ?? true,
@@ -197,17 +187,15 @@ export default config;
   }
 
   private mergeExcludePatterns(configPatterns: string[] | undefined, rootDir: string): string[] {
-    const excludePatterns: string[] = [];
-
-    // Priority: Config patterns > .gitignore patterns > Default patterns
-    if (configPatterns) {
-      return configPatterns;
-    }
-
-    // Try to read .gitignore patterns
+    // Always read .gitignore patterns
     const gitignorePatterns = this.readGitignorePatterns(rootDir);
-    if (gitignorePatterns.length > 0) {
-      return gitignorePatterns;
+
+    // Merge gitignore patterns with config patterns
+    // Config patterns are added to gitignore patterns, not replacing them
+    const excludePatterns = [...gitignorePatterns];
+
+    if (configPatterns) {
+      excludePatterns.push(...configPatterns);
     }
 
     return excludePatterns;
