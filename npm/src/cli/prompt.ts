@@ -40,17 +40,3 @@ export async function prompt(options: PromptOptions): Promise<string> {
     });
   });
 }
-
-export async function confirmPrompt(
-  message: string,
-  defaultValue: boolean = true,
-): Promise<boolean> {
-  const answer = await prompt({
-    message,
-    defaultValue: defaultValue ? 'y' : 'n',
-    choices: ['y', 'n', 'yes', 'no'],
-  });
-
-  const normalized = answer.toLowerCase();
-  return normalized === 'y' || normalized === 'yes';
-}

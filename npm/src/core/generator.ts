@@ -8,7 +8,7 @@ import { ProjectAnalyzer } from './analyzers/project-analyzer.js';
 import { ParsemeConfig } from './config.js';
 import { ContextBuilder } from './context-builder.js';
 
-import type { ContextOutput, GeneratorOptions, ParsemeConfigFile } from './types.js';
+import type { ContextOutput, GeneratorOptions } from './types.js';
 
 export class ParsemeGenerator {
   private readonly config: ParsemeConfig;
@@ -22,22 +22,9 @@ export class ParsemeGenerator {
     this.config = new ParsemeConfig(options);
     this.projectAnalyzer = new ProjectAnalyzer(this.config);
     this.astAnalyzer = new ASTAnalyzer(this.config);
-    this.frameworkDetector = new FrameworkDetector(this.config);
-    this.gitAnalyzer = new GitAnalyzer(this.config);
+    this.frameworkDetector = new FrameworkDetector();
+    this.gitAnalyzer = new GitAnalyzer();
     this.contextBuilder = new ContextBuilder(this.config);
-  }
-
-  static async fromConfig(configPath?: string): Promise<ParsemeGenerator> {
-    const config = await ParsemeConfig.fromFile(configPath);
-    return new ParsemeGenerator(config.get());
-  }
-
-  static async fromConfigWithOptions(
-    configPath?: string,
-    cliOptions: Partial<ParsemeConfigFile> = {},
-  ): Promise<ParsemeGenerator> {
-    const config = await ParsemeConfig.fromFileWithOptions(configPath, cliOptions);
-    return new ParsemeGenerator(config.get());
   }
 
   async generate(outputPath?: string): Promise<ContextOutput> {

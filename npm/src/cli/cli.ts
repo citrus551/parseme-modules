@@ -13,8 +13,7 @@ import type { ParsemeConfigFile } from '../core/types.js';
 const program = new Command();
 
 async function promptForMissingConfig(config: ParsemeConfigFile): Promise<ParsemeConfigFile> {
-  const finalConfig = { ...config };
-  return finalConfig;
+  return { ...config };
 }
 
 program.name('parseme').description('AI Project Context Generator').version('0.1.0');
@@ -102,12 +101,11 @@ program
       // Only prompt if interactive (TTY) and not in CI
       if (process.stdin.isTTY && !process.env.CI) {
         // Ask about context directory path
-        const contextDirAnswer = await prompt({
+        // Set context directory to what user entered (or default if they pressed enter)
+        userConfig.contextDir = await prompt({
           message: 'Context directory path',
           defaultValue: 'parseme-context',
         });
-        // Always set context directory to what user entered (or default if they pressed enter)
-        userConfig.contextDir = contextDirAnswer;
 
         // Ask about exclude patterns
         const defaultExcludePatterns = ['node_modules/**', 'dist/**', '.git/**'];

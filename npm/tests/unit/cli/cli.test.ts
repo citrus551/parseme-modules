@@ -3,7 +3,7 @@ import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { join } from 'path';
 
 describe('CLI', () => {
-  join(import.meta.dirname, '../../fixtures');
+  join(process.cwd(), 'tests/fixtures');
   let originalArgv: string[];
   let originalExit: typeof process.exit;
   let originalStdin: typeof process.stdin;
@@ -45,6 +45,24 @@ describe('CLI', () => {
       configurable: true,
     });
     mock.restoreAll();
+  });
+
+  describe('console output capture', () => {
+    test('should capture console.log output in consoleLogs array', () => {
+      const testMessage = 'Test log message';
+      console.log(testMessage);
+
+      assert.strictEqual(consoleLogs.length, 1);
+      assert.strictEqual(consoleLogs[0], testMessage);
+    });
+
+    test('should capture console.error output in consoleErrors array', () => {
+      const testError = 'Test error message';
+      console.error(testError);
+
+      assert.strictEqual(consoleErrors.length, 1);
+      assert.strictEqual(consoleErrors[0], testError);
+    });
   });
 
   describe('main command', () => {

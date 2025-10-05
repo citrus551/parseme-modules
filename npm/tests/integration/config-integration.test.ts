@@ -6,9 +6,29 @@ import { join } from 'path';
 import { ParsemeConfig as parsemeConfig } from '../../dist/core/config.js';
 import { ParsemeGenerator as parsemeGenerator } from '../../dist/core/generator.js';
 
+// Type for accessing internal generator properties for testing
+interface GeneratorWithAnalyzers {
+  projectAnalyzer: {
+    analyze: (rootDir: string) => Promise<unknown>;
+    getAllProjectFiles?: (rootDir: string) => Promise<string[]>;
+  };
+  astAnalyzer: {
+    analyzeProject: (rootDir: string) => Promise<unknown[]>;
+  };
+  frameworkDetector: {
+    detect: (projectInfo: unknown) => Promise<unknown>;
+  };
+  gitAnalyzer?: {
+    analyze: (rootDir: string) => Promise<unknown>;
+  };
+  contextBuilder: {
+    build: (context: unknown) => { parseme: string; context: unknown };
+  };
+}
+
 describe('Configuration Integration', () => {
   const testDir = '/tmp/parseme-config-test';
-  const fixturesDir = join(import.meta.dirname, '../fixtures');
+  const fixturesDir = join(process.cwd(), 'tests/fixtures');
 
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });
@@ -179,16 +199,14 @@ export default {
       const configPath = join(testDir, 'test.config.js');
       await writeFile(configPath, configContent);
 
-      const generator = await parsemeGenerator.fromConfig(configPath);
+      const config = await parsemeConfig.fromFile(configPath);
+      const generator = new parsemeGenerator(config.get());
       assert.ok(generator instanceof parsemeGenerator);
 
       // Mock analyzer methods to avoid real file system operations
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { projectAnalyzer, astAnalyzer, frameworkDetector, contextBuilder } =
+        generatorWithAnalyzers;
 
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'config-test',
@@ -227,12 +245,15 @@ export default {
       const configPath = join(testDir, 'limits.config.js');
       await writeFile(configPath, configContent);
 
-      const generator = await parsemeGenerator.fromConfig(configPath);
+      const config = await parsemeConfig.fromFile(configPath);
+      const generator = new parsemeGenerator(config.get());
 
       // Mock context builder to verify limits are applied
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
-      let capturedConfig: unknown;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { contextBuilder, projectAnalyzer, astAnalyzer, frameworkDetector } =
+        generatorWithAnalyzers;
 
+      let capturedConfig: unknown;
       mock.method(contextBuilder, 'build', (options: { options: unknown }) => {
         capturedConfig = options.options;
         return {
@@ -242,12 +263,6 @@ export default {
       });
 
       // Mock other analyzers
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'limits-test',
         type: 'typescript',
@@ -300,10 +315,13 @@ export default {
       const configPath = join(testDir, 'patterns.config.js');
       await writeFile(configPath, configContent);
 
-      const generator = await parsemeGenerator.fromConfig(configPath);
+      const config = await parsemeConfig.fromFile(configPath);
+      const generator = new parsemeGenerator(config.get());
 
       // Capture the config passed to AST analyzer
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { astAnalyzer, projectAnalyzer, frameworkDetector, contextBuilder } =
+        generatorWithAnalyzers;
 
       let capturedRootDir: string;
       mock.method(astAnalyzer, 'analyzeProject', async (rootDir: string) => {
@@ -312,12 +330,6 @@ export default {
       });
 
       // Mock other components
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
-
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'patterns-test',
         type: 'typescript',
@@ -358,12 +370,15 @@ export default {
       const configPath = join(testDir, 'sections.config.js');
       await writeFile(configPath, configContent);
 
-      const generator = await parsemeGenerator.fromConfig(configPath);
+      const config = await parsemeConfig.fromFile(configPath);
+      const generator = new parsemeGenerator(config.get());
 
       // Mock components and capture build context
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
-      let capturedOptions: unknown;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { contextBuilder, projectAnalyzer, astAnalyzer, frameworkDetector } =
+        generatorWithAnalyzers;
 
+      let capturedOptions: unknown;
       mock.method(contextBuilder, 'build', (buildContext: { options: unknown }) => {
         capturedOptions = buildContext.options;
         return {
@@ -373,11 +388,6 @@ export default {
       });
 
       // Mock other analyzers
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
 
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'sections-test',

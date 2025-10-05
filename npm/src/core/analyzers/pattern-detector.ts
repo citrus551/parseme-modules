@@ -1,7 +1,6 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 
-import type { ParsemeConfig } from '../config.js';
 import type { ComponentInfo, RouteInfo } from '../types.js';
 
 export interface PatternAnalysis {
@@ -61,7 +60,7 @@ export interface UtilityInfo {
 }
 
 export class PatternDetector {
-  constructor(private readonly config: ParsemeConfig) {}
+  constructor(private config?: unknown) {}
 
   analyzePatterns(ast: t.File, filePath: string, _content: string): PatternAnalysis {
     const analysis: PatternAnalysis = {
@@ -76,28 +75,6 @@ export class PatternDetector {
 
     // Use a single traverse call to detect all patterns
     traverse.default(ast, {
-      // Detect Express-style routes: app.get(), router.post(), etc.
-      CallExpression: (path) => {
-        if (t.isMemberExpression(path.node.callee) && t.isIdentifier(path.node.callee.property)) {
-          const methodName = path.node.callee.property.name;
-          const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'all'];
-
-          if (httpMethods.includes(methodName)) {
-            const routeArg = path.node.arguments[0];
-            const routePath = t.isStringLiteral(routeArg) ? routeArg.value : '/';
-
-            analysis.endpoints.push({
-              method: methodName.toUpperCase(),
-              path: routePath,
-              handler: 'callback',
-              file: filePath,
-              line: path.node.loc?.start.line || 0,
-              type: 'rest',
-            });
-          }
-        }
-      },
-
       // Detect decorator-based routes: @Get(), @Post(), etc.
       ClassMethod: (path) => {
         const decorators = path.node.decorators;
@@ -125,6 +102,64 @@ export class PatternDetector {
             }
           });
         }
+      },
+
+      // Detect Express/Router-style routes: app.get(), router.post(), etc.
+      CallExpression: (path) => {
+        const { callee, arguments: args } = path.node;
+
+        if (t.isMemberExpression(callee) && t.isIdentifier(callee.property)) {
+          const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
+          const methodName = callee.property.name;
+
+          if (httpMethods.includes(methodName) && args.length >= 2) {
+            const routePath = args[0];
+            if (t.isStringLiteral(routePath)) {
+              analysis.endpoints.push({
+                method: methodName.toUpperCase(),
+                path: routePath.value,
+                handler: 'anonymous',
+                file: filePath,
+                line: path.node.loc?.start.line || 0,
+                type: 'rest',
+                framework: 'express',
+              });
+            }
+          }
+        }
+      },
+
+      // Detect TypeScript interfaces and type aliases
+      TSInterfaceDeclaration: (path) => {
+        const interfaceName = path.node.id.name;
+        const fields = path.node.body.body
+          .filter((member): member is t.TSPropertySignature => t.isTSPropertySignature(member))
+          .map((member) => {
+            if (t.isIdentifier(member.key)) {
+              return member.key.name;
+            }
+            return '';
+          })
+          .filter((name) => name !== '');
+
+        analysis.models.push({
+          name: interfaceName,
+          file: filePath,
+          line: path.node.loc?.start.line || 0,
+          fields,
+          type: 'interface',
+        });
+      },
+
+      TSTypeAliasDeclaration: (path) => {
+        const typeName = path.node.id.name;
+        analysis.models.push({
+          name: typeName,
+          file: filePath,
+          line: path.node.loc?.start.line || 0,
+          fields: [],
+          type: 'type',
+        });
       },
 
       // Detect React components
@@ -229,36 +264,6 @@ export class PatternDetector {
             line: path.node.loc?.start.line || 0,
           });
         }
-      },
-
-      // Detect TypeScript interfaces
-      TSInterfaceDeclaration: (path) => {
-        const interfaceName = path.node.id.name;
-        const fields = path.node.body.body
-          .filter(
-            (member): member is t.TSPropertySignature =>
-              t.isTSPropertySignature(member) && t.isIdentifier(member.key),
-          )
-          .map((member) => (member.key as t.Identifier).name);
-
-        analysis.models.push({
-          name: interfaceName,
-          file: filePath,
-          line: path.node.loc?.start.line || 0,
-          fields,
-          type: 'interface',
-        });
-      },
-
-      // Detect type aliases
-      TSTypeAliasDeclaration: (path) => {
-        analysis.models.push({
-          name: path.node.id.name,
-          file: filePath,
-          line: path.node.loc?.start.line || 0,
-          fields: [],
-          type: 'type',
-        });
       },
     });
 

@@ -6,9 +6,29 @@ import { ParsemeGenerator } from '../../../dist/core/generator.js';
 
 import type { ProjectInfo, FileAnalysis, GitInfo } from '../../../dist/core/types.js';
 
+// Type for accessing internal generator properties for testing
+interface GeneratorWithAnalyzers {
+  projectAnalyzer: {
+    analyze: (rootDir: string) => Promise<ProjectInfo>;
+    getAllProjectFiles: (rootDir: string) => Promise<string[]>;
+  };
+  astAnalyzer: {
+    analyzeProject: (rootDir: string) => Promise<FileAnalysis[]>;
+  };
+  frameworkDetector: {
+    detect: (projectInfo: ProjectInfo) => Promise<unknown>;
+  };
+  gitAnalyzer: {
+    analyze: (rootDir: string) => Promise<GitInfo>;
+  };
+  contextBuilder: {
+    build: (context: unknown) => { parseme: string; context: unknown };
+  };
+}
+
 describe('ParsemeGenerator', () => {
   let generator: ParsemeGenerator;
-  const fixturesDir = join(import.meta.dirname, '../../fixtures');
+  const fixturesDir = join(process.cwd(), 'tests/fixtures');
 
   beforeEach(() => {
     generator = new ParsemeGenerator({
@@ -39,33 +59,6 @@ describe('ParsemeGenerator', () => {
     });
   });
 
-  describe('fromConfig', () => {
-    test('should create generator from config file', async () => {
-      const configPath = join(fixturesDir, 'parseme.config.js');
-      const gen = await ParsemeGenerator.fromConfig(configPath);
-
-      assert.ok(gen instanceof ParsemeGenerator);
-    });
-
-    test('should handle missing config file', async () => {
-      const gen = await ParsemeGenerator.fromConfig('/nonexistent/config.js');
-      assert.ok(gen instanceof ParsemeGenerator);
-    });
-  });
-
-  describe('fromConfigWithOptions', () => {
-    test('should merge config file with CLI options', async () => {
-      const configPath = join(fixturesDir, 'parseme.config.js');
-      const cliOptions = {
-        outputPath: 'cli.md',
-        maxDepth: 3,
-      };
-
-      const gen = await ParsemeGenerator.fromConfigWithOptions(configPath, cliOptions);
-      assert.ok(gen instanceof ParsemeGenerator);
-    });
-  });
-
   describe('generate', () => {
     test('should generate complete context output', async () => {
       // Mock the analyzer dependencies
@@ -73,6 +66,7 @@ describe('ParsemeGenerator', () => {
         name: 'test-project',
         version: '1.0.0',
         type: 'typescript',
+        category: 'npm-package',
         packageManager: 'npm',
         dependencies: { express: '^4.18.0' },
         devDependencies: { typescript: '^5.0.0' },
@@ -97,13 +91,9 @@ describe('ParsemeGenerator', () => {
       };
 
       // Mock analyzer methods
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-      const gitAnalyzer = (generator as unknown as { gitAnalyzer: unknown }).gitAnalyzer;
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { projectAnalyzer, astAnalyzer, frameworkDetector, gitAnalyzer, contextBuilder } =
+        generatorWithAnalyzers;
 
       mock.method(projectAnalyzer, 'analyze', async () => mockProjectInfo);
       mock.method(projectAnalyzer, 'getAllProjectFiles', async () => ['src/index.ts']);
@@ -137,17 +127,13 @@ describe('ParsemeGenerator', () => {
       });
 
       // Mock minimal analyzers
-      const projectAnalyzer = (genWithoutGit as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (genWithoutGit as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (genWithoutGit as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-      const contextBuilder = (genWithoutGit as unknown as { contextBuilder: unknown })
-        .contextBuilder;
+      const genWithAnalyzers = genWithoutGit as unknown as GeneratorWithAnalyzers;
+      const { projectAnalyzer, astAnalyzer, frameworkDetector, contextBuilder } = genWithAnalyzers;
 
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'test',
         type: 'typescript',
+        category: 'npm-package',
         packageManager: 'npm',
         dependencies: {},
         devDependencies: {},
@@ -168,16 +154,14 @@ describe('ParsemeGenerator', () => {
 
     test('should use provided output path for link generation', async () => {
       // Mock analyzer methods to return minimal data
-      const projectAnalyzer = (generator as unknown as { projectAnalyzer: unknown })
-        .projectAnalyzer;
-      const astAnalyzer = (generator as unknown as { astAnalyzer: unknown }).astAnalyzer;
-      const frameworkDetector = (generator as unknown as { frameworkDetector: unknown })
-        .frameworkDetector;
-      const contextBuilder = (generator as unknown as { contextBuilder: unknown }).contextBuilder;
+      const generatorWithAnalyzers = generator as unknown as GeneratorWithAnalyzers;
+      const { projectAnalyzer, astAnalyzer, frameworkDetector, contextBuilder } =
+        generatorWithAnalyzers;
 
       mock.method(projectAnalyzer, 'analyze', async () => ({
         name: 'test',
         type: 'typescript',
+        category: 'npm-package',
         packageManager: 'npm',
         dependencies: {},
         devDependencies: {},

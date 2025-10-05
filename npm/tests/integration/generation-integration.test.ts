@@ -62,35 +62,16 @@ export { app };
 `;
 
       const serviceFile = `
-/**
- * @typedef {Object} User
- * @property {number} id
- * @property {string} name
- * @property {string} email
- */
-
 export class UserService {
-  /** @type {User[]} */
-  private users = [];
+  private users: string[] = [];
 
-  /**
-   * @returns {Promise<User[]>}
-   */
-  async getAllUsers() {
+  async getAllUsers(): Promise<string[]> {
     return [...this.users];
   }
 
-  /**
-   * @param {Omit<User, 'id'>} userData
-   * @returns {Promise<User>}
-   */
-  async createUser(userData) {
-    const newUser = {
-      id: Date.now(),
-      ...userData
-    };
-    this.users.push(newUser);
-    return newUser;
+  async createUser(name: string): Promise<string> {
+    this.users.push(name);
+    return name;
   }
 }
 `;
@@ -118,7 +99,6 @@ export function formatDate(date: Date): string {
       // Create generator and generate documentation
       const generator = new ParsemeGenerator({
         rootDir: projectDir,
-        contextDir: join(projectDir, 'parseme-context'),
         analyzeFileTypes: ['ts'],
         excludePatterns: ['node_modules/**', 'dist/**'],
         includeGitInfo: false, // Disable git for test
@@ -150,7 +130,7 @@ export function formatDate(date: Date): string {
       assert.ok(parsemeContent.includes('A test TypeScript project'));
       assert.ok(parsemeContent.includes('TypeScript'));
 
-      // Verify dependencies are mentioned (may be in dependencies section)
+      // Verify dependencies are mentioned (should be in dependencies section)
       assert.ok(parsemeContent.includes('express') || parsemeContent.includes('dependencies'));
 
       // Verify new structure sections exist

@@ -2,15 +2,12 @@ import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 
 import { GitAnalyzer } from '../../../../dist/core/analyzers/git-analyzer.js';
-import { ParsemeConfig } from '../../../../dist/core/config.js';
 
 describe('GitAnalyzer', () => {
   let analyzer: GitAnalyzer;
-  let config: ParsemeConfig;
 
   beforeEach(() => {
-    config = new ParsemeConfig();
-    analyzer = new GitAnalyzer(config);
+    analyzer = new GitAnalyzer();
   });
 
   afterEach(() => {

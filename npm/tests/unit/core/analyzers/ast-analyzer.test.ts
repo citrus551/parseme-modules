@@ -8,7 +8,7 @@ import { ParsemeConfig as parsemeConfig } from '../../../../dist/core/config.js'
 describe('ASTAnalyzer', () => {
   let analyzer: ASTAnalyzer;
   let config: parsemeConfig;
-  const fixturesDir = join(import.meta.dirname, '../../../fixtures');
+  const fixturesDir = join(process.cwd(), 'tests/fixtures');
 
   beforeEach(() => {
     config = new parsemeConfig({

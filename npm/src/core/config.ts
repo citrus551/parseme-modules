@@ -106,7 +106,7 @@ export class ParsemeConfig {
 
     // Validate analyzeFileTypes
     const fileTypes = config.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'];
-    const invalidTypes = fileTypes.filter((type) => !supportedFileTypes.includes(type));
+    const invalidTypes = fileTypes.filter((type: string) => !supportedFileTypes.includes(type));
     if (invalidTypes.length > 0) {
       throw new Error(
         `Invalid file types: ${invalidTypes.join(', ')}. Supported types are: ${supportedFileTypes.join(', ')}`,
@@ -201,8 +201,7 @@ export default config;
     // Always read .gitignore patterns
     const gitignorePatterns = this.readGitignorePatterns(rootDir);
 
-    // Merge gitignore patterns with config patterns
-    // Config patterns are added to gitignore patterns, not replacing them
+    // Merge gitignore patterns with config patterns, they are added to gitignore patterns, not replacing them
     const excludePatterns = [...gitignorePatterns];
 
     if (configPatterns) {

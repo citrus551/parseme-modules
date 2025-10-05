@@ -5,7 +5,7 @@ import { join } from 'path';
 import { ParsemeConfig } from '../../../dist/core/config.js';
 
 describe('ParsemeConfig', () => {
-  const fixturesDir = join(import.meta.dirname, '../../fixtures');
+  const fixturesDir = join(process.cwd(), 'tests/fixtures');
 
   afterEach(() => {
     mock.restoreAll();

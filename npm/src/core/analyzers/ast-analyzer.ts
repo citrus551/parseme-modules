@@ -20,7 +20,7 @@ export class ASTAnalyzer {
     this.ig = ignore();
     const configData = this.config.get();
     this.ig.add(configData.excludePatterns || []);
-    this.patternDetector = new PatternDetector(config);
+    this.patternDetector = new PatternDetector();
   }
 
   async analyzeProject(rootDir: string): Promise<FileAnalysis[]> {
@@ -75,7 +75,7 @@ export class ASTAnalyzer {
 
       const analysis: FileAnalysis = {
         path: relativePath,
-        type: this.determineFileType(relativePath, content, patterns),
+        type: this.determineFileType(relativePath, patterns),
         exports: [],
         imports: [],
         functions: [],
@@ -170,11 +170,7 @@ export class ASTAnalyzer {
     });
   }
 
-  private determineFileType(
-    relativePath: string,
-    content: string,
-    patterns: PatternAnalysis,
-  ): FileAnalysis['type'] {
+  private determineFileType(relativePath: string, patterns: PatternAnalysis): FileAnalysis['type'] {
     // Use pattern analysis to determine file type dynamically
     if (patterns.endpoints.length > 0) {
       return 'route';

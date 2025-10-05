@@ -29,7 +29,7 @@ Your feedback is **highly appreciated** and helps shape the future of this tool!
 - **Universal Pattern Detection** - Dynamic code analysis that works across many JavaScript/TypeScript frameworks
 - **Git Integration** - Includes repository status and change tracking
 - **Configurable** - Comprehensive configuration options via JavaScript, TypeScript, or JSON
-- **Dev Tool Integration** - Works seamlessly as an npm script
+- **Dev Tool Integration** - Works seamlessly as a npm script
 
 ### **What PARSEME Detects**
 
@@ -431,7 +431,7 @@ Keep your AI context automatically updated by adding parseme as a post-commit ho
 
 ```bash
 # Create and make executable
-echo '#!/bin/sh\nnpx parseme' > .git/hooks/post-commit
+echo '#!/bin/sh\npx parseme' > .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 ```
 

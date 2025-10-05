@@ -1,9 +1,6 @@
-import type { ParsemeConfig } from '../config.js';
 import type { ProjectInfo, FrameworkInfo } from '../types.js';
 
 export class FrameworkDetector {
-  constructor(private readonly config: ParsemeConfig) {}
-
   async detect(projectInfo: ProjectInfo): Promise<FrameworkInfo> {
     const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
 

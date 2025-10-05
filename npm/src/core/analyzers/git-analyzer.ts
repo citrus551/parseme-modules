@@ -1,14 +1,11 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-import type { ParsemeConfig } from '../config.js';
 import type { GitInfo } from '../types.js';
 
 const execAsync = promisify(exec);
 
 export class GitAnalyzer {
-  constructor(private readonly config: ParsemeConfig) {}
-
   async analyze(rootDir: string): Promise<GitInfo | null> {
     try {
       // Check if this is a git repository

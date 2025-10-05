@@ -304,7 +304,6 @@ export function authMiddleware(req: any, res: any, next: any) {
 
       const generator = new parsemeGenerator({
         rootDir: projectDir,
-        outputPath: join(projectDir, 'COMPLEX.md'),
         analyzeFileTypes: ['ts'],
         includeGitInfo: false,
       });
@@ -313,13 +312,13 @@ export function authMiddleware(req: any, res: any, next: any) {
 
       // Verify comprehensive output
       try {
-        await access(join(projectDir, 'COMPLEX.md'));
+        await access(join(projectDir, 'PARSEME.md'));
       } catch {
         assert.fail('Complex project output was not created');
       }
 
       const { readFile } = await import('fs/promises');
-      const content = await readFile(join(projectDir, 'COMPLEX.md'), 'utf-8');
+      const content = await readFile(join(projectDir, 'PARSEME.md'), 'utf-8');
 
       // Verify all aspects are documented in the main content
       assert.ok(content.includes('complex-cli-project'));
