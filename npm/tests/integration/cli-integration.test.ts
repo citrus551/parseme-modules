@@ -28,6 +28,7 @@ describe('CLI Integration', () => {
         name: 'cli-test-project',
         version: '1.0.0',
         description: 'CLI integration test project',
+        type: 'module',
       };
 
       const configFile = `
@@ -85,6 +86,7 @@ export function testFunction(): string {
       const packageJson = {
         name: 'cli-options-test',
         version: '1.0.0',
+        type: 'module',
       };
 
       const configFile = `
@@ -230,6 +232,7 @@ export default {
         name: 'complex-cli-project',
         version: '2.1.0',
         description: 'A complex project for CLI testing',
+        type: 'module',
         dependencies: {
           express: '^4.18.0',
           typescript: '^5.0.0',
@@ -334,6 +337,7 @@ export function authMiddleware(req: any, res: any, next: any) {
       const packageJson = {
         name: 'exclude-test',
         version: '1.0.0',
+        type: 'module',
       };
 
       const includedFile = 'export const included = true;';

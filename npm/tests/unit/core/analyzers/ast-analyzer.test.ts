@@ -88,8 +88,10 @@ describe('ASTAnalyzer', () => {
 
   describe('analyzeFile', () => {
     test('should return null for non-JS/TS files', async () => {
+      const consoleWarnMock = mock.method(console, 'warn', () => {});
       const result = await analyzer.analyzeFile('/path/to/file.txt', 'file.txt');
       assert.strictEqual(result, null);
+      consoleWarnMock.mock.restore();
     });
 
     test('should analyze JavaScript files', async () => {
