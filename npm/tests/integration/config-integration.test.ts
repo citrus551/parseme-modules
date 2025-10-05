@@ -95,9 +95,8 @@ export default {
 
     test('should handle JSON config files', async () => {
       const configObject = {
-        outputPath: 'JSON.md',
         maxDepth: 7,
-        analyzeFileTypes: ['json'],
+        analyzeFileTypes: ['ts', 'js'],
         sections: {
           overview: false,
           dependencies: true,
@@ -110,11 +109,10 @@ export default {
       const config = await parsemeConfig.fromFile(configPath);
       const result = config.get();
 
-      assert.strictEqual(result.outputPath, 'JSON.md');
       assert.strictEqual(result.maxDepth, 7);
       assert.strictEqual(result.sections?.overview, false);
       assert.strictEqual(result.sections?.dependencies, true);
-      assert.deepStrictEqual(result.analyzeFileTypes, ['json']);
+      assert.deepStrictEqual(result.analyzeFileTypes, ['ts', 'js']);
     });
 
     test('should create and save config files in different formats', async () => {

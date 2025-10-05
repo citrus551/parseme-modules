@@ -74,7 +74,8 @@ export class ParsemeConfig {
           }
         } else {
           // JSON config files
-          const content = await readFile(path, 'utf-8');
+          const fullPath = path.startsWith('/') ? path : join(process.cwd(), path);
+          const content = await readFile(fullPath, 'utf-8');
           const config = JSON.parse(content);
           return new ParsemeConfig(config);
         }
@@ -101,6 +102,16 @@ export class ParsemeConfig {
 
   private mergeWithDefaults(config: Partial<ParsemeConfigFile>): ParsemeConfigFile {
     const rootDir = config.rootDir || process.cwd();
+    const supportedFileTypes = ['ts', 'tsx', 'js', 'jsx'];
+
+    // Validate analyzeFileTypes
+    const fileTypes = config.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'];
+    const invalidTypes = fileTypes.filter((type) => !supportedFileTypes.includes(type));
+    if (invalidTypes.length > 0) {
+      throw new Error(
+        `Invalid file types: ${invalidTypes.join(', ')}. Supported types are: ${supportedFileTypes.join(', ')}`,
+      );
+    }
 
     return {
       // Output
@@ -111,7 +122,7 @@ export class ParsemeConfig {
       rootDir,
       maxDepth: config.maxDepth || 10,
       excludePatterns: this.mergeExcludePatterns(config.excludePatterns, rootDir),
-      analyzeFileTypes: config.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'],
+      analyzeFileTypes: fileTypes,
 
       // Git
       includeGitInfo: config.includeGitInfo ?? true,

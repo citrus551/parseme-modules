@@ -60,6 +60,24 @@ describe('ParsemeConfig', () => {
       assert.ok(result.analyzeFileTypes?.includes('jsx'));
     });
 
+    test('should validate file types and reject invalid ones', () => {
+      assert.throws(
+        () => {
+          new ParsemeConfig({ analyzeFileTypes: ['ts', 'py', 'go'] });
+        },
+        {
+          message: /Invalid file types: py, go/,
+        },
+      );
+    });
+
+    test('should accept valid file types', () => {
+      const config = new ParsemeConfig({ analyzeFileTypes: ['ts', 'js'] });
+      const result = config.get();
+
+      assert.deepStrictEqual(result.analyzeFileTypes, ['ts', 'js']);
+    });
+
     test('should set correct default exclude patterns', () => {
       const config = new ParsemeConfig({
         excludePatterns: ['node_modules/**', 'dist/**', '.git/**'],

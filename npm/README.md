@@ -169,8 +169,8 @@ const config = {
 
   // Analysis settings
   rootDir: './',
-  includePatterns: ['src/**/*.ts', 'src/**/*.js', 'package.json'],
-  excludePatterns: ['node_modules/**', 'dist/**', '**/*.test.ts'],
+  analyzeFileTypes: ['ts', 'tsx', 'js', 'jsx'],
+  excludePatterns: ['**/*.test.ts', 'dist/**'],
   maxDepth: 10,
 
   // Git integration
@@ -214,37 +214,36 @@ PARSEME supports three configuration formats with the following priority:
 2. **TypeScript** (`.ts`) - `parseme.config.ts`, `.parsemerc.ts`
 3. **JavaScript** (`.js`) - `parseme.config.js`, `.parsemerc.js`
 
-#### JSON Configuration
+#### Example JSON Configuration
 
 ```json
 {
-  "outputPath": "PARSEME.md",
   "contextDir": "parseme-context",
-  "includePatterns": ["src/**/*.ts"]
+  "excludePatterns": ["node_modules/**", "dist/**", ".git/**"]
 }
 ```
 
-#### TypeScript Configuration
+#### Example TypeScript Configuration
 
 ```typescript
 import type { ParsemeConfigFile } from 'parseme';
 
 const config: ParsemeConfigFile = {
-  outputPath: 'PARSEME.md',
-  includePatterns: ['src/**/*.ts'],
+  contextDir: 'parseme-context',
+  excludePatterns: ['node_modules/**', 'dist/**', '.git/**'],
   // ... other options
 };
 
 export default config;
 ```
 
-#### JavaScript Configuration
+#### Example JavaScript Configuration
 
 ```javascript
 /** @type {import('parseme').ParsemeConfigFile} */
 const config = {
-  outputPath: 'PARSEME.md',
-  includePatterns: ['src/**/*.ts'],
+  contextDir: 'parseme-context',
+  excludePatterns: ['node_modules/**', 'dist/**', '.git/**'],
   // ... other options
 };
 
@@ -271,8 +270,8 @@ Configuration values are resolved in the following order (highest to lowest prio
 #### Analysis Settings
 
 - `rootDir` - Project root directory (default: `process.cwd()`)
-- `includePatterns` - Glob patterns for files to analyze (default: `['src/**/*.ts', 'src/**/*.js', 'src/**/*.tsx', 'src/**/*.jsx', 'lib/**/*.ts', 'lib/**/*.js', 'package.json', 'tsconfig.json', 'README.md']`)
-- `excludePatterns` - Glob patterns for files to ignore (default: `['node_modules/**', '.git/**']` plus patterns from `.gitignore` if available)
+- `analyzeFileTypes` - File extensions to analyze (default and supported: `['ts', 'tsx', 'js', 'jsx']`)
+- `excludePatterns` - Additional glob patterns to exclude on top of `.gitignore` patterns. Patterns from `.gitignore` are always included in exclusions, and `excludePatterns` adds to them.
 - `maxDepth` - Maximum directory depth to traverse (default: `10`)
 
 #### Git Integration
@@ -348,8 +347,8 @@ npm run parseme
 # Override config with CLI flags
 npx parseme --output custom.md --context-dir docs/context --root ./src --no-git
 
-# Include/exclude patterns
-npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
+# Specify file types and exclude patterns
+npx parseme --file-types ts js --exclude "**/*.test.ts"
 ```
 
 ### CLI Options
@@ -360,7 +359,7 @@ npx parseme --include "src/**/*.ts" --exclude "**/*.test.ts"
 - `-o, --output <path>` - Output file path
 - `-r, --root <path>` - Root directory to analyze
 - `--context-dir <path>` - Context directory path (default: parseme-context)
-- `--include <patterns...>` - Include patterns (glob)
+- `--file-types <types...>` - File types to analyze (e.g., ts tsx js jsx)
 - `--exclude <patterns...>` - Exclude patterns (glob)
 - `--no-git` - Disable git information
 - `--max-depth <number>` - Maximum directory depth
@@ -396,7 +395,7 @@ PARSEME automatically detects and provides specialized analysis for:
 ### NestJS
 
 - Controller and decorator analysis
-- Module structure detection
+- Module structure detection w
 - Dependency injection mapping
 
 ### Fastify
