@@ -139,13 +139,13 @@ export class ASTAnalyzer {
       });
 
       return analysis;
-    } catch (error) {
-      console.warn(`Failed to parse ${relativePath}:`, error);
+    } catch {
+      console.warn(`Failed to parse ${relativePath}`);
       return null;
     }
   }
 
-  private parseFile(content: string, ext: string) {
+  private parseFile(content: string, ext: string): ReturnType<typeof parse> {
     const isTypeScript = ext === '.ts' || ext === '.tsx';
     const isJSX = ext === '.jsx' || ext === '.tsx';
 

@@ -157,7 +157,7 @@ export class ContextBuilder {
     };
 
     // Helper function to merge split files into contextFiles
-    const mergeSplitFiles = (result: string | Record<string, string>, baseName: string) => {
+    const mergeSplitFiles = (result: string | Record<string, string>, baseName: string): void => {
       if (typeof result === 'string') {
         contextFiles[baseName] = result;
       } else {

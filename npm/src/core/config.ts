@@ -45,6 +45,7 @@ export class ParsemeConfig {
 
     const paths = configPath ? [configPath] : defaultPaths;
     let tsWarning: string | null = null;
+    let configLoadError: { path: string; error: Error } | null = null;
 
     for (const path of paths) {
       try {
@@ -61,9 +62,10 @@ export class ParsemeConfig {
                 const module = await import(fullPath);
                 const config = module.default || module;
                 return new ParsemeConfig(config);
-              } catch {
+              } catch (error) {
                 // File exists but can't be loaded - save warning
                 tsWarning = path;
+                configLoadError = { path, error: error as Error };
               }
             }
           } else {
@@ -79,19 +81,36 @@ export class ParsemeConfig {
           const config = JSON.parse(content);
           return new ParsemeConfig(config);
         }
-      } catch {
+      } catch (error) {
+        // If file exists, save the error
+        const fullPath = path.startsWith('/') ? path : join(process.cwd(), path);
+        if (existsSync(fullPath)) {
+          configLoadError = { path, error: error as Error };
+        }
         // Continue to next path
       }
     }
 
-    // Handle case when no config found
-    if (options.throwOnNotFound) {
-      throw new Error('No configuration file found. Run "parseme init" to create one.');
+    // Handle case when config file was found but couldn't be loaded
+    if (configLoadError) {
+      const { path, error } = configLoadError;
+      if (options.throwOnNotFound) {
+        throw new Error(`Configuration file "${path}" found but failed to load: ${error.message}`);
+      }
+      if (options.showWarnings) {
+        console.warn(`Configuration file "${path}" found but failed to load: ${error.message}`);
+      }
+    } else {
+      // Handle case when no config found at all
+      if (options.throwOnNotFound) {
+        throw new Error('No configuration file found. Run "parseme init" to create one.');
+      }
+      if (options.showWarnings) {
+        console.warn('No configuration file found. Run "parseme init" to create one.');
+      }
     }
-    if (options.showWarnings) {
-      console.warn('No configuration file found. Run "parseme init" to create one.');
-    }
-    if (tsWarning && options.showWarnings) {
+
+    if (tsWarning && !configLoadError && options.showWarnings) {
       console.warn(`Could not load TypeScript config file: ${tsWarning}`);
       console.warn(`Consider using a .js config file or ensure tsx/ts-node is available`);
     }

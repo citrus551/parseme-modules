@@ -60,8 +60,6 @@ export interface UtilityInfo {
 }
 
 export class PatternDetector {
-  constructor(private config?: unknown) {}
-
   analyzePatterns(ast: t.File, filePath: string, _content: string): PatternAnalysis {
     const analysis: PatternAnalysis = {
       endpoints: [],

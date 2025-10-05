@@ -15,6 +15,12 @@ const baseConfig = [
     rules: {
       '@typescript-eslint/naming-convention': [
         'warn',
+        // Enforce UPPER_CASE for const variables (must come first)
+        // {
+        //   selector: ['variable'],
+        //   modifiers: ['const'],
+        //   format: ['UPPER_CASE'],
+        // },
         // Enforce camelCase for variables and functions
         {
           selector: ['variable', 'function', 'parameter'],
@@ -25,12 +31,6 @@ const baseConfig = [
         {
           selector: ['typeLike'],
           format: ['PascalCase'],
-        },
-        // Enforce UPPER_CASE for const variables
-        {
-          selector: ['variable'],
-          modifiers: ['const', 'readonly', 'global'],
-          format: ['UPPER_CASE'],
         },
         // Allow any naming for object properties
         {
@@ -65,6 +65,14 @@ const baseConfig = [
           },
         },
       ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
       'linebreak-style': ['error', 'unix'], // For LF end of line rule - Unix style
       curly: ['error', 'all'],
       'unused-imports/no-unused-imports': 'error',
