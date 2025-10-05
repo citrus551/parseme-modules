@@ -321,7 +321,6 @@ export function greet(name: string): string {
       // Check context files
       try {
         await access(join(contextDir, 'structure.json'));
-        await access(join(contextDir, 'dependencies.json'));
       } catch {
         assert.fail('Context JSON files were not created');
       }

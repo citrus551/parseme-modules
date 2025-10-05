@@ -149,11 +149,9 @@ export class ContextBuilder {
       [key: string]: string;
       structure: string;
       routes: string;
-      dependencies: string;
     } = {
       structure: '',
       routes: '',
-      dependencies: '',
     };
 
     // Helper function to merge split files into contextFiles
@@ -180,19 +178,6 @@ export class ContextBuilder {
     if (routes.length > 0) {
       const routesResult = this.buildDetailedRoutes(routes, limitedFileAnalyses);
       mergeSplitFiles(routesResult, 'api-endpoints');
-    }
-
-    // Dependencies
-    const dependenciesResult = this.buildDetailedDependencies(projectInfo);
-    mergeSplitFiles(dependenciesResult, 'dependencies');
-
-    // Framework details
-    if (
-      projectInfo.framework &&
-      projectInfo.framework.name &&
-      projectInfo.framework.name !== 'unknown'
-    ) {
-      contextFiles.framework = this.buildDetailedFramework(projectInfo.framework);
     }
 
     // Git information
@@ -270,7 +255,7 @@ Git diff statistics from the time of generation are available at \`parseme-conte
 \`\`\`bash
 git diff --stat
 \`\`\`
-Compare the output with the baseline in \`parseme-context/gitDiff.json\` to detect any modifications.`;
+Compare the output with the baseline in \`parseme-context/gitDiff.md\` to detect any modifications.`;
   }
 
   private buildSummarySection(context: BuildContext, linkPath: string): string {

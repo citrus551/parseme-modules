@@ -6,7 +6,6 @@ export interface ContextOutput {
     // Optional parseme-context/ folder files
     structure: string;
     routes: string;
-    dependencies: string;
     [key: string]: string;
   };
 }

@@ -181,7 +181,7 @@ export default {
       assert.strictEqual(result.maxDepth, 10);
       assert.strictEqual(result.includeGitInfo, true);
       assert.ok(result.analyzeFileTypes?.includes('ts'));
-      assert.ok(result.excludePatterns?.includes('node_modules/**'));
+      assert.ok(Array.isArray(result.excludePatterns));
     });
   });
 

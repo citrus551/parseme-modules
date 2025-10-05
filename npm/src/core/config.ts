@@ -242,18 +242,7 @@ export default config;
       return gitignoreContent
         .split('\n')
         .map((line: string) => line.trim())
-        .filter((line: string) => line && !line.startsWith('#'))
-        .map((pattern: string) => {
-          // Convert gitignore patterns to glob patterns
-          if (pattern.endsWith('/')) {
-            return pattern + '**';
-          }
-          if (!pattern.includes('/') && !pattern.includes('*')) {
-            // Convert simple names to match directory patterns
-            return pattern + '/**';
-          }
-          return pattern;
-        });
+        .filter((line: string) => line && !line.startsWith('#'));
     } catch {
       return [];
     }
