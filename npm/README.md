@@ -46,7 +46,7 @@ PARSEME uses AST analysis to identify:
 ## **Language Support**
 
 - **TypeScript** - Full support including advanced types, decorators, interfaces
-- **JavaScript (ES6+)** - Modern JavaScript with all ES features
+- **JavaScript (ES6+)** - Modern JavaScript with ES features
 - **JSX/TSX** - React and other JSX-based frameworks
 - **Mixed codebases** - Projects with both JS and TS files
 
@@ -59,9 +59,6 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project like:
 - **NestJS** - Controllers, services, decorators, dependency injection
 - **Express.js** - Routes, middleware, error handlers
 - **Fastify** - Route registration, plugins, hooks
-- **Koa.js** - Context-based middleware, routing
-- **Hapi.js** - Route configuration, server plugins
-- **Custom frameworks** - Any HTTP endpoint patterns
 
 ### **Frontend Applications**
 
@@ -70,28 +67,26 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project like:
 - **Angular** - Components, services, decorators, modules
 - **Svelte** - Components, stores, reactive patterns
 - **Lit** - Web components, custom elements
-- **Vanilla JS/TS** - Any component or module patterns
-
-### **NPM Packages & Libraries**
-
-- **TypeScript libraries** - Interfaces, types, utility functions
-- **JavaScript utilities** - Helper functions, class libraries
-- **Node.js modules** - CommonJS and ES modules
-- **Monorepo packages** - Lerna, Nx, Rush, Turborepo
-
-### **Development Tools**
-
-- **CLI applications** - Command-line tools and scripts
-- **Build tools** - Webpack plugins, Vite configurations
-- **Desktop applications** - Electron, Tauri apps
-- **Testing utilities** - Jest plugins, test helpers
+- **Vanilla JS/TS** - Functions, classes, modules, event handlers
 
 ### **Fullstack Frameworks**
 
 - **Next.js** - Pages, API routes, middleware, components
-- **Nuxt.js** - Vue-based fullstack applications
-- **SvelteKit** - Svelte-based fullstack applications
-- **Remix** - React-based fullstack applications
+- **Nuxt.js** - Pages, server routes, composables, components
+
+### **Packages & Libraries**
+
+- **TypeScript utilities** - Types, interfaces, enums, generic helpers
+- **JavaScript helpers** - Functions, classes, utilities, data manipulation
+- **Node.js modules** - Exports, imports, CommonJS/ESM patterns
+- **Monorepo packages** - Shared utilities, cross-package dependencies
+
+### **Development Tools**
+
+- **CLI tools** - Commands, options, argument parsing
+- **Build plugins** - Plugin functions, configuration handlers
+- **Desktop apps** - Main processes, renderers, IPC handlers
+- **Testing utilities** - Test functions, mocks, utilities, custom matchers
 
 ## Installation
 
@@ -403,11 +398,6 @@ PARSEME automatically detects and provides specialized analysis for:
 - Route registration detection
 - Plugin identification
 - Hook analysis
-
-### Koa & Hapi
-
-- Route and middleware detection
-- Framework-specific patterns
 
 ## Programmatic API
 

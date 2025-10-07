@@ -174,13 +174,7 @@ export class ProjectAnalyzer {
     }
 
     // Check for backend frameworks
-    if (
-      deps['express'] ||
-      deps['fastify'] ||
-      deps['@nestjs/core'] ||
-      deps['koa'] ||
-      deps['@hapi/hapi']
-    ) {
+    if (deps['express'] || deps['fastify'] || deps['@nestjs/core']) {
       return 'backend-api';
     }
 

@@ -14,12 +14,6 @@ export class FrameworkDetector {
     if (deps['express']) {
       return this.detectExpress(deps);
     }
-    if (deps['koa']) {
-      return this.detectKoa(deps);
-    }
-    if (deps['@hapi/hapi']) {
-      return this.detectHapi(deps);
-    }
 
     return {
       name: 'unknown',
@@ -132,64 +126,6 @@ export class FrameworkDetector {
     return {
       name: 'nestjs',
       version: deps['@nestjs/core'],
-      features,
-    };
-  }
-
-  private detectKoa(deps: Record<string, string>): FrameworkInfo {
-    const features: string[] = [];
-
-    if (deps['@koa/cors']) {
-      features.push('cors');
-    }
-    if (deps['koa-helmet']) {
-      features.push('security');
-    }
-    if (deps['koa-ratelimit']) {
-      features.push('rate-limiting');
-    }
-    if (deps['koa-multer']) {
-      features.push('file-upload');
-    }
-    if (deps['koa-static']) {
-      features.push('static-files');
-    }
-    if (deps['koa-session']) {
-      features.push('sessions');
-    }
-    if (deps['koa-bodyparser']) {
-      features.push('body-parsing');
-    }
-
-    return {
-      name: 'koa',
-      version: deps['koa'],
-      features,
-    };
-  }
-
-  private detectHapi(deps: Record<string, string>): FrameworkInfo {
-    const features: string[] = [];
-
-    if (deps['@hapi/cookie']) {
-      features.push('sessions');
-    }
-    if (deps['@hapi/jwt']) {
-      features.push('jwt');
-    }
-    if (deps['@hapi/inert']) {
-      features.push('static-files');
-    }
-    if (deps['@hapi/vision']) {
-      features.push('templates');
-    }
-    if (deps['@hapi/boom']) {
-      features.push('error-handling');
-    }
-
-    return {
-      name: 'hapi',
-      version: deps['@hapi/hapi'],
       features,
     };
   }

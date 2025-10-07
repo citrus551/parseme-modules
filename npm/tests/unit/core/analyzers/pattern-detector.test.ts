@@ -4,15 +4,12 @@ import { test, describe, beforeEach } from 'node:test';
 import { parse } from '@babel/parser';
 
 import { PatternDetector } from '../../../../dist/core/analyzers/pattern-detector.js';
-import { ParsemeConfig } from '../../../../dist/core/config.js';
 
 describe('PatternDetector', () => {
   let detector: PatternDetector;
-  let config: ParsemeConfig;
 
   beforeEach(() => {
-    config = new ParsemeConfig();
-    detector = new PatternDetector(config);
+    detector = new PatternDetector();
   });
 
   describe('endpoint detection', () => {
@@ -290,9 +287,6 @@ describe('PatternDetector', () => {
       assert.strictEqual(patterns.middleware[0].type, 'function');
       assert.strictEqual(patterns.middleware[1].name, 'corsMiddleware');
     });
-
-    // Context-based middleware (Koa-style) detection not yet implemented
-    // TODO: Add support for 2-parameter middleware (ctx, next)
   });
 
   describe('utility detection', () => {
