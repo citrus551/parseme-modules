@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import { mkdir, writeFile, rm, access } from 'fs/promises';
 import * as assert from 'node:assert';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
@@ -6,6 +7,7 @@ import { join } from 'path';
 describe('CLI Integration', () => {
   const testDir = '/tmp/parseme-cli-test';
   const projectDir = join(testDir, 'cli-project');
+  const cliPath = join(process.cwd(), 'dist', 'cli', 'cli.js');
 
   beforeEach(async () => {
     await mkdir(projectDir, { recursive: true });
@@ -19,6 +21,242 @@ describe('CLI Integration', () => {
       // Ignore cleanup errors
     }
     mock.restoreAll();
+  });
+
+  // Helper function to run CLI commands
+  function runCli(
+    args: string[],
+    cwd: string = projectDir,
+  ): Promise<{
+    code: number | null;
+    stdout: string;
+    stderr: string;
+  }> {
+    return new Promise((resolve) => {
+      const child = spawn('node', [cliPath, ...args], { cwd });
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      child.on('close', (code) => {
+        resolve({ code, stdout, stderr });
+      });
+    });
+  }
+
+  describe('CLI subcommand structure', () => {
+    test('should show error when no subcommand provided', async () => {
+      const { code, stderr } = await runCli([]);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('No command specified'));
+      assert.ok(stderr.includes('Available commands:'));
+      assert.ok(stderr.includes('parseme generate (or parseme g)'));
+      assert.ok(stderr.includes('parseme init (or parseme i)'));
+      assert.ok(stderr.includes('parseme --help'));
+    });
+
+    test('should show help for main command', async () => {
+      const { code, stdout } = await runCli(['--help']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('AI Project Context Generator'));
+      assert.ok(stdout.includes('generate|g'));
+      assert.ok(stdout.includes('init|i'));
+    });
+
+    test('should show help for generate command', async () => {
+      const { code, stdout } = await runCli(['generate', '--help']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Generate project context'));
+      assert.ok(stdout.includes('--config'));
+      assert.ok(stdout.includes('--output'));
+      assert.ok(stdout.includes('--root'));
+      assert.ok(stdout.includes('--no-git'));
+    });
+
+    test('should show help for generate alias', async () => {
+      const { code, stdout } = await runCli(['g', '--help']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Generate project context'));
+    });
+
+    test('should show help for init command', async () => {
+      const { code, stdout } = await runCli(['init', '--help']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Initialize parseme configuration'));
+      assert.ok(stdout.includes('--force'));
+      assert.ok(stdout.includes('--format'));
+    });
+
+    test('should show help for init alias', async () => {
+      const { code, stdout } = await runCli(['i', '--help']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Initialize parseme configuration'));
+    });
+
+    test('should show error for invalid subcommand', async () => {
+      const { code, stderr } = await runCli(['invalid-command']);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('unknown command') || stderr.includes('error'));
+    });
+  });
+
+  describe('CLI process execution with generate command', () => {
+    test('should run generate command with config file', async () => {
+      const packageJson = {
+        name: 'cli-process-test',
+        version: '1.0.0',
+        type: 'module',
+      };
+
+      const configFile = `
+export default {
+  rootDir: '${projectDir}',
+  outputPath: 'CLI-PROCESS-OUTPUT.md',
+  contextDir: 'cli-process-context',
+  analyzeFileTypes: ['ts'],
+  includeGitInfo: false
+};
+`;
+
+      const sourceFile = `
+export function testFunction(): string {
+  return 'CLI process test';
+}
+`;
+
+      await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+      await writeFile(join(projectDir, 'parseme.config.js'), configFile);
+      await writeFile(join(projectDir, 'src', 'test.ts'), sourceFile);
+
+      const { code, stdout } = await runCli(['generate']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Context generated successfully'));
+
+      // Verify files were created
+      try {
+        await access(join(projectDir, 'CLI-PROCESS-OUTPUT.md'));
+      } catch {
+        assert.fail('Output file was not created by CLI process');
+      }
+    });
+
+    test('should run generate alias command', async () => {
+      const packageJson = {
+        name: 'cli-alias-test',
+        version: '1.0.0',
+        type: 'module',
+      };
+
+      const configFile = `
+export default {
+  rootDir: '${projectDir}',
+  outputPath: 'ALIAS-OUTPUT.md',
+  includeGitInfo: false
+};
+`;
+
+      await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+      await writeFile(join(projectDir, 'parseme.config.js'), configFile);
+
+      const { code, stdout } = await runCli(['g']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Context generated successfully'));
+    });
+
+    test('should handle generate command with CLI options', async () => {
+      const packageJson = {
+        name: 'cli-options-test',
+        version: '1.0.0',
+        type: 'module',
+      };
+
+      await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+      const { code, stderr } = await runCli(['generate', '--output', 'CUSTOM.md', '--no-git']);
+
+      // Should fail because no config file exists, but should not crash
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('No configuration file found'));
+    });
+  });
+
+  describe('CLI process execution with init command', () => {
+    test('should run init command and create config file', async () => {
+      const { code, stdout } = await runCli(['init', '--format', 'json']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Configuration file created'));
+
+      try {
+        await access(join(projectDir, 'parseme.config.json'));
+      } catch {
+        assert.fail('Config file was not created by init command');
+      }
+    });
+
+    test('should run init alias command', async () => {
+      const { code, stdout } = await runCli(['i', '--format', 'js']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Configuration file created'));
+    });
+
+    test('should prevent overwriting existing config without force', async () => {
+      await writeFile(join(projectDir, 'parseme.config.json'), '{}');
+
+      const { code, stdout } = await runCli(['init', '--format', 'json']);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stdout.includes('already exists') || stdout.includes('--force'));
+    });
+
+    test('should overwrite existing config with force flag', async () => {
+      await writeFile(join(projectDir, 'parseme.config.json'), '{}');
+
+      const { code, stdout } = await runCli(['init', '--format', 'json', '--force']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Configuration file created'));
+    });
+
+    test('should reject invalid format', async () => {
+      const { code, stderr } = await runCli(['init', '--format', 'invalid']);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('Invalid format'));
+    });
+  });
+
+  describe('CLI error handling', () => {
+    test('should handle missing config file gracefully', async () => {
+      const { code, stderr } = await runCli(['generate']);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('No configuration file found'));
+    });
+
+    test('should handle invalid CLI options', async () => {
+      const { code, stderr } = await runCli(['generate', '--invalid-option']);
+
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('unknown option') || stderr.includes('error'));
+    });
   });
 
   describe('CLI command execution', () => {

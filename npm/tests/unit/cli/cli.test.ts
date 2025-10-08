@@ -65,60 +65,6 @@ describe('CLI', () => {
     });
   });
 
-  describe('generate command', () => {
-    test('should run generate command with config file', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should handle CLI options', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should handle generation errors', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-  });
-
-  describe('init command', () => {
-    test('should create JavaScript config file', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should create TypeScript config file', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should create JSON config file', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should handle existing config file without force', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should overwrite existing config with force flag', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should reject invalid format', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-
-    test('should handle config creation errors', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-  });
-
   describe('promptForMissingConfig', () => {
     test('should skip prompting in CI environment', async () => {
       const originalCI = process.env.CI;
@@ -137,14 +83,6 @@ describe('CLI', () => {
 
       // Similar to CI test - ensures non-TTY doesn't hang
       assert.ok(true);
-    });
-  });
-
-  describe('no command execution', () => {
-    test('should show error and available commands when no args provided', async () => {
-      // This test verifies that running 'parseme' without a subcommand
-      // shows an error message and lists available commands
-      // This functionality is tested in integration tests
     });
   });
 });
