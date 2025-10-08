@@ -100,6 +100,8 @@ npm install --save-dev parseme
 
    ```bash
    npx parseme init
+   # or use the alias
+   npx parseme i
    ```
 
    You'll be prompted for:
@@ -118,7 +120,7 @@ npm install --save-dev parseme
    ```json
    {
      "scripts": {
-       "parseme": "parseme"
+       "parseme": "parseme generate"
      }
    }
    ```
@@ -127,7 +129,9 @@ npm install --save-dev parseme
    ```bash
    npm run parseme
    # or
-   npx parseme
+   npx parseme generate
+   # or use the alias
+   npx parseme g
    ```
 
 This creates:
@@ -319,10 +323,12 @@ The context directory location can be customized via the `contextDir` configurat
 
 ```bash
 # Generate context (auto-detects config file)
-npx parseme
+npx parseme generate
+npx parseme g  # alias
 
 # Initialize configuration (JSON by default)
 npx parseme init
+npx parseme i  # alias
 
 # Initialize with TypeScript format
 npx parseme init --format ts
@@ -331,7 +337,7 @@ npx parseme init --format ts
 npx parseme init --format js
 
 # Use custom config file
-npx parseme --config custom.config.js
+npx parseme generate --config custom.config.js
 
 # If added to package.json scripts, use npm run
 npm run parseme
@@ -340,15 +346,15 @@ npm run parseme
 # Runs automatically after each commit
 
 # Override config with CLI flags
-npx parseme --output custom.md --context-dir docs/context --root ./src --no-git
+npx parseme generate --output custom.md --context-dir docs/context --root ./src --no-git
 
 # Specify file types and exclude patterns
-npx parseme --file-types ts js --exclude "**/*.test.ts"
+npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 ```
 
 ### CLI Options
 
-#### Main Command (`parseme`)
+#### Generate Command (`parseme generate` or `parseme g`)
 
 - `-c, --config <path>` - Config file path
 - `-o, --output <path>` - Output file path
@@ -359,7 +365,7 @@ npx parseme --file-types ts js --exclude "**/*.test.ts"
 - `--no-git` - Disable git information
 - `--max-depth <number>` - Maximum directory depth
 
-#### Init Command (`parseme init`)
+#### Init Command (`parseme init` or `parseme i`)
 
 - `-f, --force` - Overwrite existing config
 - `--format <format>` - Config format: json, ts, or js (default: json)
@@ -421,7 +427,7 @@ Keep your AI context automatically updated by adding parseme as a post-commit ho
 
 ```bash
 # Create and make executable
-echo '#!/bin/sh\npx parseme' > .git/hooks/post-commit
+echo '#!/bin/sh\npx parseme generate' > .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 ```
 
@@ -432,7 +438,7 @@ chmod +x .git/hooks/post-commit
 {
   "husky": {
     "hooks": {
-      "post-commit": "npx parseme"
+      "post-commit": "npx parseme generate"
     }
   }
 }

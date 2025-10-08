@@ -18,8 +18,10 @@ async function promptForMissingConfig(config: ParsemeConfigFile): Promise<Parsem
 
 program.name('parseme').description('AI Project Context Generator').version('0.1.0');
 
-// Main command - just run parseme
+// Generate command
 program
+  .command('generate')
+  .alias('g')
   .description('Generate project context using config file')
   .option('-c, --config <path>', 'Config file path')
   .option('-o, --output <path>', 'Output file path')
@@ -68,8 +70,10 @@ program
     }
   });
 
+// Init command
 program
   .command('init')
+  .alias('i')
   .description('Initialize parseme configuration')
   .option('-f, --force', 'Overwrite existing config')
   .option('--format <format>', 'Config format: json, ts, or js', 'json')
@@ -153,30 +157,14 @@ program
     }
   });
 
-// If no command and no args, run main action
+// If no command provided, show error and available commands
 if (process.argv.length <= 2) {
-  // Run the default action
-  (async () => {
-    try {
-      const configFromFile = await ParsemeConfig.fromFile(undefined, {
-        showWarnings: true,
-        throwOnNotFound: true,
-      });
-      const interactiveConfig = await promptForMissingConfig(configFromFile.get());
-
-      const config = new ParsemeConfig(interactiveConfig);
-      const generator = new ParsemeGenerator(config.get());
-      await generator.generateToFile();
-      console.log('Context generated successfully');
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('No configuration file found')) {
-        console.error(error.message);
-        process.exit(1);
-      }
-      console.error('Failed to generate context:', error);
-      process.exit(1);
-    }
-  })();
-} else {
-  program.parse();
+  console.error('No command specified.\n');
+  console.error('Available commands:');
+  console.error('  parseme generate (or parseme g) - Generate project context');
+  console.error('  parseme init (or parseme i)     - Initialize parseme configuration');
+  console.error('\nUse "parseme --help" for more information');
+  process.exit(1);
 }
+
+program.parse();
