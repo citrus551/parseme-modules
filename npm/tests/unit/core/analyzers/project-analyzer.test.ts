@@ -57,44 +57,56 @@ describe('ProjectAnalyzer', () => {
     });
   });
 
-  describe('detectPackageManager', () => {
-    test('should detect npm by default', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+  describe('project category detection', () => {
+    test('should detect CLI tool project', async () => {
+      const result = await analyzer.analyze(process.cwd());
+
+      // This package has a bin field in package.json
+      assert.strictEqual(result.category, 'cli-tool');
     });
 
-    test('should detect yarn if yarn.lock exists', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should detect scripts in package.json', async () => {
+      const result = await analyzer.analyze(fixturesDir);
+
+      assert.ok(result.scripts);
+      assert.ok(result.scripts.build);
+      assert.strictEqual(result.scripts.build, 'tsc');
     });
 
-    test('should detect pnpm if pnpm-lock.yaml exists', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should detect entry points', async () => {
+      const result = await analyzer.analyze(process.cwd());
+
+      assert.ok(result.entryPoints);
+      assert.ok(result.entryPoints.length > 0);
     });
 
-    test('should detect bun if bun.lockb exists', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should detect output targets', async () => {
+      const result = await analyzer.analyze(process.cwd());
+
+      // This project outputs to dist/
+      assert.ok(result.outputTargets);
     });
   });
 
-  describe('detectProjectType', () => {
-    test('should detect mixed project type', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
-    });
-  });
+  describe('getAllProjectFiles', () => {
+    test('should get all project files recursively', async () => {
+      const files = await analyzer.getAllProjectFiles(fixturesDir);
 
-  describe('getFilesRecursive', () => {
-    test('should get files recursively with depth limit', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+      assert.ok(Array.isArray(files));
+      assert.ok(files.length > 0);
+      // Files should be relative paths
+      assert.ok(files.some((f) => f.includes('.ts') || f.includes('.js')));
     });
 
-    test('should respect maxDepth parameter', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should exclude files matching exclude patterns', async () => {
+      const configWithExcludes = new ParsemeConfig({
+        excludePatterns: ['**/*.test.ts', 'node_modules/**'],
+      });
+      const analyzerWithExcludes = new ProjectAnalyzer(configWithExcludes);
+      const files = await analyzerWithExcludes.getAllProjectFiles(fixturesDir);
+
+      // Should not include test files
+      assert.ok(!files.some((f) => f.endsWith('.test.ts')));
     });
   });
 });
