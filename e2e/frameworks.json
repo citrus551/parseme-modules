@@ -1,0 +1,34 @@
+{
+  "nestjs": {
+    "name": "NestJS Cats App",
+    "repo": "https://github.com/nestjs/nest",
+    "path": "sample/01-cats-app",
+    "branch": "master",
+    "assertions": {
+      "shouldDetectFramework": "NestJS",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 3
+    }
+  },
+  "express": {
+    "name": "Express Multi-Router",
+    "repo": "https://github.com/expressjs/express",
+    "path": "examples/multi-router",
+    "branch": "master",
+    "assertions": {
+      "shouldDetectFramework": "Express",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 2
+    }
+  },
+  "fastify": {
+    "name": "Fastify Demo",
+    "repo": "https://github.com/fastify/demo",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "Fastify",
+      "shouldHaveEndpoints": true
+    }
+  }
+}

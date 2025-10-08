@@ -7,3 +7,6 @@ dist
 # IDE configs
 .claude
 .idea
+
+# E2E test repositories
+e2e/repos/
