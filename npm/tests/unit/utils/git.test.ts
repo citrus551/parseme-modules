@@ -6,16 +6,16 @@ import { join } from 'node:path';
 import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import { promisify } from 'node:util';
 
-import { GitAnalyzer } from '../../../../dist/core/analyzers/git-analyzer.js';
+import { GitAnalyzer } from '../../../dist/utils/git.js';
 
 const execAsync = promisify(exec);
 
-describe('GitAnalyzer', () => {
-  let analyzer: GitAnalyzer;
+describe('Git Utility', () => {
+  let gitAnalyzer: GitAnalyzer;
   let testDir: string;
 
   beforeEach(async () => {
-    analyzer = new GitAnalyzer();
+    gitAnalyzer = new GitAnalyzer();
     testDir = join(tmpdir(), `parseme-git-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
   });
@@ -41,7 +41,7 @@ describe('GitAnalyzer', () => {
       await execAsync('git add .', { cwd: testDir });
       await execAsync('git commit -m "Initial commit"', { cwd: testDir });
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       assert.ok(gitInfo.branch);
@@ -65,7 +65,7 @@ describe('GitAnalyzer', () => {
       // Make uncommitted changes
       await writeFile(join(testDir, 'test2.txt'), 'new file');
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       assert.strictEqual(gitInfo.status, 'dirty');
@@ -80,7 +80,7 @@ describe('GitAnalyzer', () => {
       await execAsync('git config user.name "Test User"', { cwd: testDir });
       await execAsync('git remote add origin https://github.com/test/repo.git', { cwd: testDir });
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       assert.strictEqual(gitInfo.origin, 'https://github.com/test/repo.git');
@@ -92,7 +92,7 @@ describe('GitAnalyzer', () => {
       await execAsync('git config user.email "test@test.com"', { cwd: testDir });
       await execAsync('git config user.name "Test User"', { cwd: testDir });
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       assert.strictEqual(gitInfo.origin, undefined);
@@ -102,7 +102,7 @@ describe('GitAnalyzer', () => {
       // Initialize empty git repo
       await execAsync('git init', { cwd: testDir });
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       assert.strictEqual(gitInfo.lastCommit, 'No commits');
@@ -122,7 +122,7 @@ describe('GitAnalyzer', () => {
       // Modify file but don't commit
       await writeFile(join(testDir, 'test.txt'), 'modified content\nwith more lines');
 
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       assert.ok(gitInfo !== null);
       // diffStat might be undefined or a string depending on git state
@@ -130,7 +130,7 @@ describe('GitAnalyzer', () => {
     });
 
     test('should handle non-git directories gracefully', async () => {
-      const gitInfo = await analyzer.analyze(testDir);
+      const gitInfo = await gitAnalyzer.analyze(testDir);
 
       // Should return null for non-git directories
       assert.strictEqual(gitInfo, null);
@@ -138,7 +138,7 @@ describe('GitAnalyzer', () => {
 
     test('should handle git command failures', async () => {
       // Test with a path that might exist but isn't a git repo
-      const gitInfo = await analyzer.analyze('/tmp');
+      const gitInfo = await gitAnalyzer.analyze('/tmp');
 
       // Should handle errors gracefully and return null
       assert.strictEqual(gitInfo, null);
@@ -148,7 +148,7 @@ describe('GitAnalyzer', () => {
   describe('error handling', () => {
     test('should handle missing git binary', async () => {
       // Test error handling when git is not available
-      const gitInfo = await analyzer.analyze('/mock/path');
+      const gitInfo = await gitAnalyzer.analyze('/mock/path');
 
       // Should handle missing git gracefully
       assert.ok(gitInfo === null || typeof gitInfo === 'object');
@@ -156,7 +156,7 @@ describe('GitAnalyzer', () => {
 
     test('should handle permission errors', async () => {
       // Test handling of permission denied errors
-      const gitInfo = await analyzer.analyze('/root'); // Typically restricted
+      const gitInfo = await gitAnalyzer.analyze('/root'); // Typically restricted
 
       // Should handle permission errors gracefully
       assert.ok(gitInfo === null || typeof gitInfo === 'object');

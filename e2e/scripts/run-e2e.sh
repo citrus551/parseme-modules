@@ -19,14 +19,12 @@ if [ ! -d "$REPOS_DIR" ]; then
   echo ""
 fi
 
-# Check if npm package is built
-if [ ! -d "$NPM_DIR/dist" ]; then
-  echo "Building npm package..."
-  cd "$NPM_DIR"
-  npm run build
-  cd - > /dev/null
-  echo ""
-fi
+# Always build npm package to ensure latest code
+echo "Building npm package..."
+cd "$NPM_DIR"
+npm run build
+cd - > /dev/null
+echo ""
 
 echo "Running E2E tests..."
 echo ""

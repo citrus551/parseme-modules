@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-import type { GitInfo } from '../types.js';
+import type { GitInfo } from '../core/types.js';
 
 const execAsync = promisify(exec);
 

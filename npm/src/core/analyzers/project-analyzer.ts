@@ -1,7 +1,7 @@
 import { readFile, access, readdir, stat } from 'fs/promises';
 import { join, basename, relative } from 'path';
 
-import { FileFilterService } from './file-filter.js';
+import { FileFilterService } from '../../utils/file-filter.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { ProjectInfo, ProjectCategory } from '../types.js';

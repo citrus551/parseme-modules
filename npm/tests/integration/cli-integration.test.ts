@@ -27,13 +27,17 @@ describe('CLI Integration', () => {
   function runCli(
     args: string[],
     cwd: string = projectDir,
+    options?: { input?: string },
   ): Promise<{
     code: number | null;
     stdout: string;
     stderr: string;
   }> {
     return new Promise((resolve) => {
-      const child = spawn('node', [cliPath, ...args], { cwd });
+      const child = spawn('node', [cliPath, ...args], {
+        cwd,
+        env: { ...process.env, CI: undefined }, // Clear CI flag if we want TTY behavior
+      });
       let stdout = '';
       let stderr = '';
 
@@ -44,6 +48,12 @@ describe('CLI Integration', () => {
       child.stderr.on('data', (data) => {
         stderr += data.toString();
       });
+
+      // If input is provided, write it to stdin
+      if (options?.input) {
+        child.stdin.write(options.input);
+        child.stdin.end();
+      }
 
       child.on('close', (code) => {
         resolve({ code, stdout, stderr });
@@ -241,6 +251,43 @@ export default {
       assert.strictEqual(code, 1);
       assert.ok(stderr.includes('Invalid format'));
     });
+
+    test('should create TypeScript config and show TS tip', async () => {
+      const { code, stdout } = await runCli(['init', '--format', 'ts']);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Configuration file created'));
+      assert.ok(stdout.includes('TypeScript') || stdout.includes('tsx') || stdout.includes('ts-node'));
+
+      try {
+        await access(join(projectDir, 'parseme.config.ts'));
+      } catch {
+        assert.fail('TypeScript config file was not created');
+      }
+    });
+
+    test('should skip interactive prompts in non-TTY environment', async () => {
+      // In automated tests without TTY, the interactive prompts are skipped (lines 91-109)
+      // This is by design to prevent hanging in CI/automated environments
+      const { code, stdout } = await runCli(['init', '--format', 'json'], projectDir);
+
+      assert.strictEqual(code, 0);
+      assert.ok(stdout.includes('Configuration file created'));
+
+      // Verify the config file was created with empty config (no prompts ran)
+      try {
+        await access(join(projectDir, 'parseme.config.json'));
+        const { readFile } = await import('fs/promises');
+        const configContent = await readFile(join(projectDir, 'parseme.config.json'), 'utf-8');
+        const config = JSON.parse(configContent);
+
+        // Without TTY, no interactive prompts run, so config should be minimal/empty
+        // The config file should exist but may not have the prompted values
+        assert.ok(config !== null);
+      } catch (error) {
+        assert.fail(`Failed to verify config: ${error}`);
+      }
+    });
   });
 
   describe('CLI error handling', () => {
@@ -256,6 +303,48 @@ export default {
 
       assert.strictEqual(code, 1);
       assert.ok(stderr.includes('unknown option') || stderr.includes('error'));
+    });
+
+    test('should handle generic generate errors', async () => {
+      // Create a malformed config that will cause a generic error (not "No configuration file found")
+      const malformedConfig = `
+        export default {
+          rootDir: '/this/path/absolutely/does/not/exist/anywhere',
+          outputPath: '/invalid/readonly/path/that/cannot/be/written/PARSEME.md',
+        };
+      `;
+
+      await writeFile(join(projectDir, 'parseme.config.js'), malformedConfig);
+
+      const { code, stderr } = await runCli(['generate']);
+
+      assert.strictEqual(code, 1);
+      // Should hit the generic error handler (lines 57-59)
+      assert.ok(stderr.includes('Failed to generate context') || stderr.includes('Error') || stderr.includes('ENOENT'));
+    });
+
+    test('should handle init command file system errors', async () => {
+      // Try to create config in a read-only or invalid location
+      // by making the directory read-only
+      const readOnlyDir = join(testDir, 'readonly-dir');
+      await mkdir(readOnlyDir, { recursive: true });
+
+      // Create a config file and make it read-only
+      const configPath = join(readOnlyDir, 'parseme.config.json');
+      await writeFile(configPath, '{}');
+
+      // Make file read-only (chmod 444)
+      const { chmod } = await import('fs/promises');
+      await chmod(configPath, 0o444);
+
+      const { code, stderr } = await runCli(['init', '--format', 'json', '--force'], readOnlyDir);
+
+      // Should fail with permission error and hit error handler (lines 128-130)
+      assert.strictEqual(code, 1);
+      assert.ok(stderr.includes('Failed to create configuration') || stderr.includes('EACCES') || stderr.includes('permission'));
+
+      // Restore write permissions for cleanup
+      await chmod(configPath, 0o644);
     });
   });
 

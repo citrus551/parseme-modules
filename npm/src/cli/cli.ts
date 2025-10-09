@@ -4,9 +4,9 @@ import { join } from 'path';
 
 import { Command } from 'commander';
 
-import { prompt } from './prompt.js';
 import { ParsemeConfig } from '../core/config.js';
 import { ParsemeGenerator } from '../core/generator.js';
+import { prompt } from '../utils/prompt.js';
 
 import type { ParsemeConfigFile } from '../core/types.js';
 

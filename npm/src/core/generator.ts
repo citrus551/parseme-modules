@@ -3,10 +3,10 @@ import { join } from 'path';
 
 import { ASTAnalyzer } from './analyzers/ast-analyzer.js';
 import { FrameworkDetector } from './analyzers/framework-detector.js';
-import { GitAnalyzer } from './analyzers/git-analyzer.js';
 import { ProjectAnalyzer } from './analyzers/project-analyzer.js';
 import { ParsemeConfig } from './config.js';
 import { ContextBuilder } from './context-builder.js';
+import { GitAnalyzer } from '../utils/git.js';
 
 import type { ContextOutput, GeneratorOptions } from './types.js';
 

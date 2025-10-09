@@ -5,8 +5,8 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 
-import { FileFilterService } from './file-filter.js';
 import { PatternDetector, type PatternAnalysis } from './pattern-detector.js';
+import { FileFilterService } from '../../utils/file-filter.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { FileAnalysis } from '../types.js';
