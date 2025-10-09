@@ -99,8 +99,8 @@ describe('File Filter Utility', () => {
       const filter = new FileFilterService([]);
       const files = await filter.getFilteredFiles(testDir);
 
-      assert.ok(files.some(f => f.includes('file1.ts')));
-      assert.ok(files.some(f => f.includes('file2.ts')));
+      assert.ok(files.some((f) => f.includes('file1.ts')));
+      assert.ok(files.some((f) => f.includes('file2.ts')));
     });
 
     test('should apply exclude patterns in non-git directory', async () => {

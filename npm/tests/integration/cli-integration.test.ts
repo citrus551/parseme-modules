@@ -257,7 +257,9 @@ export default {
 
       assert.strictEqual(code, 0);
       assert.ok(stdout.includes('Configuration file created'));
-      assert.ok(stdout.includes('TypeScript') || stdout.includes('tsx') || stdout.includes('ts-node'));
+      assert.ok(
+        stdout.includes('TypeScript') || stdout.includes('tsx') || stdout.includes('ts-node'),
+      );
 
       try {
         await access(join(projectDir, 'parseme.config.ts'));
@@ -320,7 +322,11 @@ export default {
 
       assert.strictEqual(code, 1);
       // Should hit the generic error handler (lines 57-59)
-      assert.ok(stderr.includes('Failed to generate context') || stderr.includes('Error') || stderr.includes('ENOENT'));
+      assert.ok(
+        stderr.includes('Failed to generate context') ||
+          stderr.includes('Error') ||
+          stderr.includes('ENOENT'),
+      );
     });
 
     test('should handle init command file system errors', async () => {
@@ -341,7 +347,11 @@ export default {
 
       // Should fail with permission error and hit error handler (lines 128-130)
       assert.strictEqual(code, 1);
-      assert.ok(stderr.includes('Failed to create configuration') || stderr.includes('EACCES') || stderr.includes('permission'));
+      assert.ok(
+        stderr.includes('Failed to create configuration') ||
+          stderr.includes('EACCES') ||
+          stderr.includes('permission'),
+      );
 
       // Restore write permissions for cleanup
       await chmod(configPath, 0o644);
