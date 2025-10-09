@@ -1,56 +1,45 @@
 import { readFile } from 'fs/promises';
-import { relative, extname } from 'path';
+import { join, extname } from 'path';
 
 import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { glob } from 'glob';
-import ignore from 'ignore';
 
+import { FileFilterService } from './file-filter.js';
 import { PatternDetector, type PatternAnalysis } from './pattern-detector.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { FileAnalysis } from '../types.js';
 
 export class ASTAnalyzer {
-  private readonly ig: ReturnType<typeof ignore>;
+  private readonly fileFilter: FileFilterService;
   private readonly patternDetector: PatternDetector;
 
   constructor(private readonly config: ParsemeConfig) {
-    this.ig = ignore();
     const configData = this.config.get();
-    this.ig.add(configData.excludePatterns || []);
+    this.fileFilter = new FileFilterService(configData.excludePatterns);
     this.patternDetector = new PatternDetector();
   }
 
   async analyzeProject(rootDir: string): Promise<FileAnalysis[]> {
     const configData = this.config.get();
     const fileTypes = configData.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'];
-    const patterns = fileTypes.map((type) => `**/*.${type}`);
 
-    const files = await glob(patterns, {
-      cwd: rootDir,
-      absolute: true,
-      ignore: configData.excludePatterns,
-    });
+    // Get filtered files (respects git ignore + custom excludePatterns)
+    const files = await this.fileFilter.getFilteredFiles(rootDir, fileTypes);
 
     const analyses: FileAnalysis[] = [];
 
     for (const file of files) {
-      const relativePath = relative(rootDir, file);
-
-      // Skip if ignored
-      if (this.ig.ignores(relativePath)) {
-        continue;
-      }
+      const filePath = join(rootDir, file);
 
       try {
-        const analysis = await this.analyzeFile(file, relativePath);
+        const analysis = await this.analyzeFile(filePath, file);
         if (analysis) {
           analyses.push(analysis);
         }
       } catch (error) {
-        console.warn(`Failed to analyze ${relativePath}:`, error);
+        console.warn(`Failed to analyze ${file}:`, error);
         // Continue with other files
       }
     }

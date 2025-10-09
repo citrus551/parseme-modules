@@ -115,7 +115,7 @@ program
         const defaultExcludePatterns = ['node_modules/**', 'dist/**', '.git/**'];
         const excludePatternsAnswer = await prompt({
           message:
-            'Exclude patterns (comma-separated glob patterns, patterns from .gitignore will be ignored by default as well)',
+            'Exclude patterns (comma-separated glob patterns - in git repositories, additional to git-tracked files)',
           defaultValue: defaultExcludePatterns.join(', '),
         });
         // Always set exclude patterns to what user entered (or defaults if they pressed enter)

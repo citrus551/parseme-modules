@@ -1,18 +1,17 @@
 import { readFile, access, readdir, stat } from 'fs/promises';
 import { join, basename, relative } from 'path';
 
-import ignore from 'ignore';
+import { FileFilterService } from './file-filter.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { ProjectInfo, ProjectCategory } from '../types.js';
 
 export class ProjectAnalyzer {
-  private readonly ig: ReturnType<typeof ignore>;
+  private readonly fileFilter: FileFilterService;
 
   constructor(private readonly config: ParsemeConfig) {
-    this.ig = ignore();
     const configData = this.config.get();
-    this.ig.add(configData.excludePatterns || []);
+    this.fileFilter = new FileFilterService(configData.excludePatterns);
   }
 
   async analyze(rootDir: string): Promise<ProjectInfo> {
@@ -108,7 +107,7 @@ export class ProjectAnalyzer {
         const relativePath = relative(rootDir, fullPath);
 
         // Skip if ignored by exclude patterns
-        if (this.ig.ignores(relativePath)) {
+        if (this.fileFilter.shouldIgnore(relativePath)) {
           continue;
         }
 

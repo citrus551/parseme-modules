@@ -189,28 +189,34 @@ describe('ParsemeConfig', () => {
   });
 
   describe('mergeExcludePatterns', () => {
-    test('should merge gitignore patterns with config patterns', () => {
+    test('should use only custom exclude patterns', () => {
       const customPatterns = ['custom/**', 'exclude/**'];
       const config = new ParsemeConfig({
         excludePatterns: customPatterns,
       });
 
       const result = config.get();
-      // Should include both gitignore patterns and custom patterns
+      // Should only include custom patterns (gitignore is now handled by FileFilterService)
       assert.ok(result.excludePatterns?.includes('custom/**'));
       assert.ok(result.excludePatterns?.includes('exclude/**'));
-      // gitignore patterns should also be present
-      assert.ok(result.excludePatterns && result.excludePatterns.length > customPatterns.length);
+      assert.strictEqual(result.excludePatterns?.length, customPatterns.length);
     });
 
-    test('should read .gitignore patterns when no config patterns', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should return empty array when no config patterns provided', () => {
+      const config = new ParsemeConfig();
+      const result = config.get();
+
+      // Should be empty array since gitignore is now handled by FileFilterService
+      assert.ok(Array.isArray(result.excludePatterns));
+      assert.strictEqual(result.excludePatterns?.length, 0);
     });
 
-    test('should handle missing .gitignore file gracefully', async () => {
-      // Skip this test for now due to mocking complexity in Node.js test runner
-      // This functionality is tested in integration tests
+    test('should handle empty exclude patterns array', () => {
+      const config = new ParsemeConfig({ excludePatterns: [] });
+      const result = config.get();
+
+      assert.ok(Array.isArray(result.excludePatterns));
+      assert.strictEqual(result.excludePatterns?.length, 0);
     });
   });
 

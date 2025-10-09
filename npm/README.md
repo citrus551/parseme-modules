@@ -106,7 +106,7 @@ npm install --save-dev parseme
 
    You'll be prompted for:
    - Context directory path (default: `parseme-context`)
-   - Exclude patterns (default: `node_modules/**`, `.git/**` - patterns from `.gitignore` will be ignored by default as well)
+   - Exclude patterns (default: `node_modules/**`, `dist/**`, `.git/**` - in git repositories, additional patterns on top of git-tracked files)
 
    A minimal config file will be created with only your custom settings.
 
@@ -270,7 +270,7 @@ Configuration values are resolved in the following order (highest to lowest prio
 
 - `rootDir` - Project root directory (default: `process.cwd()`)
 - `analyzeFileTypes` - File extensions to analyze (default and supported: `['ts', 'tsx', 'js', 'jsx']`)
-- `excludePatterns` - Additional glob patterns to exclude on top of `.gitignore` patterns. Patterns from `.gitignore` are always included in exclusions, and `excludePatterns` adds to them.
+- `excludePatterns` - Additional glob patterns to exclude files. In git repositories, only git-tracked files are analyzed (respecting all `.gitignore` files automatically). Use `excludePatterns` to exclude additional files beyond what git ignores.
 - `maxDepth` - Maximum directory depth to traverse (default: `10`)
 
 #### Git Integration
@@ -361,7 +361,7 @@ npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 - `-r, --root <path>` - Root directory to analyze
 - `--context-dir <path>` - Context directory path (default: parseme-context)
 - `--file-types <types...>` - File types to analyze (e.g., ts tsx js jsx)
-- `--exclude <patterns...>` - Exclude patterns (glob)
+- `--exclude <patterns...>` - Additional exclude patterns (glob, in git repositories on top of git-tracked files)
 - `--no-git` - Disable git information
 - `--max-depth <number>` - Maximum directory depth
 
@@ -375,7 +375,7 @@ npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 When running `parseme init` interactively (TTY, not CI), you'll be prompted to configure:
 
 - **Context directory** - Where to store context files (default: `parseme-context`)
-- **Exclude patterns** - Comma-separated glob patterns (default: `node_modules/**`, `.git/**` - patterns from `.gitignore` will be ignored by default as well)
+- **Exclude patterns** - Comma-separated glob patterns (default: `node_modules/**`, `dist/**`, `.git/**` - in git repositories, additional patterns on top of git-tracked files)
 
 After initialization, setup tips are displayed:
 

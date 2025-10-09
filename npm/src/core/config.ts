@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { join, extname } from 'path';
 
@@ -216,35 +216,8 @@ export default config;
 `;
   }
 
-  private mergeExcludePatterns(configPatterns: string[] | undefined, rootDir: string): string[] {
-    // Always read .gitignore patterns
-    const gitignorePatterns = this.readGitignorePatterns(rootDir);
-
-    // Merge gitignore patterns with config patterns, they are added to gitignore patterns, not replacing them
-    const excludePatterns = [...gitignorePatterns];
-
-    if (configPatterns) {
-      excludePatterns.push(...configPatterns);
-    }
-
-    return excludePatterns;
-  }
-
-  private readGitignorePatterns(rootDir: string): string[] {
-    try {
-      const gitignorePath = join(rootDir, '.gitignore');
-      if (!existsSync(gitignorePath)) {
-        return [];
-      }
-
-      const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
-
-      return gitignoreContent
-        .split('\n')
-        .map((line: string) => line.trim())
-        .filter((line: string) => line && !line.startsWith('#'));
-    } catch {
-      return [];
-    }
+  private mergeExcludePatterns(configPatterns: string[] | undefined, _rootDir: string): string[] {
+    // Only use config patterns - git ignore is now handled by FileFilterService
+    return configPatterns || [];
   }
 }

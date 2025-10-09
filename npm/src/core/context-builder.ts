@@ -279,7 +279,7 @@ A comprehensive list of all discovered API endpoints is available at \`${linkPat
 
   private buildFilesList(allFiles: string[]): string {
     let content = `# Project Files\n\n`;
-    content += `This is a complete list of all files in the project (excluding files matching exclude patterns).\n\n`;
+    content += `This is a complete list of all git-tracked files in the project (excluding files matching additional exclude patterns).\n\n`;
 
     allFiles.forEach((file) => {
       content += `- ${file}\n`;
