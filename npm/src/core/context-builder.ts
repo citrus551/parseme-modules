@@ -189,7 +189,7 @@ export class ContextBuilder {
     }
 
     // Git information
-    if (gitInfo) {
+    if (gitInfo && gitInfo.diffStat && gitInfo.diffStat.length > 0) {
       contextFiles.gitDiff = this.buildDetailedGit(gitInfo);
     }
 
@@ -201,8 +201,8 @@ export class ContextBuilder {
 
   private buildHeader(linkPath: string, hasRoutes: boolean): string {
     const routesInstructions = hasRoutes
-      ? `   - Files with routes will reference ${linkPath}/routes.json using a $ref pattern for token efficiency
-5. For API route details, see ${linkPath}/routes.json which contains all discovered endpoints
+      ? `   - Files with routes will reference [${linkPath}/routes.json](${linkPath}/routes.json) using a $ref pattern for token efficiency
+5. For API route details, see [${linkPath}/routes.json](${linkPath}/routes.json) which contains all discovered endpoints
 6. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
 7. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`
       : `5. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
@@ -214,8 +214,8 @@ Auto-generated project summary optimized for AI coding agents. This file provide
 **Usage Instructions for AI Agents:**
 1. Read this PARSEME.md file completely first before accessing individual project files
 2. Basic project information, script availability and dependency information provides basic understanding of code base and tech stack without checking package.json
-3. Use the provided file list (${linkPath}/files.md) to see all tracked files in the project
-4. Utilize the structure and AST data (${linkPath}/structure.json) for code analysis without manual parsing
+3. Use the provided file list [${linkPath}/files.md](${linkPath}/files.md) to see all tracked files in the project
+4. Utilize the structure and AST data [${linkPath}/structure.json](${linkPath}/structure.json) for code analysis without manual parsing
 ${routesInstructions}`;
   }
 
@@ -256,41 +256,47 @@ ${routesInstructions}`;
   }
 
   private buildGitSection(gitInfo: GitInfo): string {
-    return `## Git Information
+    const base = `## Git Information
 
 **State when PARSEME.md and all linked files were automatically generated:**
 
 - **Branch:** ${gitInfo.branch}
 - **Commit:** ${gitInfo.lastCommit}${gitInfo.origin ? `\n- **Origin:** ${gitInfo.origin}` : ''}
 
-### Git Diff Statistics
-Git diff statistics from the time of generation are available at \`parseme-context/gitDiff.md\`.
+### Git Diff Statistics`;
+
+    const info =
+      gitInfo.diffStat && gitInfo.diffStat.length > 0
+        ? `Git diff statistics from the time of generation are available at [parseme-context/gitDiff.md](parseme-context/gitDiff.md) (relative to the commit mentioned above).
 
 **AI Agent Command:** To check for changes since generation, run:
 \`\`\`bash
 git diff --stat
 \`\`\`
-Compare the output with the baseline in \`parseme-context/gitDiff.md\` to detect any modifications.`;
+Compare the output with the baseline in [parseme-context/gitDiff.md](parseme-context/gitDiff.md) to detect any modifications.`
+        : `Git diff statistics showed no changes at the time of generation relative to the commit mentioned above.`;
+
+    return base + '\n\n' + info;
   }
 
   private buildSummarySection(context: BuildContext, linkPath: string, hasRoutes: boolean): string {
     let content = `## Project Files
-A complete list of all git-tracked files in the project (excluding files matching additional exclude patterns) is available at \`${linkPath}/files.md\`. This provides a quick overview of the project structure.
+A complete list of all git-tracked files in the project (excluding files matching additional exclude patterns) is available at [${linkPath}/files.md](${linkPath}/files.md). This provides a quick overview of the project structure.
 
 
 ## Project Structure & AST
-Detailed structure and Abstract Syntax Tree data for all tracked files is available at \`${linkPath}/structure.json\`. This includes file paths, types, imports, exports, functions, classes, interfaces, and routes for comprehensive code analysis without manual parsing.`;
+Detailed structure and Abstract Syntax Tree data for all tracked files is available at [${linkPath}/structure.json](${linkPath}/structure.json). This includes file paths, types, imports, exports, functions, classes, interfaces, and routes for comprehensive code analysis without manual parsing.`;
 
     if (hasRoutes) {
       content += `\n\n\n## API Routes
-A comprehensive list of all discovered API routes is available at \`${linkPath}/routes.json\`. This includes HTTP methods, paths, handler names, and source file locations for backend routes (Express, NestJS, and decorator-based routing).`;
+A comprehensive list of all discovered API routes is available at [${linkPath}/routes.json](${linkPath}/routes.json). This includes HTTP methods, paths, handler names, and source file locations for backend routes (Express, NestJS, and decorator-based routing).`;
     }
 
     return content;
   }
 
   private buildFilesList(allFiles: string[]): string {
-    let content = `# Project Files\n\n`;
+    let content = `# Project Files\n`;
 
     allFiles.forEach((file) => {
       content += `- ${file}\n`;
@@ -406,17 +412,9 @@ A comprehensive list of all discovered API routes is available at \`${linkPath}/
 
   private buildDetailedGit(gitInfo: GitInfo): string {
     let content = `# Git Diff Statistics
-# Generated at time of PARSEME.md creation
-# To check for changes since then, run: git diff --stat
-# Compare the output with the content below
-
 `;
 
-    if (gitInfo.diffStat && gitInfo.diffStat.length > 0) {
-      content += gitInfo.diffStat;
-    } else {
-      content += 'No changes detected at time of generation.';
-    }
+    content += gitInfo.diffStat;
 
     return content;
   }
