@@ -264,6 +264,124 @@ describe('ContextBuilder', () => {
       assert.ok(context.context.gitDiff.includes('src/feature.ts'));
     });
 
+    test('should not generate gitDiff file when git info has no diffStat', () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'test-project',
+        type: 'typescript',
+        category: 'npm-package',
+        packageManager: 'npm',
+        dependencies: {},
+        devDependencies: {},
+      };
+
+      const mockGitInfo: GitInfo = {
+        branch: 'feature-branch',
+        lastCommit: 'def456 Add feature',
+        changedFiles: ['src/feature.ts'],
+        status: 'dirty',
+        // No diffStat property
+      };
+
+      const context = builder.build({
+        projectInfo: mockProjectInfo,
+        fileAnalyses: [],
+        allFiles: [],
+        gitInfo: mockGitInfo,
+        options: {},
+      });
+
+      // Should not generate gitDiff file when no diffStat
+      assert.ok(!context.context.gitDiff);
+      // But should still include git information in main content
+      assert.ok(context.parseme.includes('feature-branch'));
+      assert.ok(context.parseme.includes('def456 Add feature'));
+      assert.ok(context.parseme.includes('Git diff statistics showed no changes'));
+    });
+
+    test('should not generate gitDiff file when diffStat is empty', () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'test-project',
+        type: 'typescript',
+        category: 'npm-package',
+        packageManager: 'npm',
+        dependencies: {},
+        devDependencies: {},
+      };
+
+      const mockGitInfo: GitInfo = {
+        branch: 'main',
+        lastCommit: 'abc123 Initial commit',
+        changedFiles: [],
+        status: 'clean',
+        diffStat: '', // Empty diff stat
+      };
+
+      const context = builder.build({
+        projectInfo: mockProjectInfo,
+        fileAnalyses: [],
+        allFiles: [],
+        gitInfo: mockGitInfo,
+        options: {},
+      });
+
+      // Should not generate gitDiff file when diffStat is empty
+      assert.ok(!context.context.gitDiff);
+      // Should include git info but show no changes message
+      assert.ok(context.parseme.includes('main'));
+      assert.ok(context.parseme.includes('abc123 Initial commit'));
+      assert.ok(context.parseme.includes('Git diff statistics showed no changes'));
+    });
+
+    test('should generate markdown links in parseme content', () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'test-project',
+        type: 'typescript',
+        category: 'npm-package',
+        packageManager: 'npm',
+        dependencies: {},
+        devDependencies: {},
+      };
+
+      const mockGitInfo: GitInfo = {
+        branch: 'feature-branch',
+        lastCommit: 'def456 Add feature',
+        changedFiles: ['src/feature.ts'],
+        status: 'dirty',
+        diffStat: ' src/feature.ts | 10 ++++++++++\n 1 file changed, 10 insertions(+)',
+      };
+
+      const context = builder.build({
+        projectInfo: mockProjectInfo,
+        fileAnalyses: [],
+        allFiles: [],
+        gitInfo: mockGitInfo,
+        options: {},
+      });
+
+      // Should contain markdown links to context files
+      assert.ok(context.parseme.includes('[parseme-context/files.md](parseme-context/files.md)'));
+      assert.ok(
+        context.parseme.includes(
+          '[parseme-context/structure.json](parseme-context/structure.json)',
+        ),
+      );
+      assert.ok(
+        context.parseme.includes('[parseme-context/gitDiff.md](parseme-context/gitDiff.md)'),
+      );
+
+      // Should contain the git diff file reference with proper link
+      assert.ok(
+        context.parseme.includes(
+          'available at [parseme-context/gitDiff.md](parseme-context/gitDiff.md) (relative to the commit mentioned above)',
+        ),
+      );
+      assert.ok(
+        context.parseme.includes(
+          'Compare the output with the baseline in [parseme-context/gitDiff.md](parseme-context/gitDiff.md)',
+        ),
+      );
+    });
+
     test('should respect maxFilesPerContext limit', () => {
       const configWithLimit = new ParsemeConfig({
         limits: {
