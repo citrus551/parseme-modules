@@ -29,23 +29,8 @@ export class ContextBuilder {
 
   private buildMultiFile(context: BuildContext): ContextOutput {
     const { projectInfo, fileAnalyses, gitInfo, contextDir, outputPath } = context;
-    const limits = this.config.get().limits;
 
-    // Limit number of files analyzed if specified
-    const limitedFileAnalyses = limits?.maxFilesPerContext
-      ? fileAnalyses.slice(0, limits.maxFilesPerContext)
-      : fileAnalyses;
-
-    // Warn if files were excluded due to limit
-    if (limits?.maxFilesPerContext && fileAnalyses.length > limits.maxFilesPerContext) {
-      const excludedCount = fileAnalyses.length - limits.maxFilesPerContext;
-
-      console.warn(`⚠️  File limit reached: ${excludedCount} files excluded from analysis.`);
-      console.warn(`   Analyzed: ${limits.maxFilesPerContext}/${fileAnalyses.length} files`);
-      console.warn(
-        `   To analyze more files, increase 'limits.maxFilesPerContext' in your config file.`,
-      );
-    }
+    // Files are now pre-limited in their respective analyzers, so no need to limit here
 
     // Calculate the relative path for the link in markdown
     let linkPath = 'parseme-context';
@@ -67,7 +52,7 @@ export class ContextBuilder {
 
     // Check if routes exist before building main content
     // Extract all actual route objects (filter out reference objects)
-    const routes = limitedFileAnalyses.flatMap((f) => {
+    const routes = fileAnalyses.flatMap((f) => {
       const fileRoutes = f.routes || [];
       // Only include if it's an array of actual routes, not a reference object
       return Array.isArray(fileRoutes) && fileRoutes.length > 0 && !('$ref' in fileRoutes[0])
@@ -81,7 +66,7 @@ export class ContextBuilder {
       '\n\n\n' +
       this.buildProjectOverview(projectInfo) +
       '\n\n\n' +
-      this.buildSummarySection(context, linkPath, hasRoutes) +
+      this.buildSummarySection(linkPath, hasRoutes) +
       '\n\n\n' +
       (gitInfo ? this.buildGitSection(gitInfo) : '');
     const contextFiles: {
@@ -95,15 +80,15 @@ export class ContextBuilder {
     contextFiles.files = this.buildFilesList(context.allFiles);
 
     // Detailed structure (JSON with AST)
-    contextFiles.structure = this.buildDetailedStructure(limitedFileAnalyses, hasRoutes);
+    contextFiles.structure = this.buildDetailedStructure(fileAnalyses, hasRoutes);
 
     // Routes documentation (only if routes exist)
     if (hasRoutes) {
-      contextFiles.routes = this.buildDetailedRoutes(routes, limitedFileAnalyses);
+      contextFiles.routes = this.buildDetailedRoutes(routes);
     }
 
     // Git information
-    if (gitInfo && gitInfo.diffStat && gitInfo.diffStat.length > 0) {
+    if (gitInfo?.diffStat?.length && gitInfo.diffStat.length > 0) {
       contextFiles.gitDiff = this.buildDetailedGit(gitInfo);
     }
 
@@ -193,7 +178,7 @@ Compare the output with the baseline in [parseme-context/gitDiff.md](parseme-con
     return base + '\n\n' + info;
   }
 
-  private buildSummarySection(context: BuildContext, linkPath: string, hasRoutes: boolean): string {
+  private buildSummarySection(linkPath: string, hasRoutes: boolean): string {
     let content = `## Project Files
 A complete list of all git-tracked files in the project (excluding files matching additional exclude patterns) is available at [${linkPath}/files.md](${linkPath}/files.md). This provides a quick overview of the project structure.
 
@@ -244,13 +229,11 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
       };
     });
 
-    const jsonContent = JSON.stringify(structureData, null, 2);
-    return jsonContent;
+    return JSON.stringify(structureData, null, 2);
   }
 
-  private buildDetailedRoutes(routes: RouteInfo[], _fileAnalyses: FileAnalysis[]): string {
-    const jsonContent = JSON.stringify(routes, null, 2);
-    return jsonContent;
+  private buildDetailedRoutes(routes: RouteInfo[]): string {
+    return JSON.stringify(routes, null, 2);
   }
 
   private buildDetailedDependencies(projectInfo: ProjectInfo): string {

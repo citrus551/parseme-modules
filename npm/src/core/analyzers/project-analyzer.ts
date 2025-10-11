@@ -1,20 +1,16 @@
 import { readFile, access, readdir, stat } from 'fs/promises';
-import { join, basename, relative } from 'path';
+import { join, basename } from 'path';
 
-import { FileFilterService } from '../../utils/file-filter.js';
+import { FileCollector } from '../../utils/file-collector.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { ProjectInfo, ProjectCategory } from '../types.js';
 
 export class ProjectAnalyzer {
-  private readonly fileFilter: FileFilterService;
+  private readonly fileCollector: FileCollector;
 
   constructor(private readonly config: ParsemeConfig) {
-    const configData = this.config.get();
-    this.fileFilter = new FileFilterService(
-      configData.excludePatterns,
-      configData.useGitForFiles ?? true,
-    );
+    this.fileCollector = new FileCollector(config);
   }
 
   async analyze(rootDir: string): Promise<ProjectInfo> {
@@ -107,13 +103,6 @@ export class ProjectAnalyzer {
 
       for (const entry of entries) {
         const fullPath = join(dir, entry);
-        const relativePath = relative(rootDir, fullPath);
-
-        // Skip if ignored by exclude patterns
-        if (this.fileFilter.shouldIgnore(relativePath)) {
-          continue;
-        }
-
         const stats = await stat(fullPath);
 
         if (stats.isFile()) {
@@ -255,7 +244,7 @@ export class ProjectAnalyzer {
   }
 
   async getAllProjectFiles(rootDir: string): Promise<string[]> {
-    const allFiles = await this.getFilesRecursive(rootDir, rootDir, Infinity);
-    return allFiles.map((file) => relative(rootDir, file));
+    const result = await this.fileCollector.getAllProjectFiles(rootDir);
+    return result.files;
   }
 }

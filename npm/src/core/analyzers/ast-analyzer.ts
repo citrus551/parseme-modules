@@ -6,34 +6,25 @@ import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 
 import { PatternDetector, type PatternAnalysis } from './pattern-detector.js';
-import { FileFilterService } from '../../utils/file-filter.js';
+import { FileCollector } from '../../utils/file-collector.js';
 
 import type { ParsemeConfig } from '../config.js';
 import type { FileAnalysis } from '../types.js';
 
 export class ASTAnalyzer {
-  private readonly fileFilter: FileFilterService;
+  private readonly fileCollector: FileCollector;
   private readonly patternDetector: PatternDetector;
 
   constructor(private readonly config: ParsemeConfig) {
-    const configData = this.config.get();
-    this.fileFilter = new FileFilterService(
-      configData.excludePatterns,
-      configData.useGitForFiles ?? true,
-    );
+    this.fileCollector = new FileCollector(config);
     this.patternDetector = new PatternDetector();
   }
 
   async analyzeProject(rootDir: string): Promise<FileAnalysis[]> {
-    const configData = this.config.get();
-    const fileTypes = configData.analyzeFileTypes || ['ts', 'tsx', 'js', 'jsx'];
-
-    // Get filtered files (respects git ignore + custom excludePatterns)
-    const files = await this.fileFilter.getFilteredFiles(rootDir, fileTypes);
-
+    const result = await this.fileCollector.getCodeFiles(rootDir);
     const analyses: FileAnalysis[] = [];
 
-    for (const file of files) {
+    for (const file of result.files) {
       const filePath = join(rootDir, file);
 
       try {

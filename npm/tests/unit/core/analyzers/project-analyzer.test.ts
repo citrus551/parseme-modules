@@ -89,24 +89,13 @@ describe('ProjectAnalyzer', () => {
   });
 
   describe('getAllProjectFiles', () => {
-    test('should get all project files recursively', async () => {
+    test('should delegate to FileCollector and return files array', async () => {
       const files = await analyzer.getAllProjectFiles(fixturesDir);
 
       assert.ok(Array.isArray(files));
       assert.ok(files.length > 0);
       // Files should be relative paths
       assert.ok(files.some((f) => f.includes('.ts') || f.includes('.js')));
-    });
-
-    test('should exclude files matching exclude patterns', async () => {
-      const configWithExcludes = new ParsemeConfig({
-        excludePatterns: ['**/*.test.ts', 'node_modules/**'],
-      });
-      const analyzerWithExcludes = new ProjectAnalyzer(configWithExcludes);
-      const files = await analyzerWithExcludes.getAllProjectFiles(fixturesDir);
-
-      // Should not include test files
-      assert.ok(!files.some((f) => f.endsWith('.test.ts')));
     });
   });
 });

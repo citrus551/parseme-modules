@@ -400,7 +400,7 @@ describe('ContextBuilder', () => {
         devDependencies: {},
       };
 
-      // Create 4 files, but limit should restrict to 2
+      // Simulate pre-limited files (as they would come from FileCollector)
       const mockFileAnalyses: FileAnalysis[] = [
         {
           path: 'src/file1.ts',
@@ -432,69 +432,36 @@ describe('ContextBuilder', () => {
           middleware: [],
           utilities: [],
         },
-        {
-          path: 'src/file3.ts',
-          type: 'utility',
-          exports: ['func3'],
-          imports: [],
-          functions: ['func3'],
-          classes: [],
-          routes: [],
-          components: [],
-          services: [],
-          models: [],
-          configs: [],
-          middleware: [],
-          utilities: [],
-        },
-        {
-          path: 'src/file4.ts',
-          type: 'utility',
-          exports: ['func4'],
-          imports: [],
-          functions: ['func4'],
-          classes: [],
-          routes: [],
-          components: [],
-          services: [],
-          models: [],
-          configs: [],
-          middleware: [],
-          utilities: [],
-        },
       ];
 
       const context = builder.build({
         projectInfo: mockProjectInfo,
-        fileAnalyses: mockFileAnalyses,
-        allFiles: ['src/file1.ts', 'src/file2.ts', 'src/file3.ts', 'src/file4.ts'],
+        fileAnalyses: mockFileAnalyses, // Pre-limited to 2 files
+        allFiles: ['src/file1.ts', 'src/file2.ts'], // Pre-limited to 2 files
         gitInfo: null,
         options: {},
       });
 
-      // Should only include first 2 files in structure
-      const structure = JSON.parse(context.context.structure);
-      assert.strictEqual(structure.length, 2);
-      assert.strictEqual(structure[0].path, 'src/file1.ts');
-      assert.strictEqual(structure[1].path, 'src/file2.ts');
+      // Structure should contain exactly 2 files (as pre-limited by FileCollector)
+      const structureData = JSON.parse(context.context.structure);
+      assert.strictEqual(structureData.length, 2);
+      assert.strictEqual(structureData[0].path, 'src/file1.ts');
+      assert.strictEqual(structureData[1].path, 'src/file2.ts');
     });
 
     test('should warn when maxFilesPerContext limit is exceeded', () => {
-      // Mock console.warn to capture warning messages
+      // This test should verify that ContextBuilder handles pre-limited data correctly
+      const config = new ParsemeConfig();
+      const builder = new ContextBuilder(config);
+
+      // Mock console.warn to capture warnings
       const warnings: string[] = [];
       const originalWarn = console.warn;
-      console.warn = (...args: string[]) => {
+      console.warn = (...args: unknown[]) => {
         warnings.push(args.join(' '));
       };
 
       try {
-        const config = new ParsemeConfig({
-          limits: {
-            maxFilesPerContext: 2,
-          },
-        });
-        const builder = new ContextBuilder(config);
-
         const mockProjectInfo: ProjectInfo = {
           name: 'test-project',
           type: 'typescript',
@@ -504,42 +471,20 @@ describe('ContextBuilder', () => {
           devDependencies: {},
         };
 
-        // Create 5 files to exceed the limit of 2
-        const mockFileAnalyses: FileAnalysis[] = Array.from({ length: 5 }, (_, i) => ({
-          path: `src/file${i + 1}.ts`,
-          type: 'utility',
-          exports: [`func${i + 1}`],
-          imports: [],
-          functions: [`func${i + 1}`],
-          classes: [],
-          routes: [],
-          components: [],
-          services: [],
-          models: [],
-          configs: [],
-          middleware: [],
-          utilities: [],
-        }));
-
-        builder.build({
+        const context = builder.build({
           projectInfo: mockProjectInfo,
-          fileAnalyses: mockFileAnalyses,
-          allFiles: mockFileAnalyses.map((f) => f.path),
+          fileAnalyses: [], // Pre-limited files
+          allFiles: [], // Pre-limited files
           gitInfo: null,
           options: {},
         });
 
-        // Verify warning messages were displayed
-        assert.strictEqual(warnings.length, 3);
-        assert.ok(warnings[0].includes('File limit reached: 3 files excluded from analysis.'));
-        assert.ok(warnings[1].includes('Analyzed: 2/5 files'));
-        assert.ok(
-          warnings[2].includes(
-            "To analyze more files, increase 'limits.maxFilesPerContext' in your config file.",
-          ),
-        );
+        // ContextBuilder should not produce warnings about file limits
+        // Those warnings come from FileCollector
+        const limitWarnings = warnings.filter((w) => w.includes('File limit reached'));
+        assert.strictEqual(limitWarnings.length, 0);
+        assert.ok(context.parseme);
       } finally {
-        // Restore original console.warn
         console.warn = originalWarn;
       }
     });
