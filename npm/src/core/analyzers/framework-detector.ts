@@ -2,10 +2,7 @@ import type { ProjectInfo, FrameworkInfo } from '../types.js';
 import type { EndpointInfo } from './pattern-detector.js';
 
 export class FrameworkDetector {
-  async detect(
-    projectInfo: ProjectInfo,
-    endpoints?: EndpointInfo[],
-  ): Promise<FrameworkInfo> {
+  async detect(projectInfo: ProjectInfo, endpoints?: EndpointInfo[]): Promise<FrameworkInfo> {
     const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
 
     // Check for frameworks in dependencies

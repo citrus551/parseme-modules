@@ -71,6 +71,17 @@ export class PatternDetector {
       utilities: [],
     };
 
+    // First pass: collect imports to detect framework
+    const imports: string[] = [];
+    traverse.default(ast, {
+      ImportDeclaration: (path) => {
+        imports.push(path.node.source.value);
+      },
+    });
+
+    // Detect framework from imports
+    const detectedFramework = this.detectFrameworkFromImports(imports);
+
     // Use a single traverse call to detect all patterns
     traverse.default(ast, {
       // Detect decorator-based routes: @Get(), @Post(), etc.
@@ -94,6 +105,7 @@ export class PatternDetector {
                     line: path.node.loc?.start.line || 0,
                     type: 'rest',
                     decorator: callee.name,
+                    framework: 'nestjs', // Decorators are NestJS-specific
                   });
                 }
               }
@@ -102,7 +114,7 @@ export class PatternDetector {
         }
       },
 
-      // Detect Express/Router-style routes: app.get(), router.post(), etc.
+      // Detect Express/Fastify-style routes: app.get(), router.post(), fastify.get(), etc.
       CallExpression: (path) => {
         const { callee, arguments: args } = path.node;
 
@@ -120,7 +132,7 @@ export class PatternDetector {
                 file: filePath,
                 line: path.node.loc?.start.line || 0,
                 type: 'rest',
-                framework: 'express',
+                framework: detectedFramework,
               });
             }
           }
@@ -272,5 +284,25 @@ export class PatternDetector {
     return body.body.some(
       (stmt) => t.isReturnStatement(stmt) && stmt.argument && t.isJSXElement(stmt.argument),
     );
+  }
+
+  private detectFrameworkFromImports(imports: string[]): string {
+    // Check for Fastify first (most specific)
+    if (imports.some((imp) => imp === 'fastify' || imp.startsWith('@fastify/'))) {
+      return 'fastify';
+    }
+
+    // Check for NestJS
+    if (imports.some((imp) => imp.startsWith('@nestjs/'))) {
+      return 'nestjs';
+    }
+
+    // Check for Express (default fallback for router-style)
+    if (imports.some((imp) => imp === 'express')) {
+      return 'express';
+    }
+
+    // Default to express for router-style routes without clear framework indicator
+    return 'express';
   }
 }

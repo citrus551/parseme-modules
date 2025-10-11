@@ -97,7 +97,7 @@ describe('E2E Framework Examples', () => {
     });
 
     test('should generate context', async () => {
-      const { code, stdout } = await runParseme(repoDir, ['generate', '--no-git']);
+      const { code, stdout } = await runParseme(repoDir, ['generate']);
 
       assert.strictEqual(code, 0);
       assert.ok(stdout.includes('Context generated successfully'));
@@ -159,7 +159,7 @@ describe('E2E Framework Examples', () => {
     });
 
     test('should generate context', async () => {
-      const { code, stdout } = await runParseme(repoDir, ['generate', '--no-git']);
+      const { code, stdout } = await runParseme(repoDir, ['generate']);
 
       assert.strictEqual(code, 0);
       assert.ok(stdout.includes('Context generated successfully'));
@@ -202,10 +202,19 @@ describe('E2E Framework Examples', () => {
 
       assert.strictEqual(code, 0);
       assert.ok(stdout.includes('Configuration file created'));
+
+      // Update config to allow more files to be analyzed
+      const { writeFile } = await import('fs/promises');
+      const configPath = join(repoDir, 'parseme.config.json');
+      await writeFile(configPath, JSON.stringify({
+        limits: {
+          maxFilesPerContext: 100
+        }
+      }, null, 2));
     });
 
     test('should generate context', async () => {
-      const { code, stdout } = await runParseme(repoDir, ['generate', '--no-git']);
+      const { code, stdout } = await runParseme(repoDir, ['generate']);
 
       assert.strictEqual(code, 0);
       assert.ok(stdout.includes('Context generated successfully'));

@@ -141,9 +141,7 @@ export function formatDate(date: Date): string {
       );
 
       // Verify API routes were detected
-      assert.ok(
-        parsemeContent.includes('API Routes') || parsemeContent.includes('routes.json'),
-      );
+      assert.ok(parsemeContent.includes('API Routes') || parsemeContent.includes('routes.json'));
     });
 
     test('should handle mixed TypeScript/JavaScript project', async () => {

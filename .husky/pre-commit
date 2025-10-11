@@ -3,6 +3,6 @@
 set -e  # Exit immediately if any command fails
 
 cd npm
-npm run lint
-npm run format
+npm run lint:check
+npm run format:check
 npm run test

@@ -275,7 +275,7 @@ Compare the output with the baseline in \`parseme-context/gitDiff.md\` to detect
 
   private buildSummarySection(context: BuildContext, linkPath: string, hasRoutes: boolean): string {
     let content = `## Project Files
-A complete list of all tracked files in the project is available at \`${linkPath}/files.md\`. This list excludes files ignored by git and provides a quick overview of the project structure.
+A complete list of all git-tracked files in the project (excluding files matching additional exclude patterns) is available at \`${linkPath}/files.md\`. This provides a quick overview of the project structure.
 
 
 ## Project Structure & AST
@@ -291,7 +291,6 @@ A comprehensive list of all discovered API routes is available at \`${linkPath}/
 
   private buildFilesList(allFiles: string[]): string {
     let content = `# Project Files\n\n`;
-    content += `This is a complete list of all git-tracked files in the project (excluding files matching additional exclude patterns).\n\n`;
 
     allFiles.forEach((file) => {
       content += `- ${file}\n`;
