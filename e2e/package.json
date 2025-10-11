@@ -1,0 +1,12 @@
+{
+  "name": "parseme-e2e-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "End-to-end tests for parseme",
+  "scripts": {
+    "test": "node --test tests/test-repositories.test.js",
+    "clone": "node scripts/clone-repos.js",
+    "run": "node scripts/run-e2e.js"
+  }
+}
