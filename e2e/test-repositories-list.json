@@ -1,8 +1,8 @@
 {
   "nestjs": {
     "name": "NestJS Cats App",
+    "type": "clone",
     "repo": "https://github.com/nestjs/nest",
-    "directory": "nestjs-cats-app",
     "path": "sample/01-cats-app",
     "branch": "master",
     "assertions": {
@@ -13,8 +13,9 @@
   },
   "express": {
     "name": "Express Multi-Router",
+    "type": "clone",
+    "notes": "Contains no package.json",
     "repo": "https://github.com/expressjs/express",
-    "directory": "express-multi-router",
     "path": "examples/multi-router",
     "branch": "master",
     "assertions": {
@@ -25,12 +26,25 @@
   },
   "fastify": {
     "name": "Fastify Demo",
+    "type": "clone",
     "repo": "https://github.com/fastify/demo",
-    "directory": "fastify-demo",
     "path": ".",
     "branch": "main",
     "assertions": {
       "shouldDetectFramework": "Fastify",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 5
+    }
+  },
+  "express-generator": {
+    "name": "Express Generator App",
+    "type": "generate",
+    "generate": {
+      "command": "npx",
+      "args": ["express-generator", "express-generator", "--no-git"]
+    },
+    "assertions": {
+      "shouldDetectFramework": "Express",
       "shouldHaveEndpoints": true
     }
   }

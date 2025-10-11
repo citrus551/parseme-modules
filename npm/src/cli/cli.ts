@@ -29,7 +29,7 @@ program
   .option('--context-dir <path>', 'Context directory path (default: parseme-context)')
   .option('--file-types <types...>', 'File types to analyze (e.g., ts tsx js jsx)')
   .option('--exclude <patterns...>', 'Exclude patterns (glob)')
-  .option('--no-git', 'Disable git information')
+  .option('--no-git', 'Disable git integration (info and file discovery)')
   .option('--max-depth <number>', 'Maximum directory depth', parseInt)
   .action(async (options) => {
     try {
@@ -40,7 +40,7 @@ program
         ...(options.contextDir && { contextDir: options.contextDir }),
         ...(options.fileTypes && { analyzeFileTypes: options.fileTypes }),
         ...(options.exclude && { excludePatterns: options.exclude }),
-        ...(options.git === false && { includeGitInfo: false }),
+        ...(options.git === false && { includeGitInfo: false, useGitForFiles: false }),
         ...(options.maxDepth && { maxDepth: options.maxDepth }),
       };
 

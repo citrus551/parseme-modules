@@ -43,10 +43,10 @@ function runCommand(command, args, cwd) {
 }
 
 // Function to clone with sparse checkout
-async function cloneSparse(repoUrl, repoName, subpath, branch) {
-  const targetDir = join(REPOS_DIR, repoName);
+async function cloneSparse(key, repoUrl, name, subpath, branch) {
+  const targetDir = join(REPOS_DIR, key);
 
-  console.log(`Cloning ${repoName}...`);
+  console.log(`Cloning ${name}...`);
 
   // Remove if exists
   await rm(targetDir, { recursive: true, force: true });
@@ -85,16 +85,38 @@ async function cloneSparse(repoUrl, repoName, subpath, branch) {
       await runCommand('git', ['checkout', branch], targetDir);
     }
 
-    console.log(`Success: ${repoName} cloned\n`);
+    console.log(`Success: ${name} cloned\n`);
   } catch (error) {
-    console.error(`Failed to clone ${repoName}: ${error.message}`);
+    console.error(`Failed to clone ${name}: ${error.message}`);
+    throw error;
+  }
+}
+
+// Function to generate a project using a command
+async function generateProject(key, name, generateConfig) {
+  const targetDir = join(REPOS_DIR, key);
+
+  console.log(`Generating ${name}...`);
+
+  // Remove if exists
+  await rm(targetDir, { recursive: true, force: true });
+
+  try {
+    const { command, args } = generateConfig;
+
+    // Run the generation command in the repos directory
+    await runCommand(command, args, REPOS_DIR);
+
+    console.log(`Success: ${name} generated\n`);
+  } catch (error) {
+    console.error(`Failed to generate ${name}: ${error.message}`);
     throw error;
   }
 }
 
 // Main function
 async function main() {
-  console.log('Cloning test repositories...\n');
+  console.log('Setting up test repositories...\n');
 
   // Create repos directory
   await mkdir(REPOS_DIR, { recursive: true });
@@ -102,17 +124,28 @@ async function main() {
   // Read repositories configuration
   const config = JSON.parse(await readFile(REPOS_CONFIG, 'utf-8'));
 
-  // Clone each repository
+  // Process each repository (clone or generate)
   for (const [key, repoConfig] of Object.entries(config)) {
-    const repoUrl = repoConfig.repo;
-    const repoName = repoConfig.directory || repoUrl.split('/').pop(); // Use directory name if specified
-    const subpath = repoConfig.path;
-    const branch = repoConfig.branch;
+    if (repoConfig.type === 'generate') {
+      // Generate project using a command
+      const name = repoConfig.name;
+      const generateConfig = repoConfig.generate;
 
-    await cloneSparse(repoUrl, repoName, subpath, branch);
+      await generateProject(key, name, generateConfig);
+    } else if (repoConfig.type === 'clone') {
+      // Clone from git repository
+      const name = repoConfig.name;
+      const repoUrl = repoConfig.repo;
+      const subpath = repoConfig.path;
+      const branch = repoConfig.branch;
+
+      await cloneSparse(key, repoUrl, name, subpath, branch);
+    } else {
+      console.warn(`Warning: Unknown repository type "${repoConfig.type}" for ${repoConfig.name}. Skipping.`);
+    }
   }
 
-  console.log('All repositories cloned successfully');
+  console.log('All repositories set up successfully');
   console.log(`Location: ${REPOS_DIR}`);
 }
 

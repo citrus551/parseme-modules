@@ -3,6 +3,7 @@
 export interface GeneratorOptions {
   rootDir?: string;
   includeGitInfo?: boolean;
+  useGitForFiles?: boolean;
   maxDepth?: number;
   excludePatterns?: string[];
   analyzeFileTypes?: string[];
@@ -21,6 +22,7 @@ export interface ParsemeConfigFile extends GeneratorOptions {
 
   // Git integration
   includeGitInfo?: boolean;
+  useGitForFiles?: boolean;
 
   // CLI behavior
   readmeSuggestion?: boolean;

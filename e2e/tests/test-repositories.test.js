@@ -58,33 +58,33 @@ async function fileExists(path) {
 
 // Helper to get repository directory path
 function getRepoDir(repoKey, config) {
-  const repoName = config.directory || config.repo.split('/').pop();
-  const basePath = join(REPOS_DIR, repoName);
-  return config.path === '.' ? basePath : join(basePath, config.path);
+  // Use the JSON key as the directory name
+  const basePath = join(REPOS_DIR, repoKey);
+
+  // For cloned repos, add subpath if specified
+  if (config.type === 'clone' && config.path && config.path !== '.') {
+    return join(basePath, config.path);
+  }
+
+  return basePath;
 }
 
 describe('E2E Test Repositories', () => {
   before(async () => {
-    // Check that all configured repositories are cloned
     const missingRepos = [];
+    const cleanups = [];
+
+    // Check repos exist and prepare cleanups in a single loop
     for (const [key, config] of Object.entries(reposConfig)) {
       const repoDir = getRepoDir(key, config);
+
+      // Check if repo exists
       const exists = await fileExists(repoDir);
       if (!exists) {
         missingRepos.push(`${config.name} at ${repoDir}`);
       }
-    }
 
-    if (missingRepos.length > 0) {
-      throw new Error(
-        `Repositories not cloned. Run: ./e2e/scripts/clone-repos.sh\nMissing: ${missingRepos.join(', ')}`
-      );
-    }
-
-    // Clean up any existing generated files before running tests
-    const cleanups = [];
-    for (const [key, config] of Object.entries(reposConfig)) {
-      const repoDir = getRepoDir(key, config);
+      // Prepare cleanup tasks
       cleanups.push(
         rm(join(repoDir, 'PARSEME.md'), { force: true }),
         rm(join(repoDir, 'parseme-context'), { recursive: true, force: true }),
@@ -92,6 +92,14 @@ describe('E2E Test Repositories', () => {
       );
     }
 
+    // Throw error if any repos are missing
+    if (missingRepos.length > 0) {
+      throw new Error(
+        `Repositories not set up. Run: npm run setup\nMissing: ${missingRepos.join(', ')}`
+      );
+    }
+
+    // Clean up any existing generated files
     await Promise.allSettled(cleanups);
   });
 
@@ -111,7 +119,13 @@ describe('E2E Test Repositories', () => {
       });
 
       test('should generate context', async () => {
-        const { code, stdout } = await runParseme(repoDir, ['generate']);
+        // Build generate command args - use --no-git for generated projects by default
+        const generateArgs = ['generate'];
+        if (config.type === 'generate') {
+          generateArgs.push('--no-git');
+        }
+
+        const { code, stdout } = await runParseme(repoDir, generateArgs);
 
         assert.strictEqual(code, 0);
         assert.ok(stdout.includes('Context generated successfully'));

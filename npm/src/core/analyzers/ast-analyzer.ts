@@ -17,7 +17,10 @@ export class ASTAnalyzer {
 
   constructor(private readonly config: ParsemeConfig) {
     const configData = this.config.get();
-    this.fileFilter = new FileFilterService(configData.excludePatterns);
+    this.fileFilter = new FileFilterService(
+      configData.excludePatterns,
+      configData.useGitForFiles ?? true,
+    );
     this.patternDetector = new PatternDetector();
   }
 

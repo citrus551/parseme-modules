@@ -53,8 +53,8 @@ async function main() {
   // Check if repos exist
   const reposExist = await dirExists(REPOS_DIR);
   if (!reposExist) {
-    console.log('Repositories not found. Cloning...');
-    await runCommand('node', [join(SCRIPT_DIR, 'clone-repos.js')], SCRIPT_DIR);
+    console.log('Repositories not found. Setting up...');
+    await runCommand('node', [join(SCRIPT_DIR, 'setup-repos.js')], SCRIPT_DIR);
     console.log('');
   }
 

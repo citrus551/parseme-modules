@@ -24,8 +24,6 @@
     "format:check": "prettier . --ignore-unknown --check",
     "lint": "eslint --config ./eslint.config.js --fix",
     "lint:check": "eslint --config ./eslint.config.js --no-fix --max-warnings 0",
-    "prepare": "npm run format && npm run lint",
-    "pretest": "npm run build",
     "test": "node --test --experimental-test-coverage 'tests/**/*.test.ts'",
     "pretest:unit": "npm run build",
     "test:unit": "node --test 'tests/unit/**/*.test.ts'",
@@ -34,7 +32,8 @@
     "test:watch": "node --test --watch 'tests/**/*.test.ts'",
     "pretest:coverage": "npm run build",
     "test:coverage": "node --test --experimental-test-coverage 'tests/unit/**/*.test.ts' 'tests/integration/**/*.test.ts'",
-    "test:e2e": "node ../e2e/scripts/run-e2e.js",
+    "setup:test:e2e": "npm run -C ../e2e setup",
+    "test:e2e": "npm run -C ../e2e test",
     "clean": "rm -rf dist"
   },
   "keywords": [

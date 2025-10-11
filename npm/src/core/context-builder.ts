@@ -117,9 +117,9 @@ export class ContextBuilder {
     const routesInstructions = hasRoutes
       ? `   - Files with routes will reference [${linkPath}/routes.json](${linkPath}/routes.json) using a $ref pattern for token efficiency
 5. For API route details, see [${linkPath}/routes.json](${linkPath}/routes.json) which contains all discovered endpoints
-6. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
+6. For git tracked projects follow the instructions in the "Git Information" section of this file to validate the actuality of the provided information.
 7. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`
-      : `5. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
+      : `5. For git tracked projects, follow the instructions in the "Git Information" section of this file to validate the actuality of the provided information.
 6. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
 
     return `## PARSEME - AI Agent Context

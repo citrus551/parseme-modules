@@ -145,6 +145,7 @@ export class ParsemeConfig {
 
       // Git
       includeGitInfo: config.includeGitInfo ?? true,
+      useGitForFiles: config.useGitForFiles ?? true,
 
       // Sections
       sections: {

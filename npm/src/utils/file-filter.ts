@@ -10,14 +10,17 @@ const execAsync = promisify(exec);
 export class FileFilterService {
   private readonly ig: ReturnType<typeof ignore>;
 
-  constructor(private readonly excludePatterns: string[] = []) {
+  constructor(
+    private readonly excludePatterns: string[] = [],
+    private readonly useGitForFiles: boolean = true,
+  ) {
     this.ig = ignore();
     this.ig.add(excludePatterns);
   }
 
   /**
    * Get all files that should be analyzed, respecting:
-   * 1. Git-tracked files (if git repo) - respects all .gitignore files automatically
+   * 1. Git-tracked files (respects all .gitignore files automatically)
    * 2. All files (if non-git repo) - respects only custom excludePatterns
    * 3. Custom excludePatterns from config (always applied)
    */
@@ -25,8 +28,8 @@ export class FileFilterService {
     try {
       let files: string[];
 
-      // Try to get git-tracked files first
-      const isGitRepo = await this.isGitRepository(rootDir);
+      // Try to get git-tracked files first (only if useGitForFiles is enabled)
+      const isGitRepo = this.useGitForFiles && (await this.isGitRepository(rootDir));
       if (isGitRepo) {
         files = await this.getGitTrackedFiles(rootDir);
       } else {
