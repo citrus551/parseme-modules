@@ -294,4 +294,207 @@ describe('FrameworkDetector', () => {
       assert.strictEqual(framework.name, 'nestjs');
     });
   });
+
+  describe('detect from endpoints fallback', () => {
+    test('should detect Express from endpoints when package.json missing', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'express-no-pkg',
+        type: 'javascript',
+        category: 'unknown',
+        packageManager: 'unknown',
+        dependencies: {},
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const mockEndpoints = [
+        {
+          method: 'GET',
+          path: '/users',
+          handler: 'getUsers',
+          file: 'routes/users.js',
+          line: 10,
+          type: 'rest' as const,
+          framework: 'express',
+        },
+        {
+          method: 'POST',
+          path: '/users',
+          handler: 'createUser',
+          file: 'routes/users.js',
+          line: 20,
+          type: 'rest' as const,
+          framework: 'express',
+        },
+      ];
+
+      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+
+      assert.strictEqual(framework.name, 'express');
+      assert.strictEqual(framework.features.length, 0); // No features without package.json
+    });
+
+    test('should detect Fastify from endpoints when package.json missing', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'fastify-no-pkg',
+        type: 'javascript',
+        category: 'unknown',
+        packageManager: 'unknown',
+        dependencies: {},
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const mockEndpoints = [
+        {
+          method: 'GET',
+          path: '/api/items',
+          handler: 'getItems',
+          file: 'routes/items.js',
+          line: 5,
+          type: 'rest' as const,
+          framework: 'fastify',
+        },
+      ];
+
+      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+
+      assert.strictEqual(framework.name, 'fastify');
+      assert.strictEqual(framework.features.length, 0);
+    });
+
+    test('should prioritize package.json over endpoints', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'express-app',
+        type: 'javascript',
+        category: 'backend-api',
+        packageManager: 'npm',
+        dependencies: {
+          express: '^4.18.0',
+          cors: '^2.8.0',
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      // Endpoints suggest fastify, but package.json has express
+      const mockEndpoints = [
+        {
+          method: 'GET',
+          path: '/test',
+          handler: 'test',
+          file: 'test.js',
+          line: 1,
+          type: 'rest' as const,
+          framework: 'fastify',
+        },
+      ];
+
+      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+
+      assert.strictEqual(framework.name, 'express');
+      assert.ok(framework.features.includes('cors'));
+    });
+
+    test('should handle mixed frameworks in endpoints by choosing most common', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'mixed-endpoints',
+        type: 'javascript',
+        category: 'unknown',
+        packageManager: 'unknown',
+        dependencies: {},
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const mockEndpoints = [
+        {
+          method: 'GET',
+          path: '/express1',
+          handler: 'test1',
+          file: 'route1.js',
+          line: 1,
+          type: 'rest' as const,
+          framework: 'express',
+        },
+        {
+          method: 'GET',
+          path: '/express2',
+          handler: 'test2',
+          file: 'route2.js',
+          line: 1,
+          type: 'rest' as const,
+          framework: 'express',
+        },
+        {
+          method: 'GET',
+          path: '/fastify1',
+          handler: 'test3',
+          file: 'route3.js',
+          line: 1,
+          type: 'rest' as const,
+          framework: 'fastify',
+        },
+      ];
+
+      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+
+      assert.strictEqual(framework.name, 'express'); // 2 express vs 1 fastify
+    });
+
+    test('should return unknown when endpoints have no framework', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'no-framework',
+        type: 'javascript',
+        category: 'unknown',
+        packageManager: 'unknown',
+        dependencies: {},
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const mockEndpoints = [
+        {
+          method: 'GET',
+          path: '/test',
+          handler: 'test',
+          file: 'test.js',
+          line: 1,
+          type: 'rest' as const,
+        },
+      ];
+
+      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+
+      assert.strictEqual(framework.name, 'unknown');
+    });
+
+    test('should return unknown when no endpoints provided', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'no-endpoints',
+        type: 'javascript',
+        category: 'unknown',
+        packageManager: 'unknown',
+        dependencies: {},
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const framework = await detector.detect(mockProjectInfo, []);
+
+      assert.strictEqual(framework.name, 'unknown');
+    });
+  });
 });

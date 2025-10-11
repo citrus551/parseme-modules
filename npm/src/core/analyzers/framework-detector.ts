@@ -1,7 +1,11 @@
 import type { ProjectInfo, FrameworkInfo } from '../types.js';
+import type { EndpointInfo } from './pattern-detector.js';
 
 export class FrameworkDetector {
-  async detect(projectInfo: ProjectInfo): Promise<FrameworkInfo> {
+  async detect(
+    projectInfo: ProjectInfo,
+    endpoints?: EndpointInfo[],
+  ): Promise<FrameworkInfo> {
     const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
 
     // Check for frameworks in dependencies
@@ -15,10 +19,58 @@ export class FrameworkDetector {
       return this.detectExpress(deps);
     }
 
+    // Fallback: If no framework found in dependencies, try to infer from endpoints
+    if (endpoints && endpoints.length > 0) {
+      const frameworkFromEndpoints = this.detectFrameworkFromEndpoints(endpoints);
+      if (frameworkFromEndpoints) {
+        return frameworkFromEndpoints;
+      }
+    }
+
     return {
       name: 'unknown',
       features: [],
     };
+  }
+
+  private detectFrameworkFromEndpoints(endpoints: EndpointInfo[]): FrameworkInfo | null {
+    // Count frameworks detected in endpoints
+    const frameworkCounts = new Map<string, number>();
+
+    endpoints.forEach((endpoint) => {
+      if (endpoint.framework) {
+        const count = frameworkCounts.get(endpoint.framework) || 0;
+        frameworkCounts.set(endpoint.framework, count + 1);
+      }
+    });
+
+    if (frameworkCounts.size === 0) {
+      return null;
+    }
+
+    // Find the most common framework
+    let mostCommonFramework = '';
+    let maxCount = 0;
+
+    frameworkCounts.forEach((count, framework) => {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommonFramework = framework;
+      }
+    });
+
+    // Return framework info based on detected framework
+    // Note: We can't detect features without package.json, so features array will be empty
+    switch (mostCommonFramework.toLowerCase()) {
+      case 'express':
+        return { name: 'express', features: [] };
+      case 'fastify':
+        return { name: 'fastify', features: [] };
+      case 'nestjs':
+        return { name: 'nestjs', features: [] };
+      default:
+        return null;
+    }
   }
 
   private detectExpress(deps: Record<string, string>): FrameworkInfo {

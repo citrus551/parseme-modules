@@ -163,8 +163,8 @@ describe('ContextBuilder', () => {
         options: {},
       });
 
-      assert.ok(context.parseme.includes('API Endpoints'));
-      assert.ok(context.context.routes || context.context['api-endpoints']);
+      assert.ok(context.parseme.includes('API Routes'));
+      assert.ok(context.context.routes);
     });
 
     test('should generate files list in context', () => {

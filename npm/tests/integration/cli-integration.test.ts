@@ -665,8 +665,8 @@ export function authMiddleware(req: any, res: any, next: any) {
       assert.ok(content.includes('Project Files') || content.includes('files.md'));
       assert.ok(content.includes('Project Structure & AST') || content.includes('structure.json'));
 
-      // Verify API endpoints were detected
-      assert.ok(content.includes('API Endpoints') || content.includes('api-endpoints.json'));
+      // Verify API routes were detected
+      assert.ok(content.includes('API Routes') || content.includes('routes.json'));
     });
 
     test('should respect exclude patterns from CLI', async () => {

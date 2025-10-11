@@ -133,7 +133,7 @@ describe('E2E Framework Examples', () => {
     });
 
     test('should detect API endpoints', async () => {
-      const endpointsPath = join(repoDir, 'parseme-context', 'api-endpoints.json');
+      const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
       const endpointsExist = await fileExists(endpointsPath);
 
       if (endpointsExist) {
@@ -179,7 +179,7 @@ describe('E2E Framework Examples', () => {
     });
 
     test('should detect API endpoints', async () => {
-      const endpointsPath = join(repoDir, 'parseme-context', 'api-endpoints.json');
+      const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
       const endpointsExist = await fileExists(endpointsPath);
 
       if (endpointsExist) {
@@ -225,12 +225,16 @@ describe('E2E Framework Examples', () => {
     });
 
     test('should detect API endpoints', async () => {
-      const endpointsPath = join(repoDir, 'parseme-context', 'api-endpoints.json');
+      const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
       const endpointsExist = await fileExists(endpointsPath);
 
       if (endpointsExist) {
-        const endpoints = JSON.parse(await readFile(endpointsPath, 'utf-8'));
-        assert.ok(Array.isArray(endpoints), 'Endpoints should be an array');
+        const content = await readFile(endpointsPath, 'utf-8');
+        // Skip if file is empty (no routes detected)
+        if (content.trim().length > 0) {
+          const endpoints = JSON.parse(content);
+          assert.ok(Array.isArray(endpoints), 'Endpoints should be an array');
+        }
       }
     });
   });

@@ -142,7 +142,7 @@ export function formatDate(date: Date): string {
 
       // Verify API routes were detected
       assert.ok(
-        parsemeContent.includes('API Endpoints') || parsemeContent.includes('api-endpoints.json'),
+        parsemeContent.includes('API Routes') || parsemeContent.includes('routes.json'),
       );
     });
 

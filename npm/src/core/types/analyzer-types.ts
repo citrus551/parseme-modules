@@ -6,9 +6,10 @@ import type {
   ConfigInfo,
   MiddlewareInfo,
   UtilityInfo,
+  EndpointInfo,
 } from '../analyzers/pattern-detector.js';
 
-export type { ServiceInfo, ModelInfo, ConfigInfo, MiddlewareInfo, UtilityInfo };
+export type { ServiceInfo, ModelInfo, ConfigInfo, MiddlewareInfo, UtilityInfo, EndpointInfo };
 
 export interface FileAnalysis {
   path: string;
@@ -18,7 +19,7 @@ export interface FileAnalysis {
   imports: string[];
   functions: string[];
   classes: string[];
-  routes?: RouteInfo[];
+  routes?: EndpointInfo[];
   components?: ComponentInfo[];
   services?: ServiceInfo[];
   models?: ModelInfo[];

@@ -137,21 +137,30 @@ export class ContextBuilder {
       linkPath = contextDir;
     }
 
+    // Check if routes exist before building main content
+    // Extract all actual route objects (filter out reference objects)
+    const routes = limitedFileAnalyses.flatMap((f) => {
+      const fileRoutes = f.routes || [];
+      // Only include if it's an array of actual routes, not a reference object
+      return Array.isArray(fileRoutes) && fileRoutes.length > 0 && !('$ref' in fileRoutes[0])
+        ? fileRoutes
+        : [];
+    });
+    const hasRoutes = routes.length > 0;
+
     const mainContent =
-      this.buildHeader(linkPath) +
+      this.buildHeader(linkPath, hasRoutes) +
       '\n\n\n' +
       this.buildProjectOverview(projectInfo) +
       '\n\n\n' +
-      this.buildSummarySection(context, linkPath) +
+      this.buildSummarySection(context, linkPath, hasRoutes) +
       '\n\n\n' +
       (gitInfo ? this.buildGitSection(gitInfo) : '');
     const contextFiles: {
       [key: string]: string;
       structure: string;
-      routes: string;
     } = {
       structure: '',
-      routes: '',
     };
 
     // Helper function to merge split files into contextFiles
@@ -170,14 +179,13 @@ export class ContextBuilder {
     contextFiles.files = this.buildFilesList(context.allFiles);
 
     // Detailed structure (JSON with AST)
-    const structureResult = this.buildDetailedStructure(limitedFileAnalyses);
+    const structureResult = this.buildDetailedStructure(limitedFileAnalyses, hasRoutes);
     mergeSplitFiles(structureResult, 'structure');
 
-    // Routes documentation
-    const routes = limitedFileAnalyses.flatMap((f) => f.routes || []);
-    if (routes.length > 0) {
+    // Routes documentation (only if routes exist)
+    if (hasRoutes) {
       const routesResult = this.buildDetailedRoutes(routes, limitedFileAnalyses);
-      mergeSplitFiles(routesResult, 'api-endpoints');
+      mergeSplitFiles(routesResult, 'routes');
     }
 
     // Git information
@@ -191,8 +199,16 @@ export class ContextBuilder {
     };
   }
 
-  private buildHeader(linkPath: string): string {
-    return `## PARSEME - AI Agent Context 
+  private buildHeader(linkPath: string, hasRoutes: boolean): string {
+    const routesInstructions = hasRoutes
+      ? `   - Files with routes will reference ${linkPath}/routes.json using a $ref pattern for token efficiency
+5. For API route details, see ${linkPath}/routes.json which contains all discovered endpoints
+6. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
+7. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`
+      : `5. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
+6. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
+
+    return `## PARSEME - AI Agent Context
 Auto-generated project summary optimized for AI coding agents. This file provides complete project context without requiring full codebase traversal, designed for token efficiency.
 
 **Usage Instructions for AI Agents:**
@@ -200,8 +216,7 @@ Auto-generated project summary optimized for AI coding agents. This file provide
 2. Basic project information, script availability and dependency information provides basic understanding of code base and tech stack without checking package.json
 3. Use the provided file list (${linkPath}/files.md) to see all tracked files in the project
 4. Utilize the structure and AST data (${linkPath}/structure.json) for code analysis without manual parsing
-5. Follow the instruction in the "Git Information" section of this file to validate the actuality of the provided information.
-6. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
+${routesInstructions}`;
   }
 
   private buildProjectOverview(projectInfo: ProjectInfo): string {
@@ -258,10 +273,7 @@ git diff --stat
 Compare the output with the baseline in \`parseme-context/gitDiff.md\` to detect any modifications.`;
   }
 
-  private buildSummarySection(context: BuildContext, linkPath: string): string {
-    const { fileAnalyses } = context;
-    const routes = fileAnalyses.flatMap((f) => f.routes || []).length;
-
+  private buildSummarySection(context: BuildContext, linkPath: string, hasRoutes: boolean): string {
     let content = `## Project Files
 A complete list of all tracked files in the project is available at \`${linkPath}/files.md\`. This list excludes files ignored by git and provides a quick overview of the project structure.
 
@@ -269,9 +281,9 @@ A complete list of all tracked files in the project is available at \`${linkPath
 ## Project Structure & AST
 Detailed structure and Abstract Syntax Tree data for all tracked files is available at \`${linkPath}/structure.json\`. This includes file paths, types, imports, exports, functions, classes, interfaces, and routes for comprehensive code analysis without manual parsing.`;
 
-    if (routes > 0) {
-      content += `\n\n\n## API Endpoints
-A comprehensive list of all discovered API endpoints is available at \`${linkPath}/api-endpoints.json\`. This includes HTTP methods, paths, handler names, and source file locations for backend routes (Express, NestJS, and decorator-based routing).`;
+    if (hasRoutes) {
+      content += `\n\n\n## API Routes
+A comprehensive list of all discovered API routes is available at \`${linkPath}/routes.json\`. This includes HTTP methods, paths, handler names, and source file locations for backend routes (Express, NestJS, and decorator-based routing).`;
     }
 
     return content;
@@ -288,16 +300,33 @@ A comprehensive list of all discovered API endpoints is available at \`${linkPat
     return content;
   }
 
-  private buildDetailedStructure(fileAnalyses: FileAnalysis[]): string | Record<string, string> {
-    const structureData = fileAnalyses.map((file) => ({
-      path: file.path,
-      type: file.type,
-      exports: file.exports,
-      imports: file.imports,
-      functions: file.functions,
-      classes: file.classes,
-      routes: file.routes || [],
-    }));
+  private buildDetailedStructure(
+    fileAnalyses: FileAnalysis[],
+    hasRoutes: boolean,
+  ): string | Record<string, string> {
+    const structureData = fileAnalyses.map((file) => {
+      const routes = file.routes || [];
+
+      // If file has routes and routes exist in the project, replace with reference instead of full route objects
+      const routesData =
+        routes.length > 0 && hasRoutes
+          ? {
+              $ref: './routes.json',
+              filter: { file: file.path },
+              count: routes.length,
+            }
+          : [];
+
+      return {
+        path: file.path,
+        type: file.type,
+        exports: file.exports,
+        imports: file.imports,
+        functions: file.functions,
+        classes: file.classes,
+        routes: routesData,
+      };
+    });
 
     const jsonContent = JSON.stringify(structureData, null, 2);
     const result = this.truncateContent(jsonContent);
