@@ -22,9 +22,6 @@ export default {
     sortOrder: 'type',
   },
   limits: {
-    maxLinesPerFile: 500,
-    maxCharsPerFile: 25000,
     maxFilesPerContext: 15,
-    truncateStrategy: 'truncate',
   },
 };

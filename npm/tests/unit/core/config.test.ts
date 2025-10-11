@@ -93,10 +93,7 @@ describe('ParsemeConfig', () => {
       const config = new ParsemeConfig();
       const result = config.get();
 
-      assert.strictEqual(result.limits?.maxLinesPerFile, 1000);
-      assert.strictEqual(result.limits?.maxCharsPerFile, 50000);
-      assert.strictEqual(result.limits?.maxFilesPerContext, 1000);
-      assert.strictEqual(result.limits?.truncateStrategy, 'truncate');
+      assert.strictEqual(result.limits?.maxFilesPerContext, 5000);
     });
   });
 
@@ -109,7 +106,7 @@ describe('ParsemeConfig', () => {
       assert.strictEqual(result.rootDir, './test-project');
       assert.strictEqual(result.maxDepth, 5);
       assert.ok(result.analyzeFileTypes?.includes('ts'));
-      assert.strictEqual(result.limits?.maxLinesPerFile, 500);
+      assert.strictEqual(result.limits?.maxFilesPerContext, 15);
     });
 
     test('should return default config when file not found', async () => {

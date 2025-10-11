@@ -205,32 +205,6 @@ module.exports = { processData };
       );
     });
 
-    test('should respect truncation limits', async () => {
-      const packageJson = {
-        name: 'large-project',
-        version: '1.0.0',
-      };
-
-      // Create a file with many lines to test truncation
-      const largeFile = Array.from({ length: 200 }, (_, i) => `// Line ${i + 1}`).join('\n');
-
-      await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
-      await writeFile(join(projectDir, 'src', 'large-file.ts'), largeFile);
-
-      const generator = new ParsemeGenerator({
-        rootDir: projectDir,
-        analyzeFileTypes: ['ts'],
-        includeGitInfo: false,
-      });
-
-      const result = await generator.generate();
-
-      assert.ok(result.parseme.includes('large-project'));
-      // Verify truncation behavior - just check that generation completed
-      assert.ok(result.parseme.length > 0);
-      // Context structure details are tested elsewhere
-    });
-
     test('should handle empty project gracefully', async () => {
       const packageJson = {
         name: 'empty-project',

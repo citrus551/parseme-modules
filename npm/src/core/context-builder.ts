@@ -23,89 +23,6 @@ interface BuildContext {
 export class ContextBuilder {
   constructor(private readonly config: ParsemeConfig) {}
 
-  private truncateContent(content: string, type: 'lines' | 'chars' = 'chars'): string | string[] {
-    const limits = this.config.get().limits;
-    if (!limits) {
-      return content;
-    }
-
-    const strategy = limits.truncateStrategy || 'truncate';
-
-    if (type === 'lines') {
-      const lines = content.split('\n');
-      const maxLines = limits.maxLinesPerFile || 1000;
-
-      if (lines.length > maxLines) {
-        if (strategy === 'split') {
-          return this.splitContentByLines(lines, maxLines);
-        } else {
-          const truncated = lines.slice(0, maxLines).join('\n');
-          return truncated + '\n\n[... truncated for AI compatibility ...]';
-        }
-      }
-    } else {
-      const maxChars = limits.maxCharsPerFile || 50000;
-
-      if (content.length > maxChars) {
-        if (strategy === 'split') {
-          return this.splitContentByChars(content, maxChars);
-        } else {
-          const truncated = content.substring(0, maxChars - 100);
-          return truncated + '\n\n[... truncated for AI compatibility ...]';
-        }
-      }
-    }
-
-    return content;
-  }
-
-  private splitContentByLines(lines: string[], maxLines: number): string[] {
-    const parts: string[] = [];
-    const safeMaxLines = maxLines - 5; // Reserve space for split indicators
-
-    for (let i = 0; i < lines.length; i += safeMaxLines) {
-      const chunk = lines.slice(i, i + safeMaxLines);
-      const partNumber = Math.floor(i / safeMaxLines) + 1;
-      const totalParts = Math.ceil(lines.length / safeMaxLines);
-
-      let partContent = chunk.join('\n');
-      partContent += `\n\n[... part ${partNumber} of ${totalParts} ...]`;
-
-      parts.push(partContent);
-    }
-
-    return parts;
-  }
-
-  private splitContentByChars(content: string, maxChars: number): string[] {
-    const parts: string[] = [];
-    const safeMaxChars = maxChars - 200; // Reserve space for split indicators
-
-    for (let i = 0; i < content.length; i += safeMaxChars) {
-      let chunk = content.substring(i, i + safeMaxChars);
-      const partNumber = Math.floor(i / safeMaxChars) + 1;
-      const totalParts = Math.ceil(content.length / safeMaxChars);
-
-      // Try to break at a reasonable place (newline or word boundary)
-      if (i + safeMaxChars < content.length) {
-        const lastNewline = chunk.lastIndexOf('\n');
-        const lastSpace = chunk.lastIndexOf(' ');
-        const breakPoint =
-          lastNewline > -1 ? lastNewline : lastSpace > -1 ? lastSpace : chunk.length;
-
-        if (breakPoint > safeMaxChars * 0.8) {
-          // Only break if we're not losing too much content
-          chunk = chunk.substring(0, breakPoint);
-        }
-      }
-
-      chunk += `\n\n[... part ${partNumber} of ${totalParts} ...]`;
-      parts.push(chunk);
-    }
-
-    return parts;
-  }
-
   build(context: BuildContext): ContextOutput {
     return this.buildMultiFile(context);
   }
@@ -174,29 +91,15 @@ export class ContextBuilder {
       structure: '',
     };
 
-    // Helper function to merge split files into contextFiles
-    const mergeSplitFiles = (result: string | Record<string, string>, baseName: string): void => {
-      if (typeof result === 'string') {
-        contextFiles[baseName] = result;
-      } else {
-        // Merge split files into contextFiles
-        Object.entries(result).forEach(([key, value]) => {
-          contextFiles[key] = value;
-        });
-      }
-    };
-
     // Files list (markdown) - all files in project, not just analyzed ones
     contextFiles.files = this.buildFilesList(context.allFiles);
 
     // Detailed structure (JSON with AST)
-    const structureResult = this.buildDetailedStructure(limitedFileAnalyses, hasRoutes);
-    mergeSplitFiles(structureResult, 'structure');
+    contextFiles.structure = this.buildDetailedStructure(limitedFileAnalyses, hasRoutes);
 
     // Routes documentation (only if routes exist)
     if (hasRoutes) {
-      const routesResult = this.buildDetailedRoutes(routes, limitedFileAnalyses);
-      mergeSplitFiles(routesResult, 'routes');
+      contextFiles.routes = this.buildDetailedRoutes(routes, limitedFileAnalyses);
     }
 
     // Git information
@@ -316,10 +219,7 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
     return content;
   }
 
-  private buildDetailedStructure(
-    fileAnalyses: FileAnalysis[],
-    hasRoutes: boolean,
-  ): string | Record<string, string> {
+  private buildDetailedStructure(fileAnalyses: FileAnalysis[], hasRoutes: boolean): string {
     const structureData = fileAnalyses.map((file) => {
       const routes = file.routes || [];
 
@@ -345,41 +245,15 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
     });
 
     const jsonContent = JSON.stringify(structureData, null, 2);
-    const result = this.truncateContent(jsonContent);
-
-    if (Array.isArray(result)) {
-      // Return split files as a record with numbered keys
-      const splitFiles: Record<string, string> = {};
-      result.forEach((part, index) => {
-        const suffix = index === 0 ? '' : `_part${index + 1}`;
-        splitFiles[`structure${suffix}`] = part;
-      });
-      return splitFiles;
-    }
-
-    return result;
+    return jsonContent;
   }
 
-  private buildDetailedRoutes(
-    routes: RouteInfo[],
-    _fileAnalyses: FileAnalysis[],
-  ): string | Record<string, string> {
+  private buildDetailedRoutes(routes: RouteInfo[], _fileAnalyses: FileAnalysis[]): string {
     const jsonContent = JSON.stringify(routes, null, 2);
-    const result = this.truncateContent(jsonContent);
-
-    if (Array.isArray(result)) {
-      const splitFiles: Record<string, string> = {};
-      result.forEach((part, index) => {
-        const suffix = index === 0 ? '' : `_part${index + 1}`;
-        splitFiles[`routes${suffix}`] = part;
-      });
-      return splitFiles;
-    }
-
-    return result;
+    return jsonContent;
   }
 
-  private buildDetailedDependencies(projectInfo: ProjectInfo): string | Record<string, string> {
+  private buildDetailedDependencies(projectInfo: ProjectInfo): string {
     const jsonContent = JSON.stringify(
       {
         dependencies: projectInfo.dependencies,
@@ -389,18 +263,7 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
       null,
       2,
     );
-    const result = this.truncateContent(jsonContent);
-
-    if (Array.isArray(result)) {
-      const splitFiles: Record<string, string> = {};
-      result.forEach((part, index) => {
-        const suffix = index === 0 ? '' : `_part${index + 1}`;
-        splitFiles[`dependencies${suffix}`] = part;
-      });
-      return splitFiles;
-    }
-
-    return result;
+    return jsonContent;
   }
 
   private buildDetailedFramework(framework: ProjectInfo['framework']): string {

@@ -175,12 +175,9 @@ const config = {
   // Git integration
   includeGitInfo: true,
 
-  // AI-friendly size limits
+  // Size limits
   limits: {
-    maxLinesPerFile: 1000,
-    maxCharsPerFile: 50000,
-    maxFilesPerContext: 1000,
-    truncateStrategy: 'truncate', // 'truncate' | 'split' | 'summarize'
+    maxFilesPerContext: 5000,
   },
 
   // Content sections (all default to true)
@@ -297,12 +294,7 @@ Toggle which sections to include in the output (all default to `true`):
 
 #### Size Limits
 
-AI-friendly size limits to prevent token overflow:
-
-- `limits.maxLinesPerFile` - Maximum lines per file (default: `1000`)
-- `limits.maxCharsPerFile` - Maximum characters per file (default: `50000`)
-- `limits.maxFilesPerContext` - Maximum files per context (default: `1000`)
-- `limits.truncateStrategy` - Strategy: `"truncate"`, `"split"`, or `"summarize"` (default: `"truncate"`)
+- `limits.maxFilesPerContext` - Maximum number of files to analyze (default: `5000`)
 
 ## Output Format
 

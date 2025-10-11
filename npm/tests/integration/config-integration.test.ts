@@ -59,8 +59,7 @@ export default {
     git: false
   },
   limits: {
-    maxLinesPerFile: 100,
-    maxCharsPerFile: 5000
+    maxFilesPerContext: 100
   }
 };
 `;
@@ -77,7 +76,7 @@ export default {
       assert.strictEqual(result.includeGitInfo, false);
       assert.strictEqual(result.sections?.routes, false);
       assert.strictEqual(result.sections?.git, false);
-      assert.strictEqual(result.limits?.maxLinesPerFile, 100);
+      assert.strictEqual(result.limits?.maxFilesPerContext, 100);
       assert.deepStrictEqual(result.analyzeFileTypes, ['ts', 'js']);
     });
 
@@ -234,9 +233,7 @@ export default {
 export default {
   rootDir: '${fixturesDir}',
   limits: {
-    maxLinesPerFile: 5,
-    maxCharsPerFile: 100,
-    truncateStrategy: 'truncate'
+    maxFilesPerContext: 10
   },
   includeGitInfo: false
 };
@@ -257,7 +254,7 @@ export default {
       mock.method(contextBuilder, 'build', (options: { options: unknown }) => {
         capturedConfig = options.options;
         return {
-          parseme: '# Limits Test\n\nContent truncated.',
+          parseme: '# Limits Test\n\nContent limited.',
           context: undefined,
         };
       });
@@ -279,26 +276,10 @@ export default {
       assert.strictEqual(
         (
           capturedConfig as {
-            limits: { maxLinesPerFile: number; maxCharsPerFile: number; truncateStrategy: string };
+            limits: { maxFilesPerContext: number };
           }
-        ).limits.maxLinesPerFile,
-        5,
-      );
-      assert.strictEqual(
-        (
-          capturedConfig as {
-            limits: { maxLinesPerFile: number; maxCharsPerFile: number; truncateStrategy: string };
-          }
-        ).limits.maxCharsPerFile,
-        100,
-      );
-      assert.strictEqual(
-        (
-          capturedConfig as {
-            limits: { maxLinesPerFile: number; maxCharsPerFile: number; truncateStrategy: string };
-          }
-        ).limits.truncateStrategy,
-        'truncate',
+        ).limits.maxFilesPerContext,
+        10,
       );
     });
 

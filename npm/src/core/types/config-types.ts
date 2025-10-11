@@ -45,9 +45,6 @@ export interface ParsemeConfigFile extends GeneratorOptions {
 
   // Size limits for AI compatibility
   limits?: {
-    maxLinesPerFile?: number;
-    maxCharsPerFile?: number;
     maxFilesPerContext?: number;
-    truncateStrategy?: 'truncate' | 'split' | 'summarize';
   };
 }
