@@ -102,6 +102,11 @@ program
       // Build config with only user-specified values
       const userConfig: Partial<ParsemeConfigFile> = {};
 
+      // Set defaults that would normally be prompted for
+      const defaultExcludePatterns = ['node_modules/**', 'dist/**', '.git/**'];
+      userConfig.contextDir = 'parseme-context';
+      userConfig.excludePatterns = defaultExcludePatterns;
+
       // Only prompt if interactive (TTY) and not in CI
       if (process.stdin.isTTY && !process.env.CI) {
         // Ask about context directory path
@@ -112,7 +117,6 @@ program
         });
 
         // Ask about exclude patterns
-        const defaultExcludePatterns = ['node_modules/**', 'dist/**', '.git/**'];
         const excludePatternsAnswer = await prompt({
           message:
             'Exclude patterns (comma-separated glob patterns - in git repositories, additional to git-tracked files)',

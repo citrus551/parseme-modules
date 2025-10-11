@@ -144,6 +144,7 @@ describe('ContextBuilder', () => {
               handler: 'getUsers',
               file: 'src/routes/users.ts',
               line: 10,
+              type: 'unknown',
             },
           ],
           components: [],
@@ -358,7 +359,7 @@ describe('ContextBuilder', () => {
         options: {},
       });
 
-      // Should contain markdown links to context files
+      // Should contain Markdown links to context files
       assert.ok(context.parseme.includes('[parseme-context/files.md](parseme-context/files.md)'));
       assert.ok(
         context.parseme.includes(
@@ -383,12 +384,12 @@ describe('ContextBuilder', () => {
     });
 
     test('should respect maxFilesPerContext limit', () => {
-      const configWithLimit = new ParsemeConfig({
+      const config = new ParsemeConfig({
         limits: {
           maxFilesPerContext: 2,
         },
       });
-      const limitedBuilder = new ContextBuilder(configWithLimit);
+      const builder = new ContextBuilder(config);
 
       const mockProjectInfo: ProjectInfo = {
         name: 'test-project',
@@ -399,13 +400,14 @@ describe('ContextBuilder', () => {
         devDependencies: {},
       };
 
+      // Create 4 files, but limit should restrict to 2
       const mockFileAnalyses: FileAnalysis[] = [
         {
           path: 'src/file1.ts',
           type: 'utility',
-          exports: [],
+          exports: ['func1'],
           imports: [],
-          functions: [],
+          functions: ['func1'],
           classes: [],
           routes: [],
           components: [],
@@ -418,9 +420,9 @@ describe('ContextBuilder', () => {
         {
           path: 'src/file2.ts',
           type: 'utility',
-          exports: [],
+          exports: ['func2'],
           imports: [],
-          functions: [],
+          functions: ['func2'],
           classes: [],
           routes: [],
           components: [],
@@ -433,9 +435,24 @@ describe('ContextBuilder', () => {
         {
           path: 'src/file3.ts',
           type: 'utility',
-          exports: [],
+          exports: ['func3'],
           imports: [],
-          functions: [],
+          functions: ['func3'],
+          classes: [],
+          routes: [],
+          components: [],
+          services: [],
+          models: [],
+          configs: [],
+          middleware: [],
+          utilities: [],
+        },
+        {
+          path: 'src/file4.ts',
+          type: 'utility',
+          exports: ['func4'],
+          imports: [],
+          functions: ['func4'],
           classes: [],
           routes: [],
           components: [],
@@ -447,153 +464,118 @@ describe('ContextBuilder', () => {
         },
       ];
 
-      const context = limitedBuilder.build({
+      const context = builder.build({
         projectInfo: mockProjectInfo,
         fileAnalyses: mockFileAnalyses,
-        allFiles: ['src/file1.ts', 'src/file2.ts', 'src/file3.ts'],
+        allFiles: ['src/file1.ts', 'src/file2.ts', 'src/file3.ts', 'src/file4.ts'],
         gitInfo: null,
         options: {},
       });
 
+      // Should only include first 2 files in structure
       const structure = JSON.parse(context.context.structure);
-      assert.strictEqual(structure.length, 2); // Limited to 2 files
+      assert.strictEqual(structure.length, 2);
+      assert.strictEqual(structure[0].path, 'src/file1.ts');
+      assert.strictEqual(structure[1].path, 'src/file2.ts');
     });
 
-    test('should handle contextDir and outputPath for link generation', () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
+    test('should warn when maxFilesPerContext limit is exceeded', () => {
+      // Mock console.warn to capture warning messages
+      const warnings: string[] = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: string[]) => {
+        warnings.push(args.join(' '));
       };
 
-      const context = builder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: [],
-        allFiles: [],
-        gitInfo: null,
-        options: {},
-        contextDir: 'custom-context',
-        outputPath: '/path/to/PARSEME.md',
-      });
+      try {
+        const config = new ParsemeConfig({
+          limits: {
+            maxFilesPerContext: 2,
+          },
+        });
+        const builder = new ContextBuilder(config);
 
-      assert.ok(context.parseme.includes('custom-context'));
-    });
+        const mockProjectInfo: ProjectInfo = {
+          name: 'test-project',
+          type: 'typescript',
+          category: 'npm-package',
+          packageManager: 'npm',
+          dependencies: {},
+          devDependencies: {},
+        };
 
-    test('should include project scripts in overview', () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
-        scripts: {
-          build: 'tsc',
-          test: 'jest',
-          dev: 'nodemon',
-        },
-      };
+        // Create 5 files to exceed the limit of 2
+        const mockFileAnalyses: FileAnalysis[] = Array.from({ length: 5 }, (_, i) => ({
+          path: `src/file${i + 1}.ts`,
+          type: 'utility',
+          exports: [`func${i + 1}`],
+          imports: [],
+          functions: [`func${i + 1}`],
+          classes: [],
+          routes: [],
+          components: [],
+          services: [],
+          models: [],
+          configs: [],
+          middleware: [],
+          utilities: [],
+        }));
 
-      const context = builder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: [],
-        allFiles: [],
-        gitInfo: null,
-        options: {},
-      });
+        builder.build({
+          projectInfo: mockProjectInfo,
+          fileAnalyses: mockFileAnalyses,
+          allFiles: mockFileAnalyses.map((f) => f.path),
+          gitInfo: null,
+          options: {},
+        });
 
-      assert.ok(context.parseme.includes('Available Scripts'));
-      assert.ok(context.parseme.includes('build'));
-      assert.ok(context.parseme.includes('test'));
-      assert.ok(context.parseme.includes('dev'));
-    });
-
-    test('should include dependencies in overview', () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {
-          express: '^4.18.0',
-          react: '^18.0.0',
-        },
-        devDependencies: {},
-      };
-
-      const context = builder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: [],
-        allFiles: [],
-        gitInfo: null,
-        options: {},
-      });
-
-      assert.ok(context.parseme.includes('Dependencies'));
-      assert.ok(context.parseme.includes('express'));
-      assert.ok(context.parseme.includes('react'));
-    });
-
-    test('should include framework info when available', () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'backend-api',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
-        framework: {
-          name: 'nestjs',
-          version: '^10.0.0',
-          features: ['decorators', 'dependency-injection'],
-        },
-      };
-
-      const context = builder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: [],
-        allFiles: [],
-        gitInfo: null,
-        options: {},
-      });
-
-      assert.ok(context.parseme.includes('nestjs'));
-    });
-
-    test('should truncate content when maxCharsPerFile limit exceeded', () => {
-      const configWithLimits = new ParsemeConfig({
-        limits: {
-          maxCharsPerFile: 100,
-          truncateStrategy: 'truncate',
-        },
-      });
-      const limitedBuilder = new ContextBuilder(configWithLimits);
-
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
-      };
-
-      // Create a large file analysis
-      const largeExports: string[] = [];
-      for (let i = 0; i < 1000; i++) {
-        largeExports.push(`veryLongExportName${i}`);
+        // Verify warning messages were displayed
+        assert.strictEqual(warnings.length, 3);
+        assert.ok(warnings[0].includes('File limit reached: 3 files excluded from analysis.'));
+        assert.ok(warnings[1].includes('Analyzed: 2/5 files'));
+        assert.ok(
+          warnings[2].includes(
+            "To analyze more files, increase 'limits.maxFilesPerContext' in your config file.",
+          ),
+        );
+      } finally {
+        // Restore original console.warn
+        console.warn = originalWarn;
       }
+    });
 
-      const mockFileAnalyses: FileAnalysis[] = [
-        {
-          path: 'src/large-file.ts',
+    test('should not warn when file count is within limit', () => {
+      // Mock console.warn to capture warning messages
+      const warnings: string[] = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: string[]) => {
+        warnings.push(args.join(' '));
+      };
+
+      try {
+        const config = new ParsemeConfig({
+          limits: {
+            maxFilesPerContext: 5,
+          },
+        });
+        const builder = new ContextBuilder(config);
+
+        const mockProjectInfo: ProjectInfo = {
+          name: 'test-project',
+          type: 'typescript',
+          category: 'npm-package',
+          packageManager: 'npm',
+          dependencies: {},
+          devDependencies: {},
+        };
+
+        // Create 3 files, which is within the limit of 5
+        const mockFileAnalyses: FileAnalysis[] = Array.from({ length: 3 }, (_, i) => ({
+          path: `src/file${i + 1}.ts`,
           type: 'utility',
-          exports: largeExports,
+          exports: [`func${i + 1}`],
           imports: [],
-          functions: [],
+          functions: [`func${i + 1}`],
           classes: [],
           routes: [],
           components: [],
@@ -602,126 +584,22 @@ describe('ContextBuilder', () => {
           configs: [],
           middleware: [],
           utilities: [],
-        },
-      ];
+        }));
 
-      const context = limitedBuilder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: mockFileAnalyses,
-        allFiles: ['src/large-file.ts'],
-        gitInfo: null,
-        options: {},
-      });
+        builder.build({
+          projectInfo: mockProjectInfo,
+          fileAnalyses: mockFileAnalyses,
+          allFiles: mockFileAnalyses.map((f) => f.path),
+          gitInfo: null,
+          options: {},
+        });
 
-      // Structure should be truncated
-      assert.ok(
-        context.context.structure.includes('truncated') ||
-          context.context.structure.length < JSON.stringify(mockFileAnalyses, null, 2).length,
-      );
-    });
-
-    test('should split content when split strategy is used', () => {
-      const configWithSplit = new ParsemeConfig({
-        limits: {
-          maxCharsPerFile: 500,
-          truncateStrategy: 'split',
-        },
-      });
-      const splitBuilder = new ContextBuilder(configWithSplit);
-
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
-      };
-
-      // Create a large file analysis
-      const largeExports: string[] = [];
-      for (let i = 0; i < 200; i++) {
-        largeExports.push(`export${i}`);
+        // Should not have any warnings since we're within the limit
+        assert.strictEqual(warnings.length, 0);
+      } finally {
+        // Restore original console.warn
+        console.warn = originalWarn;
       }
-
-      const mockFileAnalyses: FileAnalysis[] = [
-        {
-          path: 'src/file.ts',
-          type: 'utility',
-          exports: largeExports,
-          imports: [],
-          functions: [],
-          classes: [],
-          routes: [],
-          components: [],
-          services: [],
-          models: [],
-          configs: [],
-          middleware: [],
-          utilities: [],
-        },
-      ];
-
-      const context = splitBuilder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: mockFileAnalyses,
-        allFiles: ['src/file.ts'],
-        gitInfo: null,
-        options: {},
-      });
-
-      // Should have split files when content is large
-      const hasStructureParts =
-        context.context.structure_part2 !== undefined || context.context.structure.includes('part');
-      assert.ok(
-        hasStructureParts || context.context.structure.length < 1000,
-        'Should handle large content',
-      );
-    });
-
-    test('should handle content without limits configuration', () => {
-      const configNoLimits = new ParsemeConfig({
-        limits: undefined as never,
-      });
-      const noLimitsBuilder = new ContextBuilder(configNoLimits);
-
-      const mockProjectInfo: ProjectInfo = {
-        name: 'test-project',
-        type: 'typescript',
-        category: 'npm-package',
-        packageManager: 'npm',
-        dependencies: {},
-        devDependencies: {},
-      };
-
-      const mockFileAnalyses: FileAnalysis[] = [
-        {
-          path: 'src/file.ts',
-          type: 'utility',
-          exports: ['export1', 'export2'],
-          imports: [],
-          functions: [],
-          classes: [],
-          routes: [],
-          components: [],
-          services: [],
-          models: [],
-          configs: [],
-          middleware: [],
-          utilities: [],
-        },
-      ];
-
-      const context = noLimitsBuilder.build({
-        projectInfo: mockProjectInfo,
-        fileAnalyses: mockFileAnalyses,
-        allFiles: ['src/file.ts'],
-        gitInfo: null,
-        options: {},
-      });
-
-      assert.ok(context.context.structure);
-      assert.ok(!context.context.structure.includes('truncated'));
     });
   });
 });

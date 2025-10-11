@@ -179,7 +179,7 @@ const config = {
   limits: {
     maxLinesPerFile: 1000,
     maxCharsPerFile: 50000,
-    maxFilesPerContext: 20,
+    maxFilesPerContext: 1000,
     truncateStrategy: 'truncate', // 'truncate' | 'split' | 'summarize'
   },
 
@@ -301,7 +301,7 @@ AI-friendly size limits to prevent token overflow:
 
 - `limits.maxLinesPerFile` - Maximum lines per file (default: `1000`)
 - `limits.maxCharsPerFile` - Maximum characters per file (default: `50000`)
-- `limits.maxFilesPerContext` - Maximum files per context (default: `20`)
+- `limits.maxFilesPerContext` - Maximum files per context (default: `1000`)
 - `limits.truncateStrategy` - Strategy: `"truncate"`, `"split"`, or `"summarize"` (default: `"truncate"`)
 
 ## Output Format

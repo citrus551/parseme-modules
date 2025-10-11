@@ -170,7 +170,7 @@ export class ParsemeConfig {
       limits: {
         maxLinesPerFile: config.limits?.maxLinesPerFile ?? 1000,
         maxCharsPerFile: config.limits?.maxCharsPerFile ?? 50000, // ~15k tokens
-        maxFilesPerContext: config.limits?.maxFilesPerContext ?? 20,
+        maxFilesPerContext: config.limits?.maxFilesPerContext ?? 1000,
         truncateStrategy: config.limits?.truncateStrategy ?? 'truncate',
       },
     };

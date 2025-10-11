@@ -119,6 +119,17 @@ export class ContextBuilder {
       ? fileAnalyses.slice(0, limits.maxFilesPerContext)
       : fileAnalyses;
 
+    // Warn if files were excluded due to limit
+    if (limits?.maxFilesPerContext && fileAnalyses.length > limits.maxFilesPerContext) {
+      const excludedCount = fileAnalyses.length - limits.maxFilesPerContext;
+
+      console.warn(`⚠️  File limit reached: ${excludedCount} files excluded from analysis.`);
+      console.warn(`   Analyzed: ${limits.maxFilesPerContext}/${fileAnalyses.length} files`);
+      console.warn(
+        `   To analyze more files, increase 'limits.maxFilesPerContext' in your config file.`,
+      );
+    }
+
     // Calculate the relative path for the link in markdown
     let linkPath = 'parseme-context';
 

@@ -95,7 +95,7 @@ describe('ParsemeConfig', () => {
 
       assert.strictEqual(result.limits?.maxLinesPerFile, 1000);
       assert.strictEqual(result.limits?.maxCharsPerFile, 50000);
-      assert.strictEqual(result.limits?.maxFilesPerContext, 20);
+      assert.strictEqual(result.limits?.maxFilesPerContext, 1000);
       assert.strictEqual(result.limits?.truncateStrategy, 'truncate');
     });
   });
