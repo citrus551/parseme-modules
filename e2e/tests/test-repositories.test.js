@@ -171,20 +171,20 @@ describe('E2E Test Repositories', () => {
           const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
           const endpointsExist = await fileExists(endpointsPath);
 
-          if (endpointsExist) {
-            const content = await readFile(endpointsPath, 'utf-8');
-            // Skip if file is empty (no routes detected)
-            if (content.trim().length > 0) {
-              const endpoints = JSON.parse(content);
-              assert.ok(Array.isArray(endpoints), 'Endpoints should be an array');
+          assert.ok(endpointsExist, 'routes.json file should exist when shouldHaveEndpoints is true');
 
-              if (config.assertions.minEndpoints) {
-                assert.ok(
-                  endpoints.length >= config.assertions.minEndpoints,
-                  `Should detect at least ${config.assertions.minEndpoints} endpoints`
-                );
-              }
-            }
+          const content = await readFile(endpointsPath, 'utf-8');
+          assert.ok(content.trim().length > 0, 'routes.json should not be empty when shouldHaveEndpoints is true');
+
+          const endpoints = JSON.parse(content);
+          assert.ok(Array.isArray(endpoints), 'Endpoints should be an array');
+          assert.ok(endpoints.length > 0, 'Should detect at least one endpoint');
+
+          if (config.assertions.minEndpoints) {
+            assert.ok(
+              endpoints.length >= config.assertions.minEndpoints,
+              `Should detect at least ${config.assertions.minEndpoints} endpoints, but found ${endpoints.length}`
+            );
           }
         });
       }

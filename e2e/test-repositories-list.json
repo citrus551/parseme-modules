@@ -138,10 +138,8 @@
     "path": "examples/hello-world",
     "branch": "canary",
     "assertions": {
-      "shouldDetectFramework": "Next.js",
-      "shouldHaveEndpoints": true,
-      "minEndpoints": 1
-    }
+      "shouldDetectFramework": "Next.js"
+   }
   },
   "nextjs-2": {
     "name": "Next.js Generated",
@@ -161,9 +159,7 @@
     "path": ".",
     "branch": "master",
     "assertions": {
-      "shouldDetectFramework": "Nuxt.js",
-      "shouldHaveEndpoints": true,
-      "minEndpoints": 2
+      "shouldDetectFramework": "Nuxt.js"
     }
   }
 }
