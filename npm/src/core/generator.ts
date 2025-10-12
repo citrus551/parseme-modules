@@ -36,18 +36,13 @@ export class ParsemeGenerator {
     // Step 2: Analyze all relevant files with AST
     const fileAnalyses = await this.astAnalyzer.analyzeProject(configData.rootDir!);
 
-    // Step 3: Collect all endpoints from file analyses for framework detection
-    const allEndpoints = fileAnalyses
-      .filter((file) => file.routes && file.routes.length > 0)
-      .flatMap((file) => file.routes!);
+    // Step 3: Detect frameworks from dependencies
+    projectInfo.frameworks = await this.frameworkDetector.detect(projectInfo);
 
-    // Step 4: Detect frameworks from dependencies or infer from endpoints
-    projectInfo.frameworks = await this.frameworkDetector.detect(projectInfo, allEndpoints);
-
-    // Step 5: Get all project files (for file list output)
+    // Step 4: Get all project files (for file list output)
     const allFiles = await this.projectAnalyzer.getAllProjectFiles(configData.rootDir!);
 
-    // Step 6: Get git information if enabled
+    // Step 5: Get git information if enabled
     const gitInfo = configData.includeGitInfo
       ? await this.gitAnalyzer.analyze(configData.rootDir!)
       : null;
@@ -56,7 +51,7 @@ export class ParsemeGenerator {
     const finalOutputPath =
       outputPath || configData.outputPath || join(configData.rootDir!, 'PARSEME.md');
 
-    // Step 7: Build the context output
+    // Step 6: Build the context output
     return this.contextBuilder.build({
       projectInfo,
       fileAnalyses,

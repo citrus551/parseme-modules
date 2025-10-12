@@ -6,7 +6,7 @@
     "path": "sample/01-cats-app",
     "branch": "master",
     "assertions": {
-      "shouldDetectFramework": "NestJS",
+      "shouldDetectFramework": "nestjs",
       "shouldHaveEndpoints": true,
       "minEndpoints": 3
     }
@@ -18,9 +18,9 @@
     "path": "orm/express",
     "branch": "latest",
     "assertions": {
-      "shouldDetectFramework": "Express",
+      "shouldDetectFramework": "express",
       "shouldHaveEndpoints": true,
-      "minEndpoints": 5 
+      "minEndpoints": 5
     }
   },
   "fastify": {
@@ -30,7 +30,7 @@
     "path": ".",
     "branch": "main",
     "assertions": {
-      "shouldDetectFramework": "Fastify",
+      "shouldDetectFramework": "fastify",
       "shouldHaveEndpoints": true,
       "minEndpoints": 5
     }
@@ -43,18 +43,20 @@
       "args": ["express-generator", "express-2", "--no-git"]
     },
     "assertions": {
-      "shouldDetectFramework": "Express",
+      "shouldDetectFramework": "express",
       "shouldHaveEndpoints": true,
-      "minEndpoints": 2 
+      "minEndpoints": 2
     }
   },
   "react": {
-    "name": "React Onborda",
+    "name": "React 2txt",
     "type": "clone",
-    "repo": "https://github.com/uixmat/onborda",
+    "repo": "https://github.com/ai-ng/2txt",
     "path": ".",
     "branch": "main",
-    "assertions": {}
+    "assertions": {
+      "shouldDetectFramework": "next.js, react"
+    }
   },
   "react-2": {
     "name": "React Router Generated",
@@ -64,19 +66,17 @@
       "args": ["create-react-router@latest", "react-2", "-y"]
     },
     "assertions": {
-      "shouldDetectFramework": "React"
+      "shouldDetectFramework": "react"
     }
   },
   "vue": {
-    "name": "Vue Pinia",
+    "name": "Vue Pinia Colada",
     "type": "clone",
-    "repo": "https://github.com/vuejs/pinia",
+    "repo": "https://github.com/posva/pinia-colada",
     "path": ".",
-    "branch": "v2",
+    "branch": "main",
     "assertions": {
-      "shouldDetectFramework": "Vue",
-      "shouldHaveEndpoints": true,
-      "minEndpoints": 1 
+      "shouldDetectFramework": "vue"
     }
   },
   "vue-2": {
@@ -87,7 +87,7 @@
       "args": ["create-vue@latest", "vue-2", "--typescript", "--jsx", "--router", "--pinia", "--vitest", "--eslint", "--prettier"]
     },
     "assertions": {
-      "shouldDetectFramework": "Vue"
+      "shouldDetectFramework": "vue"
     }
   },
   "angular": {
@@ -97,7 +97,7 @@
     "path": "walk-my-dog",
     "branch": "main",
     "assertions": {
-      "shouldDetectFramework": "Angular"
+      "shouldDetectFramework": "angular"
     }
   },
   "angular-2": {
@@ -108,17 +108,17 @@
       "args": ["@angular/cli@latest", "new", "angular-2", "--standalone", "--routing", "--style=scss", "--strict", "--skip-git"]
     },
     "assertions": {
-      "shouldDetectFramework": "Angular"
+      "shouldDetectFramework": "angular"
     }
   },
   "svelte": {
-    "name": "Svelte TodoMVC",
+    "name": "Svelte Template",
     "type": "clone",
-    "repo": "https://github.com/sveltejs/examples",
-    "path": "examples/todomvc",
-    "branch": "main",
+    "repo": "https://github.com/hmmhmmhm/svelte-template",
+    "path": ".",
+    "branch": "master",
     "assertions": {
-      "shouldDetectFramework": "Svelte"
+      "shouldDetectFramework": "express, svelte"
     }
   },
   "vanilla": {
@@ -138,8 +138,8 @@
     "path": "examples/hello-world",
     "branch": "canary",
     "assertions": {
-      "shouldDetectFramework": "Next.js"
-   }
+      "shouldDetectFramework": "next.js, react"
+    }
   },
   "nextjs-2": {
     "name": "Next.js Generated",
@@ -149,7 +149,7 @@
       "args": ["create-next-app@latest", "nextjs-2", "--app", "--ts", "--tailwind", "--src-dir", "--no-git", "--yes"]
     },
     "assertions": {
-      "shouldDetectFramework": "Next.js"
+      "shouldDetectFramework": "next.js, react"
     }
   },
   "nuxtjs": {
@@ -159,7 +159,87 @@
     "path": ".",
     "branch": "master",
     "assertions": {
-      "shouldDetectFramework": "Nuxt.js"
+      "shouldDetectFramework": "nuxt.js, vue"
+    }
+  },
+  "utility-types": {
+    "name": "TypeScript Utility Types",
+    "type": "clone",
+    "repo": "https://github.com/piotrwitek/utility-types",
+    "path": ".",
+    "branch": "master",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "lodash": {
+    "name": "Lodash JavaScript Helpers",
+    "type": "clone",
+    "repo": "https://github.com/lodash/lodash",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "axios": {
+    "name": "Axios HTTP Client",
+    "type": "clone",
+    "repo": "https://github.com/axios/axios",
+    "path": ".",
+    "branch": "v1.x",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "lerna": {
+    "name": "Lerna Monorepo Tool",
+    "type": "clone",
+    "repo": "https://github.com/lerna/lerna",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "ls-mcp": {
+    "name": "Cli Tool ls-mcp",
+    "type": "clone",
+    "repo": "https://github.com/lirantal/ls-mcp",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "vite-plugin-pages": {
+    "name": "Vite Plugin Pages",
+    "type": "clone",
+    "repo": "https://github.com/hannoeru/vite-plugin-pages",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "responsively-app": {
+    "name": "Responsively Desktop App",
+    "type": "clone",
+    "repo": "https://github.com/responsively-org/responsively-app",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "jest": {
+    "name": "Jest Testing Framework",
+    "type": "clone",
+    "repo": "https://github.com/jestjs/jest",
+    "path": ".",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "unknown"
     }
   }
 }

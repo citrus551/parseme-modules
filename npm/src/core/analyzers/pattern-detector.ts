@@ -14,8 +14,6 @@ export interface PatternAnalysis {
 }
 
 export interface EndpointInfo extends RouteInfo {
-  type: 'rest' | 'graphql' | 'websocket' | 'rpc' | 'unknown';
-  framework?: string;
   decorator?: string;
 }
 
@@ -71,18 +69,7 @@ export class PatternDetector {
       utilities: [],
     };
 
-    // First pass: collect imports to detect framework
-    const imports: string[] = [];
-    traverse.default(ast, {
-      ImportDeclaration: (path) => {
-        imports.push(path.node.source.value);
-      },
-    });
-
-    // Detect framework from imports
-    const detectedFramework = this.detectFrameworkFromImports(imports);
-
-    // Use a single traverse call to detect all patterns
+    // Analyze patterns in the AST
     traverse.default(ast, {
       // Detect decorator-based routes: @Get(), @Post(), etc.
       ClassMethod: (path) => {
@@ -103,9 +90,7 @@ export class PatternDetector {
                     handler: t.isIdentifier(path.node.key) ? path.node.key.name : 'anonymous',
                     file: filePath,
                     line: path.node.loc?.start.line || 0,
-                    type: 'rest',
                     decorator: callee.name,
-                    framework: 'nestjs', // Decorators are NestJS-specific
                   });
                 }
               }
@@ -124,26 +109,38 @@ export class PatternDetector {
 
           if (httpMethods.includes(methodName) && args.length >= 2) {
             const routePath = args[0];
-            if (t.isStringLiteral(routePath)) {
-              analysis.endpoints.push({
-                method: methodName.toUpperCase(),
-                path: routePath.value,
-                handler: 'anonymous',
-                file: filePath,
-                line: path.node.loc?.start.line || 0,
-                type: 'rest',
-                framework: detectedFramework,
-              });
+            // Only detect if:
+            // 1. First argument is a string literal (route path)
+            // 2. Object is a known route handler name
+            if (t.isStringLiteral(routePath) && t.isIdentifier(callee.object)) {
+              const objectName = callee.object.name;
+              const routeObjectNames = [
+                'app',
+                'router',
+                'server',
+                'fastify',
+                'express',
+                'route',
+                'api',
+              ];
+
+              // Only detect if it's a common route object name
+              // This filters out axios.get(), client.get(), etc.
+              if (routeObjectNames.includes(objectName.toLowerCase())) {
+                analysis.endpoints.push({
+                  method: methodName.toUpperCase(),
+                  path: routePath.value,
+                  handler: 'anonymous',
+                  file: filePath,
+                  line: path.node.loc?.start.line || 0,
+                });
+              }
             }
           }
         }
 
         // Detect Nuxt.js server routes: defineEventHandler()
-        if (
-          t.isIdentifier(callee) &&
-          callee.name === 'defineEventHandler' &&
-          detectedFramework === 'nuxt.js'
-        ) {
+        if (t.isIdentifier(callee) && callee.name === 'defineEventHandler') {
           // Extract route path from file path
           // Nuxt server routes are in server/api/ or server/routes/
           const routePath = this.extractNuxtRoutePath(filePath);
@@ -154,8 +151,6 @@ export class PatternDetector {
             handler: 'defineEventHandler',
             file: filePath,
             line: path.node.loc?.start.line || 0,
-            type: 'rest',
-            framework: 'nuxt.js',
           });
         }
       },
@@ -197,15 +192,12 @@ export class PatternDetector {
       ExportNamedDeclaration: (path) => {
         const declaration = path.node.declaration;
 
-        if (
-          t.isFunctionDeclaration(declaration) &&
-          declaration.id &&
-          detectedFramework === 'next.js'
-        ) {
+        if (t.isFunctionDeclaration(declaration) && declaration.id) {
           const functionName = declaration.id.name;
           const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'];
 
-          if (httpMethods.includes(functionName)) {
+          // Only detect if it's an HTTP method name and in an api directory
+          if (httpMethods.includes(functionName) && /\/api\//.test(filePath)) {
             // Extract route path from file path
             // Next.js API routes are in app/api/ or pages/api/
             const routePath = this.extractNextJSRoutePath(filePath);
@@ -216,8 +208,6 @@ export class PatternDetector {
               handler: functionName,
               file: filePath,
               line: declaration.loc?.start.line || 0,
-              type: 'rest',
-              framework: 'next.js',
             });
           }
         }
@@ -335,36 +325,6 @@ export class PatternDetector {
     return body.body.some(
       (stmt) => t.isReturnStatement(stmt) && stmt.argument && t.isJSXElement(stmt.argument),
     );
-  }
-
-  private detectFrameworkFromImports(imports: string[]): string | undefined {
-    // Check for Fastify first (most specific)
-    if (imports.some((imp) => imp === 'fastify' || imp.startsWith('@fastify/'))) {
-      return 'fastify';
-    }
-
-    // Check for NestJS
-    if (imports.some((imp) => imp.startsWith('@nestjs/'))) {
-      return 'nestjs';
-    }
-
-    // Check for Next.js (check before Express as it may also use express-like patterns)
-    if (imports.some((imp) => imp.startsWith('next') || imp === 'next/server')) {
-      return 'next.js';
-    }
-
-    // Check for Nuxt.js
-    if (imports.some((imp) => imp.startsWith('nuxt') || imp.startsWith('#app') || imp === 'h3')) {
-      return 'nuxt.js';
-    }
-
-    // Check for Express
-    if (imports.some((imp) => imp === 'express')) {
-      return 'express';
-    }
-
-    // Return undefined if no framework detected
-    return undefined;
   }
 
   private extractNextJSRoutePath(filePath: string): string {

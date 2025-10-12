@@ -1,9 +1,10 @@
 import type { ProjectInfo, FrameworkInfo } from '../types.js';
-import type { EndpointInfo } from './pattern-detector.js';
 
 export class FrameworkDetector {
-  async detect(projectInfo: ProjectInfo, endpoints?: EndpointInfo[]): Promise<FrameworkInfo[]> {
-    const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+  async detect(projectInfo: ProjectInfo): Promise<FrameworkInfo[]> {
+    // Only check dependencies (not devDependencies) for framework detection
+    // This prevents false positives from libraries that have frameworks in devDependencies for testing
+    const deps = projectInfo.dependencies || {};
     const detectedFrameworks: FrameworkInfo[] = [];
 
     // Backend frameworks
@@ -17,7 +18,7 @@ export class FrameworkDetector {
       detectedFrameworks.push(this.detectExpress(deps));
     }
 
-    // Fullstack frameworks (check these first as they include frontend frameworks)
+    // Fullstack frameworks
     if (deps['next']) {
       detectedFrameworks.push(this.detectNextJS(deps));
     }
@@ -26,60 +27,20 @@ export class FrameworkDetector {
     }
 
     // Frontend frameworks
+    // Note: Fullstack frameworks like Next.js and Nuxt.js will also detect their underlying
+    // frontend frameworks (React, Vue), which is correct behavior
     if (deps['react'] || deps['react-dom']) {
       detectedFrameworks.push(this.detectReact(deps));
     }
-    if (deps['vue']) {
+    if (deps['vue'] || Object.keys(deps).some((dep) => dep.startsWith('@vue/'))) {
       detectedFrameworks.push(this.detectVue(deps));
     }
     if (deps['@angular/core']) {
       detectedFrameworks.push(this.detectAngular(deps));
     }
-    if (deps['svelte']) {
+    if (deps['svelte'] || Object.keys(deps).some((dep) => dep.startsWith('@sveltejs/'))) {
       detectedFrameworks.push(this.detectSvelte(deps));
     }
-
-    // Fallback: If no framework found in dependencies, try to infer from endpoints
-    if (detectedFrameworks.length === 0 && endpoints && endpoints.length > 0) {
-      const frameworksFromEndpoints = this.detectFrameworksFromEndpoints(endpoints);
-      detectedFrameworks.push(...frameworksFromEndpoints);
-    }
-
-    return detectedFrameworks;
-  }
-
-  private detectFrameworksFromEndpoints(endpoints: EndpointInfo[]): FrameworkInfo[] {
-    // Count frameworks detected in endpoints
-    const frameworkCounts = new Map<string, number>();
-
-    endpoints.forEach((endpoint) => {
-      if (endpoint.framework) {
-        const count = frameworkCounts.get(endpoint.framework) || 0;
-        frameworkCounts.set(endpoint.framework, count + 1);
-      }
-    });
-
-    if (frameworkCounts.size === 0) {
-      return [];
-    }
-
-    // Return all detected frameworks
-    // Note: We can't detect features without package.json, so features array will be empty
-    const detectedFrameworks: FrameworkInfo[] = [];
-
-    frameworkCounts.forEach((_, framework) => {
-      switch (framework.toLowerCase()) {
-        case 'express':
-          detectedFrameworks.push({ name: 'express', features: [] });
-          break;
-        case 'fastify':
-          detectedFrameworks.push({ name: 'fastify', features: [] });
-          break;
-        case 'nestjs':
-          detectedFrameworks.push({ name: 'nestjs', features: [] });
-          break;
-      }
-    });
 
     return detectedFrameworks;
   }

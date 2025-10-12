@@ -14,7 +14,6 @@ export type { ServiceInfo, ModelInfo, ConfigInfo, MiddlewareInfo, UtilityInfo, E
 export interface FileAnalysis {
   path: string;
   type: 'route' | 'middleware' | 'model' | 'service' | 'utility' | 'config' | 'test' | 'component';
-  framework?: string;
   exports: string[];
   imports: string[];
   functions: string[];

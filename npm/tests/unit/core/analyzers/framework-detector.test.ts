@@ -211,7 +211,8 @@ describe('FrameworkDetector', () => {
       assert.ok(nestjs!.features.includes('graphql'));
       assert.ok(nestjs!.features.includes('websockets'));
       assert.ok(nestjs!.features.includes('microservices'));
-      assert.ok(nestjs!.features.includes('testing'));
+      // testing is in devDependencies, so it should NOT be detected
+      assert.ok(!nestjs!.features.includes('testing'));
     });
 
     test('should detect NestJS with mongoose', async () => {
@@ -283,11 +284,11 @@ describe('FrameworkDetector', () => {
       assert.ok(frameworks.some((f) => f.name === 'express'));
     });
 
-    test('should handle devDependencies when detecting framework', async () => {
+    test('should only check dependencies not devDependencies for framework detection', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'dev-deps-app',
         type: 'typescript',
-        category: 'backend-api',
+        category: 'npm-package',
         packageManager: 'npm',
         dependencies: {},
         devDependencies: {
@@ -301,94 +302,18 @@ describe('FrameworkDetector', () => {
 
       const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(frameworks.length, 1);
-      assert.strictEqual(frameworks[0].name, 'nestjs');
-    });
-  });
-
-  describe('detect from endpoints fallback', () => {
-    test('should detect Express from endpoints when package.json missing', async () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'express-no-pkg',
-        type: 'javascript',
-        category: 'unknown',
-        packageManager: 'unknown',
-        dependencies: {},
-        devDependencies: {},
-        scripts: {},
-        entryPoints: [],
-        outputTargets: [],
-      };
-
-      const mockEndpoints = [
-        {
-          method: 'GET',
-          path: '/users',
-          handler: 'getUsers',
-          file: 'routes/users.js',
-          line: 10,
-          type: 'rest' as const,
-          framework: 'express',
-        },
-        {
-          method: 'POST',
-          path: '/users',
-          handler: 'createUser',
-          file: 'routes/users.js',
-          line: 20,
-          type: 'rest' as const,
-          framework: 'express',
-        },
-      ];
-
-      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
-
-      assert.strictEqual(frameworks.length, 1);
-      assert.strictEqual(frameworks[0].name, 'express');
-      assert.strictEqual(frameworks[0].features.length, 0); // No features without package.json
+      // Should NOT detect NestJS since it's only in devDependencies
+      assert.strictEqual(frameworks.length, 0);
     });
 
-    test('should detect Fastify from endpoints when package.json missing', async () => {
+    test('should detect Vue when @vue/* packages are in dependencies', async () => {
       const mockProjectInfo: ProjectInfo = {
-        name: 'fastify-no-pkg',
-        type: 'javascript',
-        category: 'unknown',
-        packageManager: 'unknown',
-        dependencies: {},
-        devDependencies: {},
-        scripts: {},
-        entryPoints: [],
-        outputTargets: [],
-      };
-
-      const mockEndpoints = [
-        {
-          method: 'GET',
-          path: '/api/items',
-          handler: 'getItems',
-          file: 'routes/items.js',
-          line: 5,
-          type: 'rest' as const,
-          framework: 'fastify',
-        },
-      ];
-
-      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
-
-      assert.strictEqual(frameworks.length, 1);
-      assert.strictEqual(frameworks[0].name, 'fastify');
-      assert.strictEqual(frameworks[0].features.length, 0);
-    });
-
-    test('should prioritize package.json over endpoints', async () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'express-app',
-        type: 'javascript',
-        category: 'backend-api',
+        name: 'vue-lib',
+        type: 'typescript',
+        category: 'npm-package',
         packageManager: 'npm',
         dependencies: {
-          express: '^4.18.0',
-          cors: '^2.8.0',
+          '@vue/devtools-api': '^8.0.0',
         },
         devDependencies: {},
         scripts: {},
@@ -396,123 +321,31 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      // Endpoints suggest fastify, but package.json has express
-      const mockEndpoints = [
-        {
-          method: 'GET',
-          path: '/test',
-          handler: 'test',
-          file: 'test.js',
-          line: 1,
-          type: 'rest' as const,
-          framework: 'fastify',
-        },
-      ];
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
-      const express = frameworks.find((f) => f.name === 'express');
-
-      assert.ok(express, 'Express should be detected from package.json');
-      assert.ok(express!.features.includes('cors'));
-      // Endpoints should be ignored when package.json has frameworks
-      assert.ok(!frameworks.some((f) => f.name === 'fastify'));
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'vue');
     });
 
-    test('should detect all frameworks present in endpoints', async () => {
+    test('should detect Svelte when @sveltejs/* packages are in dependencies', async () => {
       const mockProjectInfo: ProjectInfo = {
-        name: 'mixed-endpoints',
-        type: 'javascript',
-        category: 'unknown',
-        packageManager: 'unknown',
-        dependencies: {},
+        name: 'svelte-app',
+        type: 'typescript',
+        category: 'web-app',
+        packageManager: 'npm',
+        dependencies: {
+          '@sveltejs/kit': '^2.0.0',
+        },
         devDependencies: {},
         scripts: {},
         entryPoints: [],
         outputTargets: [],
       };
 
-      const mockEndpoints = [
-        {
-          method: 'GET',
-          path: '/express1',
-          handler: 'test1',
-          file: 'route1.js',
-          line: 1,
-          type: 'rest' as const,
-          framework: 'express',
-        },
-        {
-          method: 'GET',
-          path: '/express2',
-          handler: 'test2',
-          file: 'route2.js',
-          line: 1,
-          type: 'rest' as const,
-          framework: 'express',
-        },
-        {
-          method: 'GET',
-          path: '/fastify1',
-          handler: 'test3',
-          file: 'route3.js',
-          line: 1,
-          type: 'rest' as const,
-          framework: 'fastify',
-        },
-      ];
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
-
-      assert.strictEqual(frameworks.length, 2);
-      assert.ok(frameworks.some((f) => f.name === 'express'));
-      assert.ok(frameworks.some((f) => f.name === 'fastify'));
-    });
-
-    test('should return empty array when endpoints have no framework', async () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'no-framework',
-        type: 'javascript',
-        category: 'unknown',
-        packageManager: 'unknown',
-        dependencies: {},
-        devDependencies: {},
-        scripts: {},
-        entryPoints: [],
-        outputTargets: [],
-      };
-
-      const mockEndpoints = [
-        {
-          method: 'GET',
-          path: '/test',
-          handler: 'test',
-          file: 'test.js',
-          line: 1,
-          type: 'rest' as const,
-        },
-      ];
-
-      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
-
-      assert.strictEqual(frameworks.length, 0);
-    });
-
-    test('should return empty array when no endpoints provided', async () => {
-      const mockProjectInfo: ProjectInfo = {
-        name: 'no-endpoints',
-        type: 'javascript',
-        category: 'unknown',
-        packageManager: 'unknown',
-        dependencies: {},
-        devDependencies: {},
-        scripts: {},
-        entryPoints: [],
-        outputTargets: [],
-      };
-
-      const frameworks = await detector.detect(mockProjectInfo, []);
-
-      assert.strictEqual(frameworks.length, 0);
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'svelte');
     });
   });
 });
