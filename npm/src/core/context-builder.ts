@@ -8,6 +8,7 @@ import type {
   GitInfo,
   GeneratorOptions,
   RouteInfo,
+  FrameworkInfo,
 } from './types.js';
 
 interface BuildContext {
@@ -125,7 +126,7 @@ ${routesInstructions}`;
 **Description:** ${projectInfo.description || 'No description available.'}
 **Type:** ${projectInfo.type} project
 **Package Manager:** ${projectInfo.packageManager}
-**Framework:** ${projectInfo.framework?.name || 'None detected'}`;
+**Framework:** ${this.formatFrameworksList(projectInfo.frameworks)}`;
 
     // Add main entry point if available
     if (projectInfo.entryPoints && projectInfo.entryPoints.length > 0) {
@@ -152,6 +153,19 @@ ${routesInstructions}`;
     }
 
     return content;
+  }
+
+  private formatFrameworksList(frameworks?: FrameworkInfo[]): string {
+    if (!frameworks || frameworks.length === 0) {
+      return 'unknown';
+    }
+
+    if (frameworks.length === 1) {
+      return frameworks[0].name;
+    }
+
+    // Multiple frameworks - return comma-separated list
+    return frameworks.map((f) => f.name).join(', ');
   }
 
   private buildGitSection(gitInfo: GitInfo): string {
@@ -249,20 +263,28 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
     return jsonContent;
   }
 
-  private buildDetailedFramework(framework: ProjectInfo['framework']): string {
-    if (!framework) {
+  private buildDetailedFramework(frameworks?: FrameworkInfo[]): string {
+    if (!frameworks || frameworks.length === 0) {
       return '';
     }
 
-    let content = `# Framework: ${framework.name}\n\n`;
-    content += `**Version**: ${framework.version || 'Unknown'}\n\n`;
+    let content = '';
 
-    if (framework.features.length > 0) {
-      content += '## Features Detected\n\n';
-      framework.features.forEach((feature) => {
-        content += `- ${feature}\n`;
-      });
-    }
+    frameworks.forEach((framework, index) => {
+      if (index > 0) {
+        content += '\n\n';
+      }
+
+      content += `# Framework: ${framework.name}\n\n`;
+      content += `**Version**: ${framework.version || 'Unknown'}\n\n`;
+
+      if (framework.features.length > 0) {
+        content += '## Features Detected\n\n';
+        framework.features.forEach((feature: string) => {
+          content += `- ${feature}\n`;
+        });
+      }
+    });
 
     return content;
   }

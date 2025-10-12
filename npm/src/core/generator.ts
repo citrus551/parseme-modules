@@ -41,8 +41,8 @@ export class ParsemeGenerator {
       .filter((file) => file.routes && file.routes.length > 0)
       .flatMap((file) => file.routes!);
 
-    // Step 4: Detect framework from dependencies or infer from endpoints
-    projectInfo.framework = await this.frameworkDetector.detect(projectInfo, allEndpoints);
+    // Step 4: Detect frameworks from dependencies or infer from endpoints
+    projectInfo.frameworks = await this.frameworkDetector.detect(projectInfo, allEndpoints);
 
     // Step 5: Get all project files (for file list output)
     const allFiles = await this.projectAnalyzer.getAllProjectFiles(configData.rootDir!);

@@ -286,7 +286,7 @@ export class PatternDetector {
     );
   }
 
-  private detectFrameworkFromImports(imports: string[]): string {
+  private detectFrameworkFromImports(imports: string[]): string | undefined {
     // Check for Fastify first (most specific)
     if (imports.some((imp) => imp === 'fastify' || imp.startsWith('@fastify/'))) {
       return 'fastify';
@@ -297,12 +297,12 @@ export class PatternDetector {
       return 'nestjs';
     }
 
-    // Check for Express (default fallback for router-style)
+    // Check for Express
     if (imports.some((imp) => imp === 'express')) {
       return 'express';
     }
 
-    // Default to express for router-style routes without clear framework indicator
-    return 'express';
+    // Return undefined if no framework detected
+    return undefined;
   }
 }

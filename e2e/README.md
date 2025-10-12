@@ -12,11 +12,27 @@ These tests clone example projects and run parseme to ensure:
 
 ## Tested Frameworks
 
+### Backend APIs
+
 | Framework | Repository | Path |
 |-----------|------------|------|
 | NestJS | [nestjs/nest](https://github.com/nestjs/nest) | sample/01-cats-app |
 | Express.js | [expressjs/express](https://github.com/expressjs/express) | examples/multi-router |
+| Express.js (generated) | `npx express-generator` | . |
 | Fastify | [fastify/demo](https://github.com/fastify/demo) | . |
+
+### Frontend Applications
+
+| Framework | Repository | Path |
+|-----------|------------|------|
+| React.js | [uixmat/onborda](https://github.com/uixmat/onborda) | . |
+| React.js (generated) | `npx create-react-router@latest` | . |
+| Vue.js | [vuejs/pinia](https://github.com/vuejs/pinia) | . |
+| Vue.js (generated) | `npx create-vue@latest` | . |
+| Angular | [angular/examples](https://github.com/angular/examples) | walk-my-dog |
+| Angular (generated) | `ng new` | . |
+| Svelte | [sveltejs/examples](https://github.com/sveltejs/examples) | examples/todomvc |
+| Vanilla JS | [ymw0331/vanilla-javascript-20-projects](https://github.com/ymw0331/vanilla-javascript-20-projects) | 014-nasa-apod |
 
 ## Prerequisites
 

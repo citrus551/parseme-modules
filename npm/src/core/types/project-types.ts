@@ -9,7 +9,7 @@ export interface ProjectInfo {
   type: 'typescript' | 'javascript' | 'mixed';
   category: ProjectCategory;
   packageManager: 'unknown' | 'npm' | 'yarn' | 'pnpm' | 'bun';
-  framework?: FrameworkInfo;
+  frameworks?: FrameworkInfo[];
   buildTool?: BuildToolInfo;
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;

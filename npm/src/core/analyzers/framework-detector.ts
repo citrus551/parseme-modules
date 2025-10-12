@@ -2,35 +2,48 @@ import type { ProjectInfo, FrameworkInfo } from '../types.js';
 import type { EndpointInfo } from './pattern-detector.js';
 
 export class FrameworkDetector {
-  async detect(projectInfo: ProjectInfo, endpoints?: EndpointInfo[]): Promise<FrameworkInfo> {
+  async detect(projectInfo: ProjectInfo, endpoints?: EndpointInfo[]): Promise<FrameworkInfo[]> {
     const deps = { ...projectInfo.dependencies, ...projectInfo.devDependencies };
+    const detectedFrameworks: FrameworkInfo[] = [];
 
-    // Check for frameworks in dependencies
+    // Backend frameworks
     if (deps['@nestjs/core'] || deps['@nestjs/common']) {
-      return this.detectNestJS(deps);
+      detectedFrameworks.push(this.detectNestJS(deps));
     }
     if (deps['fastify']) {
-      return this.detectFastify(deps);
+      detectedFrameworks.push(this.detectFastify(deps));
     }
     if (deps['express']) {
-      return this.detectExpress(deps);
+      detectedFrameworks.push(this.detectExpress(deps));
+    }
+
+    // Frontend frameworks
+    if (deps['next']) {
+      detectedFrameworks.push(this.detectNextJS(deps));
+    }
+    if (deps['react'] || deps['react-dom']) {
+      detectedFrameworks.push(this.detectReact(deps));
+    }
+    if (deps['vue']) {
+      detectedFrameworks.push(this.detectVue(deps));
+    }
+    if (deps['@angular/core']) {
+      detectedFrameworks.push(this.detectAngular(deps));
+    }
+    if (deps['svelte']) {
+      detectedFrameworks.push(this.detectSvelte(deps));
     }
 
     // Fallback: If no framework found in dependencies, try to infer from endpoints
-    if (endpoints && endpoints.length > 0) {
-      const frameworkFromEndpoints = this.detectFrameworkFromEndpoints(endpoints);
-      if (frameworkFromEndpoints) {
-        return frameworkFromEndpoints;
-      }
+    if (detectedFrameworks.length === 0 && endpoints && endpoints.length > 0) {
+      const frameworksFromEndpoints = this.detectFrameworksFromEndpoints(endpoints);
+      detectedFrameworks.push(...frameworksFromEndpoints);
     }
 
-    return {
-      name: 'unknown',
-      features: [],
-    };
+    return detectedFrameworks;
   }
 
-  private detectFrameworkFromEndpoints(endpoints: EndpointInfo[]): FrameworkInfo | null {
+  private detectFrameworksFromEndpoints(endpoints: EndpointInfo[]): FrameworkInfo[] {
     // Count frameworks detected in endpoints
     const frameworkCounts = new Map<string, number>();
 
@@ -42,32 +55,28 @@ export class FrameworkDetector {
     });
 
     if (frameworkCounts.size === 0) {
-      return null;
+      return [];
     }
 
-    // Find the most common framework
-    let mostCommonFramework = '';
-    let maxCount = 0;
+    // Return all detected frameworks
+    // Note: We can't detect features without package.json, so features array will be empty
+    const detectedFrameworks: FrameworkInfo[] = [];
 
-    frameworkCounts.forEach((count, framework) => {
-      if (count > maxCount) {
-        maxCount = count;
-        mostCommonFramework = framework;
+    frameworkCounts.forEach((_, framework) => {
+      switch (framework.toLowerCase()) {
+        case 'express':
+          detectedFrameworks.push({ name: 'express', features: [] });
+          break;
+        case 'fastify':
+          detectedFrameworks.push({ name: 'fastify', features: [] });
+          break;
+        case 'nestjs':
+          detectedFrameworks.push({ name: 'nestjs', features: [] });
+          break;
       }
     });
 
-    // Return framework info based on detected framework
-    // Note: We can't detect features without package.json, so features array will be empty
-    switch (mostCommonFramework.toLowerCase()) {
-      case 'express':
-        return { name: 'express', features: [] };
-      case 'fastify':
-        return { name: 'fastify', features: [] };
-      case 'nestjs':
-        return { name: 'nestjs', features: [] };
-      default:
-        return null;
-    }
+    return detectedFrameworks;
   }
 
   private detectExpress(deps: Record<string, string>): FrameworkInfo {
@@ -175,6 +184,135 @@ export class FrameworkDetector {
     return {
       name: 'nestjs',
       version: deps['@nestjs/core'],
+      features,
+    };
+  }
+
+  private detectReact(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Detect React-specific libraries
+    if (deps['react-router'] || deps['react-router-dom']) {
+      features.push('routing');
+    }
+    if (deps['redux'] || deps['@reduxjs/toolkit']) {
+      features.push('state-management-redux');
+    }
+    if (deps['zustand']) {
+      features.push('state-management-zustand');
+    }
+    if (deps['react-query'] || deps['@tanstack/react-query']) {
+      features.push('data-fetching');
+    }
+    if (deps['@testing-library/react']) {
+      features.push('testing');
+    }
+
+    return {
+      name: 'react',
+      version: deps['react'],
+      features,
+    };
+  }
+
+  private detectVue(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Detect Vue-specific libraries
+    if (deps['vue-router']) {
+      features.push('routing');
+    }
+    if (deps['pinia']) {
+      features.push('state-management-pinia');
+    }
+    if (deps['vuex']) {
+      features.push('state-management-vuex');
+    }
+    if (deps['@vue/test-utils']) {
+      features.push('testing');
+    }
+    if (deps['nuxt']) {
+      features.push('ssr-nuxt');
+    }
+
+    return {
+      name: 'vue',
+      version: deps['vue'],
+      features,
+    };
+  }
+
+  private detectAngular(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Detect Angular-specific modules
+    if (deps['@angular/router']) {
+      features.push('routing');
+    }
+    if (deps['@angular/forms']) {
+      features.push('forms');
+    }
+    if (deps['@angular/common/http'] || deps['@angular/common']) {
+      features.push('http-client');
+    }
+    if (deps['@ngrx/store']) {
+      features.push('state-management-ngrx');
+    }
+    if (deps['@angular/material']) {
+      features.push('material-design');
+    }
+    if (deps['@angular/animations']) {
+      features.push('animations');
+    }
+
+    // Angular uses decorators and dependency injection by default
+    features.push('decorators', 'dependency-injection', 'typescript');
+
+    return {
+      name: 'angular',
+      version: deps['@angular/core'],
+      features,
+    };
+  }
+
+  private detectSvelte(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Detect Svelte-specific libraries
+    if (deps['@sveltejs/kit'] || deps['@sveltejs/adapter-auto']) {
+      features.push('sveltekit');
+    }
+    if (deps['svelte-routing']) {
+      features.push('routing');
+    }
+    if (deps['@testing-library/svelte']) {
+      features.push('testing');
+    }
+
+    return {
+      name: 'svelte',
+      version: deps['svelte'],
+      features,
+    };
+  }
+
+  private detectNextJS(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Next.js features are often built-in, but we can detect some patterns
+    if (deps['next-auth']) {
+      features.push('authentication');
+    }
+    if (deps['@vercel/analytics']) {
+      features.push('analytics');
+    }
+
+    // Next.js built-in features
+    features.push('ssr', 'routing', 'api-routes', 'file-based-routing');
+
+    return {
+      name: 'next.js',
+      version: deps['next'],
       features,
     };
   }

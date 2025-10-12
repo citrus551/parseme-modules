@@ -36,16 +36,95 @@
       "minEndpoints": 5
     }
   },
-  "express-generator": {
+  "express-2": {
     "name": "Express Generator App",
     "type": "generate",
     "generate": {
       "command": "npx",
-      "args": ["express-generator", "express-generator", "--no-git"]
+      "args": ["express-generator", "express-2", "--no-git"]
     },
     "assertions": {
       "shouldDetectFramework": "Express",
       "shouldHaveEndpoints": true
     }
+  },
+  "react": {
+    "name": "React Onborda",
+    "type": "clone",
+    "repo": "https://github.com/uixmat/onborda",
+    "path": ".",
+    "branch": "main",
+    "assertions": {}
+  },
+  "react-2": {
+    "name": "React Router Generated",
+    "type": "generate",
+    "generate": {
+      "command": "npx",
+      "args": ["create-react-router@latest", "react-2", "-y"]
+    },
+    "assertions": {
+      "shouldDetectFramework": "React"
+    }
+  },
+  "vue": {
+    "name": "Vue Pinia",
+    "type": "clone",
+    "repo": "https://github.com/vuejs/pinia",
+    "path": ".",
+    "branch": "v2",
+    "assertions": {
+      "shouldDetectFramework": "Vue"
+    }
+  },
+  "vue-2": {
+    "name": "Vue Generated",
+    "type": "generate",
+    "generate": {
+      "command": "npx",
+      "args": ["create-vue@latest", "vue-2", "--typescript", "--jsx", "--router", "--pinia", "--vitest", "--eslint", "--prettier"]
+    },
+    "assertions": {
+      "shouldDetectFramework": "Vue"
+    }
+  },
+  "angular": {
+    "name": "Angular Walk My Dog",
+    "type": "clone",
+    "repo": "https://github.com/angular/examples",
+    "path": "walk-my-dog",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "Angular"
+    }
+  },
+  "angular-2": {
+    "name": "Angular Generated",
+    "type": "generate",
+    "generate": {
+      "command": "npx",
+      "args": ["@angular/cli@latest", "new", "angular-2", "--standalone", "--routing", "--style=scss", "--strict", "--skip-git"]
+    },
+    "assertions": {
+      "shouldDetectFramework": "Angular"
+    }
+  },
+  "svelte": {
+    "name": "Svelte TodoMVC",
+    "type": "clone",
+    "repo": "https://github.com/sveltejs/examples",
+    "path": "examples/todomvc",
+    "branch": "main",
+    "assertions": {
+      "shouldDetectFramework": "Svelte"
+    }
+  },
+  "vanilla": {
+    "name": "Vanilla JS NASA APOD",
+    "type": "clone",
+    "repo": "https://github.com/ymw0331/vanilla-javascript-20-projects",
+    "path": "014-nasa-apod",
+    "branch": "master",
+    "assertions": {}
   }
 }

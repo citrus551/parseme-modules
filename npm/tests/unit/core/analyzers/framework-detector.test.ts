@@ -13,7 +13,7 @@ describe('FrameworkDetector', () => {
   });
 
   describe('detect', () => {
-    test('should return unknown when no framework detected', async () => {
+    test('should return empty array when no framework detected', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'test-project',
         type: 'typescript',
@@ -26,10 +26,9 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'unknown');
-      assert.strictEqual(framework.features.length, 0);
+      assert.strictEqual(frameworks.length, 0);
     });
 
     test('should detect Express framework', async () => {
@@ -47,10 +46,11 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'express');
-      assert.strictEqual(framework.version, '^4.18.0');
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'express');
+      assert.strictEqual(frameworks[0].version, '^4.18.0');
     });
 
     test('should detect Express with common features', async () => {
@@ -77,18 +77,19 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
+      const express = frameworks.find((f) => f.name === 'express');
 
-      assert.strictEqual(framework.name, 'express');
-      assert.ok(framework.features.includes('sessions'));
-      assert.ok(framework.features.includes('authentication'));
-      assert.ok(framework.features.includes('rate-limiting'));
-      assert.ok(framework.features.includes('security'));
-      assert.ok(framework.features.includes('cors'));
-      assert.ok(framework.features.includes('body-parsing'));
-      assert.ok(framework.features.includes('validation'));
-      assert.ok(framework.features.includes('file-upload'));
-      assert.ok(framework.features.includes('static-files'));
+      assert.ok(express, 'Express framework should be detected');
+      assert.ok(express!.features.includes('sessions'));
+      assert.ok(express!.features.includes('authentication'));
+      assert.ok(express!.features.includes('rate-limiting'));
+      assert.ok(express!.features.includes('security'));
+      assert.ok(express!.features.includes('cors'));
+      assert.ok(express!.features.includes('body-parsing'));
+      assert.ok(express!.features.includes('validation'));
+      assert.ok(express!.features.includes('file-upload'));
+      assert.ok(express!.features.includes('static-files'));
     });
 
     test('should detect Fastify framework', async () => {
@@ -106,10 +107,11 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'fastify');
-      assert.strictEqual(framework.version, '^4.0.0');
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'fastify');
+      assert.strictEqual(frameworks[0].version, '^4.0.0');
     });
 
     test('should detect Fastify with common plugins', async () => {
@@ -134,16 +136,17 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
+      const fastify = frameworks.find((f) => f.name === 'fastify');
 
-      assert.strictEqual(framework.name, 'fastify');
-      assert.ok(framework.features.includes('cors'));
-      assert.ok(framework.features.includes('security'));
-      assert.ok(framework.features.includes('rate-limiting'));
-      assert.ok(framework.features.includes('file-upload'));
-      assert.ok(framework.features.includes('static-files'));
-      assert.ok(framework.features.includes('jwt'));
-      assert.ok(framework.features.includes('sessions'));
+      assert.ok(fastify, 'Fastify framework should be detected');
+      assert.ok(fastify!.features.includes('cors'));
+      assert.ok(fastify!.features.includes('security'));
+      assert.ok(fastify!.features.includes('rate-limiting'));
+      assert.ok(fastify!.features.includes('file-upload'));
+      assert.ok(fastify!.features.includes('static-files'));
+      assert.ok(fastify!.features.includes('jwt'));
+      assert.ok(fastify!.features.includes('sessions'));
     });
 
     test('should detect NestJS framework', async () => {
@@ -162,13 +165,14 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'nestjs');
-      assert.strictEqual(framework.version, '^10.0.0');
-      assert.ok(framework.features.includes('decorators'));
-      assert.ok(framework.features.includes('dependency-injection'));
-      assert.ok(framework.features.includes('modules'));
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'nestjs');
+      assert.strictEqual(frameworks[0].version, '^10.0.0');
+      assert.ok(frameworks[0].features.includes('decorators'));
+      assert.ok(frameworks[0].features.includes('dependency-injection'));
+      assert.ok(frameworks[0].features.includes('modules'));
     });
 
     test('should detect NestJS with common modules', async () => {
@@ -196,17 +200,18 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
+      const nestjs = frameworks.find((f) => f.name === 'nestjs');
 
-      assert.strictEqual(framework.name, 'nestjs');
-      assert.ok(framework.features.includes('orm'));
-      assert.ok(framework.features.includes('authentication'));
-      assert.ok(framework.features.includes('jwt'));
-      assert.ok(framework.features.includes('swagger'));
-      assert.ok(framework.features.includes('graphql'));
-      assert.ok(framework.features.includes('websockets'));
-      assert.ok(framework.features.includes('microservices'));
-      assert.ok(framework.features.includes('testing'));
+      assert.ok(nestjs, 'NestJS framework should be detected');
+      assert.ok(nestjs!.features.includes('orm'));
+      assert.ok(nestjs!.features.includes('authentication'));
+      assert.ok(nestjs!.features.includes('jwt'));
+      assert.ok(nestjs!.features.includes('swagger'));
+      assert.ok(nestjs!.features.includes('graphql'));
+      assert.ok(nestjs!.features.includes('websockets'));
+      assert.ok(nestjs!.features.includes('microservices'));
+      assert.ok(nestjs!.features.includes('testing'));
     });
 
     test('should detect NestJS with mongoose', async () => {
@@ -225,13 +230,14 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'nestjs');
-      assert.ok(framework.features.includes('orm'));
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'nestjs');
+      assert.ok(frameworks[0].features.includes('orm'));
     });
 
-    test('should prioritize NestJS over other frameworks', async () => {
+    test('should detect both NestJS and Express when both present', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'nestjs-app',
         type: 'typescript',
@@ -247,12 +253,14 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'nestjs');
+      assert.strictEqual(frameworks.length, 2);
+      assert.ok(frameworks.some((f) => f.name === 'nestjs'));
+      assert.ok(frameworks.some((f) => f.name === 'express'));
     });
 
-    test('should prioritize Fastify over Express', async () => {
+    test('should detect both Fastify and Express when both present', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'mixed-app',
         type: 'javascript',
@@ -268,9 +276,11 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'fastify');
+      assert.strictEqual(frameworks.length, 2);
+      assert.ok(frameworks.some((f) => f.name === 'fastify'));
+      assert.ok(frameworks.some((f) => f.name === 'express'));
     });
 
     test('should handle devDependencies when detecting framework', async () => {
@@ -289,9 +299,10 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo);
+      const frameworks = await detector.detect(mockProjectInfo);
 
-      assert.strictEqual(framework.name, 'nestjs');
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'nestjs');
     });
   });
 
@@ -330,10 +341,11 @@ describe('FrameworkDetector', () => {
         },
       ];
 
-      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
 
-      assert.strictEqual(framework.name, 'express');
-      assert.strictEqual(framework.features.length, 0); // No features without package.json
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'express');
+      assert.strictEqual(frameworks[0].features.length, 0); // No features without package.json
     });
 
     test('should detect Fastify from endpoints when package.json missing', async () => {
@@ -361,10 +373,11 @@ describe('FrameworkDetector', () => {
         },
       ];
 
-      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
 
-      assert.strictEqual(framework.name, 'fastify');
-      assert.strictEqual(framework.features.length, 0);
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'fastify');
+      assert.strictEqual(frameworks[0].features.length, 0);
     });
 
     test('should prioritize package.json over endpoints', async () => {
@@ -396,13 +409,16 @@ describe('FrameworkDetector', () => {
         },
       ];
 
-      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
+      const express = frameworks.find((f) => f.name === 'express');
 
-      assert.strictEqual(framework.name, 'express');
-      assert.ok(framework.features.includes('cors'));
+      assert.ok(express, 'Express should be detected from package.json');
+      assert.ok(express!.features.includes('cors'));
+      // Endpoints should be ignored when package.json has frameworks
+      assert.ok(!frameworks.some((f) => f.name === 'fastify'));
     });
 
-    test('should handle mixed frameworks in endpoints by choosing most common', async () => {
+    test('should detect all frameworks present in endpoints', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'mixed-endpoints',
         type: 'javascript',
@@ -445,12 +461,14 @@ describe('FrameworkDetector', () => {
         },
       ];
 
-      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
 
-      assert.strictEqual(framework.name, 'express'); // 2 express vs 1 fastify
+      assert.strictEqual(frameworks.length, 2);
+      assert.ok(frameworks.some((f) => f.name === 'express'));
+      assert.ok(frameworks.some((f) => f.name === 'fastify'));
     });
 
-    test('should return unknown when endpoints have no framework', async () => {
+    test('should return empty array when endpoints have no framework', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'no-framework',
         type: 'javascript',
@@ -474,12 +492,12 @@ describe('FrameworkDetector', () => {
         },
       ];
 
-      const framework = await detector.detect(mockProjectInfo, mockEndpoints);
+      const frameworks = await detector.detect(mockProjectInfo, mockEndpoints);
 
-      assert.strictEqual(framework.name, 'unknown');
+      assert.strictEqual(frameworks.length, 0);
     });
 
-    test('should return unknown when no endpoints provided', async () => {
+    test('should return empty array when no endpoints provided', async () => {
       const mockProjectInfo: ProjectInfo = {
         name: 'no-endpoints',
         type: 'javascript',
@@ -492,9 +510,9 @@ describe('FrameworkDetector', () => {
         outputTargets: [],
       };
 
-      const framework = await detector.detect(mockProjectInfo, []);
+      const frameworks = await detector.detect(mockProjectInfo, []);
 
-      assert.strictEqual(framework.name, 'unknown');
+      assert.strictEqual(frameworks.length, 0);
     });
   });
 });
