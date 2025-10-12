@@ -347,5 +347,173 @@ describe('FrameworkDetector', () => {
       assert.strictEqual(frameworks.length, 1);
       assert.strictEqual(frameworks[0].name, 'svelte');
     });
+
+    test('should detect React with features', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'react-app',
+        type: 'typescript',
+        category: 'web-app',
+        packageManager: 'npm',
+        dependencies: {
+          react: '^18.0.0',
+          'react-dom': '^18.0.0',
+          'react-router-dom': '^6.0.0',
+          '@reduxjs/toolkit': '^1.9.0',
+          '@tanstack/react-query': '^4.0.0',
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+      const react = frameworks.find((f) => f.name === 'react');
+
+      assert.ok(react, 'React framework should be detected');
+      assert.strictEqual(react!.version, '^18.0.0');
+      assert.ok(react!.features.includes('routing'));
+      assert.ok(react!.features.includes('state-management-redux'));
+      assert.ok(react!.features.includes('data-fetching'));
+    });
+
+    test('should detect Next.js with built-in features', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'nextjs-app',
+        type: 'typescript',
+        category: 'fullstack-app',
+        packageManager: 'npm',
+        dependencies: {
+          next: '^14.0.0',
+          react: '^18.0.0',
+          'react-dom': '^18.0.0',
+          'next-auth': '^4.0.0',
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+      const nextjs = frameworks.find((f) => f.name === 'next.js');
+
+      assert.ok(nextjs, 'Next.js framework should be detected');
+      assert.strictEqual(nextjs!.version, '^14.0.0');
+      assert.ok(nextjs!.features.includes('ssr'));
+      assert.ok(nextjs!.features.includes('routing'));
+      assert.ok(nextjs!.features.includes('api-routes'));
+      assert.ok(nextjs!.features.includes('file-based-routing'));
+      assert.ok(nextjs!.features.includes('authentication'));
+    });
+
+    test('should detect Nuxt.js with built-in features', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'nuxt-app',
+        type: 'typescript',
+        category: 'fullstack-app',
+        packageManager: 'npm',
+        dependencies: {
+          nuxt: '^3.0.0',
+          vue: '^3.0.0',
+          '@nuxt/content': '^2.0.0',
+          '@pinia/nuxt': '^0.4.0',
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+      const nuxt = frameworks.find((f) => f.name === 'nuxt.js');
+
+      assert.ok(nuxt, 'Nuxt.js framework should be detected');
+      assert.strictEqual(nuxt!.version, '^3.0.0');
+      assert.ok(nuxt!.features.includes('ssr'));
+      assert.ok(nuxt!.features.includes('routing'));
+      assert.ok(nuxt!.features.includes('auto-imports'));
+      assert.ok(nuxt!.features.includes('content-management'));
+      assert.ok(nuxt!.features.includes('state-management-pinia'));
+    });
+
+    test('should detect Angular with built-in features', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'angular-app',
+        type: 'typescript',
+        category: 'web-app',
+        packageManager: 'npm',
+        dependencies: {
+          '@angular/core': '^17.0.0',
+          '@angular/router': '^17.0.0',
+          '@angular/forms': '^17.0.0',
+          '@angular/material': '^17.0.0',
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+      const angular = frameworks.find((f) => f.name === 'angular');
+
+      assert.ok(angular, 'Angular framework should be detected');
+      assert.strictEqual(angular!.version, '^17.0.0');
+      assert.ok(angular!.features.includes('decorators'));
+      assert.ok(angular!.features.includes('dependency-injection'));
+      assert.ok(angular!.features.includes('typescript'));
+      assert.ok(angular!.features.includes('routing'));
+      assert.ok(angular!.features.includes('forms'));
+      assert.ok(angular!.features.includes('material-design'));
+    });
+
+    test('should not duplicate features when multiple deps map to same feature', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'nestjs-app',
+        type: 'typescript',
+        category: 'backend-api',
+        packageManager: 'npm',
+        dependencies: {
+          '@nestjs/core': '^10.0.0',
+          '@nestjs/typeorm': '^10.0.0',
+          '@nestjs/mongoose': '^10.0.0', // Both map to 'orm'
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+      const nestjs = frameworks.find((f) => f.name === 'nestjs');
+
+      assert.ok(nestjs, 'NestJS framework should be detected');
+
+      // Count how many times 'orm' appears - should only be once
+      const ormCount = nestjs!.features.filter((f) => f === 'orm').length;
+      assert.strictEqual(ormCount, 1, 'ORM feature should only appear once');
+    });
+
+    test('should detect multiple detection keys with OR logic', async () => {
+      const mockProjectInfo: ProjectInfo = {
+        name: 'react-app',
+        type: 'typescript',
+        category: 'web-app',
+        packageManager: 'npm',
+        dependencies: {
+          'react-dom': '^18.0.0', // Only react-dom, not react
+        },
+        devDependencies: {},
+        scripts: {},
+        entryPoints: [],
+        outputTargets: [],
+      };
+
+      const frameworks = await detector.detect(mockProjectInfo);
+
+      assert.strictEqual(frameworks.length, 1);
+      assert.strictEqual(frameworks[0].name, 'react');
+    });
   });
 });
