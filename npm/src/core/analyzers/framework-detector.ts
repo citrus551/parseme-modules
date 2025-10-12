@@ -17,10 +17,15 @@ export class FrameworkDetector {
       detectedFrameworks.push(this.detectExpress(deps));
     }
 
-    // Frontend frameworks
+    // Fullstack frameworks (check these first as they include frontend frameworks)
     if (deps['next']) {
       detectedFrameworks.push(this.detectNextJS(deps));
     }
+    if (deps['nuxt']) {
+      detectedFrameworks.push(this.detectNuxtJS(deps));
+    }
+
+    // Frontend frameworks
     if (deps['react'] || deps['react-dom']) {
       detectedFrameworks.push(this.detectReact(deps));
     }
@@ -231,9 +236,6 @@ export class FrameworkDetector {
     if (deps['@vue/test-utils']) {
       features.push('testing');
     }
-    if (deps['nuxt']) {
-      features.push('ssr-nuxt');
-    }
 
     return {
       name: 'vue',
@@ -313,6 +315,36 @@ export class FrameworkDetector {
     return {
       name: 'next.js',
       version: deps['next'],
+      features,
+    };
+  }
+
+  private detectNuxtJS(deps: Record<string, string>): FrameworkInfo {
+    const features: string[] = [];
+
+    // Nuxt.js modules and features
+    if (deps['@nuxt/content']) {
+      features.push('content-management');
+    }
+    if (deps['@nuxtjs/auth'] || deps['@nuxtjs/auth-next']) {
+      features.push('authentication');
+    }
+    if (deps['@pinia/nuxt']) {
+      features.push('state-management-pinia');
+    }
+    if (deps['@nuxt/image']) {
+      features.push('image-optimization');
+    }
+    if (deps['@nuxtjs/tailwindcss']) {
+      features.push('tailwind');
+    }
+
+    // Nuxt.js built-in features
+    features.push('ssr', 'routing', 'api-routes', 'file-based-routing', 'auto-imports');
+
+    return {
+      name: 'nuxt.js',
+      version: deps['nuxt'],
       features,
     };
   }

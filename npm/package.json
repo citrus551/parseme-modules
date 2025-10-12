@@ -32,7 +32,7 @@
     "test:watch": "node --test --watch 'tests/**/*.test.ts'",
     "pretest:coverage": "npm run build",
     "test:coverage": "node --test --experimental-test-coverage 'tests/unit/**/*.test.ts' 'tests/integration/**/*.test.ts'",
-    "setup:test:e2e": "npm run -C ../e2e setup",
+    "test:setup:e2e": "npm run -C ../e2e setup",
     "test:e2e": "npm run -C ../e2e test",
     "clean": "rm -rf dist"
   },

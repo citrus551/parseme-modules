@@ -12,16 +12,15 @@
     }
   },
   "express": {
-    "name": "Express Multi-Router",
+    "name": "Express Prisma Example",
     "type": "clone",
-    "notes": "Contains no package.json",
-    "repo": "https://github.com/expressjs/express",
-    "path": "examples/multi-router",
-    "branch": "master",
+    "repo": "https://github.com/prisma/prisma-examples",
+    "path": "orm/express",
+    "branch": "latest",
     "assertions": {
       "shouldDetectFramework": "Express",
       "shouldHaveEndpoints": true,
-      "minEndpoints": 2
+      "minEndpoints": 5 
     }
   },
   "fastify": {
@@ -45,7 +44,8 @@
     },
     "assertions": {
       "shouldDetectFramework": "Express",
-      "shouldHaveEndpoints": true
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 2 
     }
   },
   "react": {
@@ -74,7 +74,9 @@
     "path": ".",
     "branch": "v2",
     "assertions": {
-      "shouldDetectFramework": "Vue"
+      "shouldDetectFramework": "Vue",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 1 
     }
   },
   "vue-2": {
@@ -125,6 +127,43 @@
     "repo": "https://github.com/ymw0331/vanilla-javascript-20-projects",
     "path": "014-nasa-apod",
     "branch": "master",
-    "assertions": {}
+    "assertions": {
+      "shouldDetectFramework": "unknown"
+    }
+  },
+  "nextjs": {
+    "name": "Next.js Hello World",
+    "type": "clone",
+    "repo": "https://github.com/vercel/next.js",
+    "path": "examples/hello-world",
+    "branch": "canary",
+    "assertions": {
+      "shouldDetectFramework": "Next.js",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 1
+    }
+  },
+  "nextjs-2": {
+    "name": "Next.js Generated",
+    "type": "generate",
+    "generate": {
+      "command": "npx",
+      "args": ["create-next-app@latest", "nextjs-2", "--app", "--ts", "--tailwind", "--src-dir", "--no-git", "--yes"]
+    },
+    "assertions": {
+      "shouldDetectFramework": "Next.js"
+    }
+  },
+  "nuxtjs": {
+    "name": "Nuxt.js Habit Tracker",
+    "type": "clone",
+    "repo": "https://github.com/zackha/habit",
+    "path": ".",
+    "branch": "master",
+    "assertions": {
+      "shouldDetectFramework": "Nuxt.js",
+      "shouldHaveEndpoints": true,
+      "minEndpoints": 2
+    }
   }
 }

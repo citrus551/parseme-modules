@@ -143,9 +143,12 @@ describe('E2E Test Repositories', () => {
         test(`should detect ${config.assertions.shouldDetectFramework} framework`, async () => {
           const content = await readFile(join(repoDir, 'PARSEME.md'), 'utf-8');
           const frameworkName = config.assertions.shouldDetectFramework;
+
+          // Check that framework name appears on the same line as **Framework:**
+          const frameworkLineRegex = new RegExp(`\\*\\*Framework:\\*\\*\\s+${frameworkName}`, 'i');
           assert.ok(
-            content.includes(frameworkName) || content.includes(frameworkName.toLowerCase()),
-            `Should detect ${frameworkName} framework`
+            frameworkLineRegex.test(content),
+            `Should detect ${frameworkName} framework on the same line as **Framework:**`
           );
         });
       }

@@ -137,6 +137,27 @@ export class PatternDetector {
             }
           }
         }
+
+        // Detect Nuxt.js server routes: defineEventHandler()
+        if (
+          t.isIdentifier(callee) &&
+          callee.name === 'defineEventHandler' &&
+          detectedFramework === 'nuxt.js'
+        ) {
+          // Extract route path from file path
+          // Nuxt server routes are in server/api/ or server/routes/
+          const routePath = this.extractNuxtRoutePath(filePath);
+
+          analysis.endpoints.push({
+            method: 'GET/POST',
+            path: routePath,
+            handler: 'defineEventHandler',
+            file: filePath,
+            line: path.node.loc?.start.line || 0,
+            type: 'rest',
+            framework: 'nuxt.js',
+          });
+        }
       },
 
       // Detect TypeScript interfaces and type aliases
@@ -170,6 +191,36 @@ export class PatternDetector {
           fields: [],
           type: 'type',
         });
+      },
+
+      // Detect Next.js API route handlers: export function GET/POST/etc.
+      ExportNamedDeclaration: (path) => {
+        const declaration = path.node.declaration;
+
+        if (
+          t.isFunctionDeclaration(declaration) &&
+          declaration.id &&
+          detectedFramework === 'next.js'
+        ) {
+          const functionName = declaration.id.name;
+          const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'];
+
+          if (httpMethods.includes(functionName)) {
+            // Extract route path from file path
+            // Next.js API routes are in app/api/ or pages/api/
+            const routePath = this.extractNextJSRoutePath(filePath);
+
+            analysis.endpoints.push({
+              method: functionName,
+              path: routePath,
+              handler: functionName,
+              file: filePath,
+              line: declaration.loc?.start.line || 0,
+              type: 'rest',
+              framework: 'next.js',
+            });
+          }
+        }
       },
 
       // Detect React components
@@ -297,6 +348,16 @@ export class PatternDetector {
       return 'nestjs';
     }
 
+    // Check for Next.js (check before Express as it may also use express-like patterns)
+    if (imports.some((imp) => imp.startsWith('next') || imp === 'next/server')) {
+      return 'next.js';
+    }
+
+    // Check for Nuxt.js
+    if (imports.some((imp) => imp.startsWith('nuxt') || imp.startsWith('#app') || imp === 'h3')) {
+      return 'nuxt.js';
+    }
+
     // Check for Express
     if (imports.some((imp) => imp === 'express')) {
       return 'express';
@@ -304,5 +365,45 @@ export class PatternDetector {
 
     // Return undefined if no framework detected
     return undefined;
+  }
+
+  private extractNextJSRoutePath(filePath: string): string {
+    // Next.js API routes can be in:
+    // - app/api/[route]/route.ts (App Router)
+    // - pages/api/[route].ts (Pages Router)
+
+    // Try App Router pattern first
+    let match = filePath.match(/\/app\/api\/(.+)\/route\.[jt]sx?$/);
+    if (match) {
+      return `/api/${match[1]}`;
+    }
+
+    // Try Pages Router pattern
+    match = filePath.match(/\/pages\/api\/(.+)\.[jt]sx?$/);
+    if (match) {
+      return `/api/${match[1]}`;
+    }
+
+    // Fallback
+    return '/api/unknown';
+  }
+
+  private extractNuxtRoutePath(filePath: string): string {
+    // Nuxt.js server routes can be in:
+    // - server/api/[route].ts
+    // - server/routes/[route].ts
+
+    let match = filePath.match(/\/server\/api\/(.+)\.[jt]s$/);
+    if (match) {
+      return `/api/${match[1]}`;
+    }
+
+    match = filePath.match(/\/server\/routes\/(.+)\.[jt]s$/);
+    if (match) {
+      return `/${match[1]}`;
+    }
+
+    // Fallback
+    return '/api/unknown';
   }
 }
