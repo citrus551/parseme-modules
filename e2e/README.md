@@ -137,10 +137,26 @@ All test repositories are configured in `test-repositories-list.json`. Each entr
 - **branch**: Git branch to clone
 - **path**: Subdirectory within the repository (if needed)
 - **generate**: Command and arguments (for generate type)
+- **modifications**: (Optional) Modifications to apply after cloning
+  - `package.json`: Object with properties to add/merge into package.json
 - **assertions**: Expected test outcomes
   - `shouldDetectFramework`: Expected framework name or "unknown"
   - `shouldHaveEndpoints`: Whether endpoints should be detected
   - `minEndpoints`: Minimum number of endpoints to detect
+
+### Repository Modifications
+
+Some test repositories require modifications to validate specific functionality. For example, the Express repository has modifications applied to test git diff functionality:
+
+```json
+"modifications": {
+  "package.json": {
+    "gitDiff-test": "added"
+  }
+}
+```
+
+These modifications are applied automatically during the setup process.
 
 ## Cleaning Up
 

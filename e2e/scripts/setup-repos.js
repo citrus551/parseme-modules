@@ -92,6 +92,32 @@ async function cloneSparse(key, repoUrl, name, subpath, branch) {
   }
 }
 
+// Function to apply modifications to cloned repositories
+async function applyRepoModifications(targetDir, modifications) {
+  // Skip if no modifications defined
+  if (!modifications || !modifications['package.json']) {
+    return;
+  }
+
+  try {
+    const { readFile, writeFile } = await import('fs/promises');
+    const packageJsonPath = join(targetDir, 'package.json');
+
+    // Read the package.json file
+    const packageJsonContent = await readFile(packageJsonPath, 'utf-8');
+    const packageJson = JSON.parse(packageJsonContent);
+
+    // Merge the modifications into package.json
+    Object.assign(packageJson, modifications['package.json']);
+
+    // Write back the modified package.json
+    await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+  } catch (error) {
+    console.error(`Failed to apply modifications: ${error.message}`);
+    throw error;
+  }
+}
+
 // Function to generate a project using a command
 async function generateProject(key, name, generateConfig) {
   const targetDir = join(REPOS_DIR, key);
@@ -140,6 +166,15 @@ async function main() {
       const branch = repoConfig.branch;
 
       await cloneSparse(key, repoUrl, name, subpath, branch);
+
+      // Apply any modifications after cloning
+      if (repoConfig.modifications) {
+        const baseDir = join(REPOS_DIR, key);
+        const targetDir = subpath && subpath !== '.'
+          ? join(baseDir, subpath)
+          : baseDir;
+        await applyRepoModifications(targetDir, repoConfig.modifications);
+      }
     } else {
       console.warn(`Warning: Unknown repository type "${repoConfig.type}" for ${repoConfig.name}. Skipping.`);
     }

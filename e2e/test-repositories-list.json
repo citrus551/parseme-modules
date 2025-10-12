@@ -13,10 +13,16 @@
   },
   "express": {
     "name": "Express Prisma Example",
+    "notes":"used to test gitDiff functionality",
     "type": "clone",
     "repo": "https://github.com/prisma/prisma-examples",
     "path": "orm/express",
     "branch": "latest",
+    "modifications": {
+      "package.json": {
+        "gitDiff-test": "added"
+      }
+    },
     "assertions": {
       "shouldDetectFramework": "express",
       "shouldHaveEndpoints": true,

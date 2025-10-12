@@ -188,6 +188,23 @@ describe('E2E Test Repositories', () => {
           }
         });
       }
+
+      // Test for gitDiff file when repository has been modified (express repo)
+      if (key === 'express') {
+        test('should create gitDiff.md when there are uncommitted changes', async () => {
+          const gitDiffPath = join(repoDir, 'parseme-context', 'gitDiff.md');
+          const gitDiffExists = await fileExists(gitDiffPath);
+
+          assert.ok(gitDiffExists, 'gitDiff.md file should exist when there are uncommitted changes');
+
+          const content = await readFile(gitDiffPath, 'utf-8');
+          assert.ok(content.trim().length > 0, 'gitDiff.md should not be empty');
+
+          // Verify the content contains expected git diff information
+          assert.ok(content.includes('# Git Diff Statistics'), 'gitDiff.md should contain header');
+          assert.ok(content.includes('package.json'), 'gitDiff.md should reference the modified package.json file');
+        });
+      }
     });
   }
 });
