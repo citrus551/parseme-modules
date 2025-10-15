@@ -413,15 +413,23 @@ await generator.generateToFile('./output/PARSEME.md');
 
 ## Git Hook Integration
 
-Keep your AI context automatically updated by adding parseme as a post-commit hook:
+Keep your AI context automatically updated by adding parseme as a post-commit hook with automatic amend:
 
 ### Manual Setup
 
 ```bash
-# Create and make executable
-echo '#!/bin/sh\npx parseme generate' > .git/hooks/post-commit
+# Create post-commit hook that generates context and amends the commit
+cat > .git/hooks/post-commit << 'EOF'
+#!/bin/sh
+npx parseme generate
+git add parseme-context/ PARSEME.md
+git commit --amend --no-edit --no-verify
+EOF
+
 chmod +x .git/hooks/post-commit
 ```
+
+**Note:** If you've configured a custom `contextDir` (either in your config file or via the `--context-dir` CLI flag), update the `git add` path accordingly (e.g., `git add docs/context/ PARSEME.md`).
 
 ### Using Husky
 
@@ -430,13 +438,27 @@ chmod +x .git/hooks/post-commit
 {
   "husky": {
     "hooks": {
-      "post-commit": "npx parseme generate"
+      "post-commit": "npx parseme generate && git add parseme-context/ PARSEME.md && git commit --amend --no-edit --no-verify"
     }
   }
 }
 ```
 
-This automatically regenerates your AI context files after every commit, ensuring they're always up-to-date!
+**Note:** If using a custom `contextDir`, update the `git add` path to match your configuration.
+
+### Why Post-Commit + Amend?
+
+This approach ensures that:
+
+- ✅ The PARSEME.md file references the correct commit hash (the commit it's part of)
+- ✅ Generated context files are included in the same commit as your changes
+- ✅ No drift between code and context - everything stays synchronized
+- ✅ Clean git history - one commit, not two
+- ✅ Remote repository stays clean after push
+
+The `--no-verify` flag prevents an infinite loop by skipping hook execution on the amend.
+
+This automatically regenerates your AI context files after every commit and includes them in that commit, ensuring they're always up-to-date!
 
 ## Requirements
 
