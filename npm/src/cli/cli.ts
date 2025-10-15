@@ -138,7 +138,7 @@ program
       }
 
       console.log(
-        'Tip: Add "parseme": "parseme" to your package.json scripts for easier manual execution or hook integration',
+        'Tip: Add "parseme": "parseme generate" to your package.json scripts for easier manual execution or hook integration',
       );
       console.log(
         'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
