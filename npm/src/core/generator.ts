@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 
 import { ASTAnalyzer } from './analyzers/ast-analyzer.js';
@@ -90,6 +90,8 @@ export class ParsemeGenerator {
       ? finalContextDir // Absolute path
       : join(baseDir, finalContextDir); // Relative path
 
+    // Clear the directory if it exists, then recreate it
+    await rm(parsemeDir, { recursive: true, force: true });
     await mkdir(parsemeDir, { recursive: true });
     await writeFile(finalOutputPath, context.parseme);
 

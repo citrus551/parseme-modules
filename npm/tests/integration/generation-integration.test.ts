@@ -254,6 +254,59 @@ export function greet(name: string): string {
   });
 
   describe('File output integration', () => {
+    test('should clear existing context directory before generating new files', async () => {
+      const packageJson = {
+        name: 'clear-test',
+        version: '1.0.0',
+      };
+
+      const simpleFile = 'export const message = "Hello, World!";';
+
+      await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+      await writeFile(join(projectDir, 'src', 'message.ts'), simpleFile);
+
+      const contextDir = join(projectDir, 'parseme-context');
+
+      // First generation
+      const generator = new ParsemeGenerator({
+        rootDir: projectDir,
+        analyzeFileTypes: ['ts'],
+        includeGitInfo: false,
+      });
+
+      await generator.generateToFile();
+
+      // Add an extra file to the context directory
+      const extraFile = join(contextDir, 'extra-file.txt');
+      await writeFile(extraFile, 'This file should be deleted on next generation');
+
+      // Verify the extra file exists
+      try {
+        await access(extraFile);
+      } catch {
+        assert.fail('Extra file was not created');
+      }
+
+      // Second generation - should clear the directory first
+      await generator.generateToFile();
+
+      // Verify the extra file was removed
+      try {
+        await access(extraFile);
+        assert.fail('Extra file was not deleted - directory was not cleared');
+      } catch (error) {
+        // Expected: file should not exist
+        assert.ok((error as NodeJS.ErrnoException).code === 'ENOENT');
+      }
+
+      // Verify standard files still exist
+      try {
+        await access(join(contextDir, 'structure.json'));
+      } catch {
+        assert.fail('Standard context files were not regenerated');
+      }
+    });
+
     test('should create all output files correctly', async () => {
       const packageJson = {
         name: 'output-test',
