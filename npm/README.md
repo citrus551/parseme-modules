@@ -173,7 +173,8 @@ const config = {
   maxDepth: 10,
 
   // Git integration
-  includeGitInfo: true,
+  includeGitInfo: true, // Include git repository information in context
+  useGitForFiles: true, // Use git to discover files (respects .gitignore)
 
   // Size limits
   limits: {
@@ -272,7 +273,8 @@ Configuration values are resolved in the following order (highest to lowest prio
 
 #### Git Integration
 
-- `includeGitInfo` - Include git repository information (default: `true`)
+- `includeGitInfo` - Include git repository information in context files (default: `true`)
+- `useGitForFiles` - Use git to discover files, respecting .gitignore (default: `true`)
 
 #### Content Sections
 
@@ -338,7 +340,16 @@ npm run parseme
 # Runs automatically after each commit
 
 # Override config with CLI flags
-npx parseme generate --output custom.md --context-dir docs/context --root ./src --no-git
+npx parseme generate --output custom.md --context-dir docs/context --root ./src
+
+# Disable git info generation (keeps git for file discovery)
+npx parseme generate --no-git-info
+
+# Disable git for file discovery (keeps git info generation)
+npx parseme generate --no-git-files
+
+# Disable both git info and git file discovery
+npx parseme generate --no-git-info --no-git-files
 
 # Specify file types and exclude patterns
 npx parseme generate --file-types ts js --exclude "**/*.test.ts"
@@ -354,7 +365,8 @@ npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 - `--context-dir <path>` - Context directory path (default: parseme-context)
 - `--file-types <types...>` - File types to analyze (e.g., ts tsx js jsx)
 - `--exclude <patterns...>` - Additional exclude patterns (glob, in git repositories on top of git-tracked files)
-- `--no-git` - Disable git information
+- `--no-git-info` - Disable git info generation (keeps git for file discovery)
+- `--no-git-files` - Disable git for file discovery (uses filesystem crawling instead)
 - `--max-depth <number>` - Maximum directory depth
 
 #### Init Command (`parseme init` or `parseme i`)

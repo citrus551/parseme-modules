@@ -6,6 +6,7 @@ export default {
   analyzeFileTypes: ['ts', 'js'],
   excludePatterns: ['node_modules/**', 'dist/**', '**/*.test.ts'],
   includeGitInfo: true,
+  useGitForFiles: true,
   maxDepth: 5,
   sections: {
     overview: true,

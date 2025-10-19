@@ -90,7 +90,8 @@ describe('CLI Integration', () => {
       assert.ok(stdout.includes('--config'));
       assert.ok(stdout.includes('--output'));
       assert.ok(stdout.includes('--root'));
-      assert.ok(stdout.includes('--no-git'));
+      assert.ok(stdout.includes('--no-git-info'));
+      assert.ok(stdout.includes('--no-git-files'));
     });
 
     test('should show help for generate alias', async () => {
@@ -198,7 +199,7 @@ export default {
 
       await writeFile(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
 
-      const { code, stderr } = await runCli(['generate', '--output', 'CUSTOM.md', '--no-git']);
+      const { code, stderr } = await runCli(['generate', '--output', 'CUSTOM.md', '--no-git-info']);
 
       // Should fail because no config file exists, but should not crash
       assert.strictEqual(code, 1);
