@@ -143,7 +143,7 @@ program
         'Tip: Add "parseme": "parseme generate" to your package.json scripts for easier manual execution or hook integration',
       );
       console.log(
-        'Tip: Add parseme as a git hook to keep context auto-updated! See README for setup instructions.',
+        'Tip: Add parseme as git hooks to keep context auto-updated! See README for recommended hook setup (post-commit, pre-push, post-push).',
       );
       console.log('');
       console.log('Tip: Add this section to your README.md to help AI agents find the context:');

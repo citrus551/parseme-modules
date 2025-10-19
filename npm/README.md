@@ -425,23 +425,47 @@ await generator.generateToFile('./output/PARSEME.md');
 
 ## Git Hook Integration
 
-Keep your AI context automatically updated by adding parseme as a post-commit hook with automatic amend:
+Keep your AI context automatically updated by integrating parseme with git hooks. The recommended setup uses three hooks to ensure context files always have git info locally but stay clean on remote:
 
-### Manual Setup
+### Recommended Hook Setup
+
+#### Manual Setup
 
 ```bash
-# Create post-commit hook that generates context and amends the commit
+# 1. Post-commit: Generate context with git info after each commit
 cat > .git/hooks/post-commit << 'EOF'
 #!/bin/sh
+
 npx parseme generate
+EOF
+
+# 2. Pre-push: Regenerate without git info and amend before pushing
+cat > .git/hooks/pre-push << 'EOF'
+#!/bin/sh
+
+# Regenerate without git info for clean remote state
+npx parseme generate --no-git-info
+
+# Stage parseme files (parseme-context/ may be different if configured)
 git add parseme-context/ PARSEME.md
+
+# Amend the commit with updated parseme files
 git commit --amend --no-edit --no-verify
 EOF
 
-chmod +x .git/hooks/post-commit
+# 3. Post-push: Restore git info locally after push completes
+cat > .git/hooks/post-push << 'EOF'
+#!/bin/sh
+
+# Regenerate with git info for local development
+npx parseme generate
+EOF
+
+# Make hooks executable
+chmod +x .git/hooks/post-commit .git/hooks/pre-push .git/hooks/post-push
 ```
 
-**Note:** If you've configured a custom `contextDir` (either in your config file or via the `--context-dir` CLI flag), update the `git add` path accordingly (e.g., `git add docs/context/ PARSEME.md`).
+**Note:** If you've configured a custom `contextDir` (either in your config file or via the `--context-dir` CLI flag), update the `git add` path in the pre-push hook accordingly (e.g., `git add docs/context/ PARSEME.md`).
 
 ### Using Husky
 
@@ -450,7 +474,9 @@ chmod +x .git/hooks/post-commit
 {
   "husky": {
     "hooks": {
-      "post-commit": "npx parseme generate && git add parseme-context/ PARSEME.md && git commit --amend --no-edit --no-verify"
+      "post-commit": "npx parseme generate",
+      "pre-push": "npx parseme generate --no-git-info && git add parseme-context/ PARSEME.md && git commit --amend --no-edit --no-verify",
+      "post-push": "npx parseme generate"
     }
   }
 }
@@ -458,19 +484,15 @@ chmod +x .git/hooks/post-commit
 
 **Note:** If using a custom `contextDir`, update the `git add` path to match your configuration.
 
-### Why Post-Commit + Amend?
+### How It Works
 
-This approach ensures that:
+1. **post-commit**: After you commit, parseme generates context files with git info (current branch, recent commits, git diff) for local development
+2. **pre-push**: Before pushing, parseme regenerates without git info (`--no-git-info` flag) and amends the commit to keep remote clean
+3. **post-push**: After push completes, parseme regenerates with git info again so your local working copy maintains full context
 
-- ✅ The PARSEME.md file references the correct commit hash (the commit it's part of)
-- ✅ Generated context files are included in the same commit as your changes
-- ✅ No drift between code and context - everything stays synchronized
-- ✅ Clean git history - one commit, not two
-- ✅ Remote repository stays clean after push
+The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook execution on the amend.
 
-The `--no-verify` flag prevents an infinite loop by skipping hook execution on the amend.
-
-This automatically regenerates your AI context files after every commit and includes them in that commit, ensuring they're always up-to-date!
+This automatically keeps your AI context files synchronized with your code while maintaining clean context on remote and detailed context locally!
 
 ## Requirements
 
