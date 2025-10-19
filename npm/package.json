@@ -1,6 +1,6 @@
 {
   "name": "@parseme/cli",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Adds a PARSEME.md file—a README.md for AI agents—to your project, providing context and structure for automated tools.",
   "type": "module",
   "main": "./dist/index.js",
