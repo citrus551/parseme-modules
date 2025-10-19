@@ -137,7 +137,7 @@ npm install --save-dev parseme
 This creates:
 
 - `PARSEME.md` - Main overview with links to context files
-- `parseme-context/` - Structured data files (AST, dependencies, routes, git info)
+- `parseme-context/` - Structured data files (file list, AST structure, routes, git diff)
 
 ## Configuration
 

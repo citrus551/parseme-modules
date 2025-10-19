@@ -154,7 +154,7 @@ program
       );
       console.log('- `PARSEME.md` - Project overview with links to detailed context files');
       console.log(
-        '- `parseme-context/` - Structured data files (AST analysis, dependencies, routes, git info)',
+        '- `parseme-context/` - Structured data files (file list, AST structure, routes, git diff)',
       );
       console.log('');
     } catch (error) {
