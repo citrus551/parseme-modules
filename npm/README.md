@@ -114,6 +114,7 @@ npm install --save-dev parseme
    - How to add parseme script to package.json
    - How to integrate with git hooks
    - README section to help AI agents find context
+   - AI agent configuration files to reference PARSEME.md
 
 2. **Add to your package.json scripts** (optional, for easier execution):
 
@@ -386,6 +387,7 @@ After initialization, setup tips are displayed:
 - Package.json script suggestion
 - Git hook integration suggestion
 - README.md section suggestion for AI agents
+- AI agent configuration files to reference PARSEME.md
 
 ## Framework Support
 
@@ -493,6 +495,38 @@ chmod +x .git/hooks/post-commit .git/hooks/pre-push .git/hooks/post-push
 The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook execution on the amend.
 
 This automatically keeps your AI context files synchronized with your code while maintaining clean context on remote and detailed context locally!
+
+## AI Agent Integration
+
+To help AI coding assistants efficiently understand your codebase structure and context, add instructions to your agent configuration files:
+
+### Claude Code (`.claude/README.md` or `.claude/instructions.md`)
+
+```markdown
+Read PARSEME.md and parseme-context/ to understand the codebase structure and context.
+```
+
+### GitHub Copilot (`.github/copilot-instructions.md`)
+
+```markdown
+Read PARSEME.md and parseme-context/ to understand the codebase structure and context.
+```
+
+### Cursor (`.cursorrules`)
+
+```
+Read PARSEME.md and parseme-context/ to understand the codebase structure and context.
+```
+
+### ChatGPT / Custom GPT
+
+Add to project instructions or system prompt:
+
+```
+Read PARSEME.md and parseme-context/ to understand the codebase structure and context.
+```
+
+This ensures AI assistants use your pre-generated context for efficient codebase understanding.
 
 ## Requirements
 

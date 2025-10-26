@@ -157,6 +157,16 @@ program
         '- `parseme-context/` - Structured data files (file list, AST structure, routes, git diff)',
       );
       console.log('');
+      console.log(
+        'Tip: Add references to PARSEME.md in your AI agent config files for efficient context gathering:',
+      );
+      console.log('  - Claude Code: .claude/README.md or .claude/instructions.md');
+      console.log('  - GitHub Copilot: .github/copilot-instructions.md');
+      console.log('  - Cursor: .cursorrules');
+      console.log(
+        '  - Example instruction: "Read PARSEME.md and parseme-context/ to understand the codebase structure and context."',
+      );
+      console.log('');
     } catch (error) {
       console.error('Failed to create configuration:', error);
       process.exit(1);
