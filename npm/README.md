@@ -1,16 +1,16 @@
 # PARSEME
 
-AI Project Context Generator - Automated context generation for AI coding assistants.
+**Local code analysis and context generation to improve token efficiency of AI Coding agents
+Cross-project access via Cloud MCP**
 
 PARSEME analyzes your TypeScript/JavaScript projects and generates a PARSEME.md file—a README.md for AI agents. This file provides comprehensive context documentation that helps AI assistants understand your codebase structure, architecture, and patterns. By providing persistent, reusable context, PARSEME prevents AI agents from repeatedly analyzing your codebase from scratch—saving valuable tokens and improving efficiency for every interaction.
 
 ## Development Status
 
-**This project is currently in active development and pre-alpha phase.**
+**This project is currently in active development.**
 
 The core functionality is working, but expect:
 
-- Breaking changes in configuration format
 - API modifications as the interface gets refined
 - Additional features being added regularly
 - Possible bugs and edge cases
