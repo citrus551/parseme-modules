@@ -75,6 +75,7 @@ describe('E2E Test Repositories', () => {
     // Check repos exist and prepare cleanups in a single loop
     for (const [key, config] of Object.entries(reposConfig)) {
       const repoDir = getRepoDir(key, config);
+      const contextDir = config.contextDir || 'parseme-context';
 
       // Check if repo exists
       const exists = await fileExists(repoDir);
@@ -85,7 +86,7 @@ describe('E2E Test Repositories', () => {
       // Prepare cleanup tasks
       cleanups.push(
         rm(join(repoDir, 'PARSEME.md'), { force: true }),
-        rm(join(repoDir, 'parseme-context'), { recursive: true, force: true }),
+        rm(join(repoDir, contextDir), { recursive: true, force: true }),
         rm(join(repoDir, 'parseme.config.json'), { force: true }),
       );
     }
@@ -105,6 +106,7 @@ describe('E2E Test Repositories', () => {
   for (const [key, config] of Object.entries(reposConfig)) {
     describe(config.name, () => {
       const repoDir = getRepoDir(key, config);
+      const contextDir = config.contextDir || 'parseme-context';
 
       test('should initialize config', async () => {
         const { code, stdout } = await runParseme(repoDir, ['init']);
@@ -121,6 +123,10 @@ describe('E2E Test Repositories', () => {
         const generateArgs = ['generate'];
         if (config.type === 'generate') {
           generateArgs.push('--no-git-info', '--no-git-files');
+        }
+        // Add custom context dir if specified
+        if (config.contextDir) {
+          generateArgs.push('--context-dir', config.contextDir);
         }
 
         const { code, stdout } = await runParseme(repoDir, generateArgs);
@@ -152,13 +158,11 @@ describe('E2E Test Repositories', () => {
       }
 
       test('should create structure.json', async () => {
-        const structureExists = await fileExists(
-          join(repoDir, 'parseme-context', 'structure.json'),
-        );
+        const structureExists = await fileExists(join(repoDir, contextDir, 'structure.json'));
         assert.ok(structureExists, 'structure.json should exist');
 
         const structure = JSON.parse(
-          await readFile(join(repoDir, 'parseme-context', 'structure.json'), 'utf-8'),
+          await readFile(join(repoDir, contextDir, 'structure.json'), 'utf-8'),
         );
         assert.ok(Array.isArray(structure), 'Structure should be an array');
         assert.ok(structure.length > 0, 'Should analyze files');
@@ -166,7 +170,7 @@ describe('E2E Test Repositories', () => {
 
       if (config.assertions?.shouldHaveEndpoints) {
         test('should detect API endpoints', async () => {
-          const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
+          const endpointsPath = join(repoDir, contextDir, 'routes.json');
           const endpointsExist = await fileExists(endpointsPath);
 
           assert.ok(
@@ -196,7 +200,7 @@ describe('E2E Test Repositories', () => {
       // Test for gitDiff file when repository has been modified (express repo)
       if (key === 'express') {
         test('should create gitDiff.md when there are uncommitted changes', async () => {
-          const gitDiffPath = join(repoDir, 'parseme-context', 'gitDiff.md');
+          const gitDiffPath = join(repoDir, contextDir, 'gitDiff.md');
           const gitDiffExists = await fileExists(gitDiffPath);
 
           assert.ok(

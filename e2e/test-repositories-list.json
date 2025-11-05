@@ -222,6 +222,7 @@
     "repo": "https://github.com/axios/axios",
     "path": ".",
     "branch": "v1.x",
+    "contextDir": "ai-context/parseme",
     "assertions": {
       "shouldDetectFramework": "unknown"
     }
