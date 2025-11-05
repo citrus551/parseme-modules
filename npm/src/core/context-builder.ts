@@ -209,7 +209,7 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
   }
 
   private buildFilesList(allFiles: string[]): string {
-    let content = `# Project Files\n`;
+    let content = `# Project Files\n\n`;
 
     allFiles.forEach((file) => {
       content += `- ${file}\n`;

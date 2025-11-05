@@ -93,13 +93,18 @@ export class ParsemeGenerator {
     // Clear the directory if it exists, then recreate it
     await rm(parsemeDir, { recursive: true, force: true });
     await mkdir(parsemeDir, { recursive: true });
-    await writeFile(finalOutputPath, context.parseme);
+
+    const parsemeContent = context.parseme.endsWith('\n')
+      ? context.parseme
+      : context.parseme + '\n';
+    await writeFile(finalOutputPath, parsemeContent);
 
     if (context.context) {
       for (const [filename, content] of Object.entries(context.context)) {
         // Use .md extension for markdown files, .json for others
         const extension = filename === 'gitDiff' || filename === 'files' ? '.md' : '.json';
-        await writeFile(join(parsemeDir, `${filename}${extension}`), content);
+        const fileContent = content.endsWith('\n') ? content : content + '\n';
+        await writeFile(join(parsemeDir, `${filename}${extension}`), fileContent);
       }
     }
   }
