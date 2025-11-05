@@ -1,9 +1,9 @@
-import { describe, test, before } from 'node:test';
-import assert from 'node:assert';
+import { spawn } from 'child_process';
 import { readFile, access, rm } from 'fs/promises';
+import assert from 'node:assert';
+import { describe, test, before } from 'node:test';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,9 +13,7 @@ const CLI_PATH = join(E2E_DIR, '..', 'npm', 'dist', 'cli', 'cli.js');
 const REPOS_CONFIG_PATH = join(E2E_DIR, 'test-repositories-list.json');
 
 // Load repository configurations
-const reposConfig = JSON.parse(
-  await readFile(REPOS_CONFIG_PATH, 'utf-8')
-);
+const reposConfig = JSON.parse(await readFile(REPOS_CONFIG_PATH, 'utf-8'));
 
 // Helper to run parseme CLI
 function runParseme(cwd, args = []) {
@@ -88,14 +86,14 @@ describe('E2E Test Repositories', () => {
       cleanups.push(
         rm(join(repoDir, 'PARSEME.md'), { force: true }),
         rm(join(repoDir, 'parseme-context'), { recursive: true, force: true }),
-        rm(join(repoDir, 'parseme.config.json'), { force: true })
+        rm(join(repoDir, 'parseme.config.json'), { force: true }),
       );
     }
 
     // Throw error if any repos are missing
     if (missingRepos.length > 0) {
       throw new Error(
-        `Repositories not set up. Run: npm run setup\nMissing: ${missingRepos.join(', ')}`
+        `Repositories not set up. Run: npm run setup\nMissing: ${missingRepos.join(', ')}`,
       );
     }
 
@@ -148,19 +146,19 @@ describe('E2E Test Repositories', () => {
           const frameworkLineRegex = new RegExp(`\\*\\*Framework:\\*\\*\\s+${frameworkName}`, 'i');
           assert.ok(
             frameworkLineRegex.test(content),
-            `Should detect ${frameworkName} framework on the same line as **Framework:**`
+            `Should detect ${frameworkName} framework on the same line as **Framework:**`,
           );
         });
       }
 
       test('should create structure.json', async () => {
         const structureExists = await fileExists(
-          join(repoDir, 'parseme-context', 'structure.json')
+          join(repoDir, 'parseme-context', 'structure.json'),
         );
         assert.ok(structureExists, 'structure.json should exist');
 
         const structure = JSON.parse(
-          await readFile(join(repoDir, 'parseme-context', 'structure.json'), 'utf-8')
+          await readFile(join(repoDir, 'parseme-context', 'structure.json'), 'utf-8'),
         );
         assert.ok(Array.isArray(structure), 'Structure should be an array');
         assert.ok(structure.length > 0, 'Should analyze files');
@@ -171,10 +169,16 @@ describe('E2E Test Repositories', () => {
           const endpointsPath = join(repoDir, 'parseme-context', 'routes.json');
           const endpointsExist = await fileExists(endpointsPath);
 
-          assert.ok(endpointsExist, 'routes.json file should exist when shouldHaveEndpoints is true');
+          assert.ok(
+            endpointsExist,
+            'routes.json file should exist when shouldHaveEndpoints is true',
+          );
 
           const content = await readFile(endpointsPath, 'utf-8');
-          assert.ok(content.trim().length > 0, 'routes.json should not be empty when shouldHaveEndpoints is true');
+          assert.ok(
+            content.trim().length > 0,
+            'routes.json should not be empty when shouldHaveEndpoints is true',
+          );
 
           const endpoints = JSON.parse(content);
           assert.ok(Array.isArray(endpoints), 'Endpoints should be an array');
@@ -183,7 +187,7 @@ describe('E2E Test Repositories', () => {
           if (config.assertions.minEndpoints) {
             assert.ok(
               endpoints.length >= config.assertions.minEndpoints,
-              `Should detect at least ${config.assertions.minEndpoints} endpoints, but found ${endpoints.length}`
+              `Should detect at least ${config.assertions.minEndpoints} endpoints, but found ${endpoints.length}`,
             );
           }
         });
@@ -195,14 +199,20 @@ describe('E2E Test Repositories', () => {
           const gitDiffPath = join(repoDir, 'parseme-context', 'gitDiff.md');
           const gitDiffExists = await fileExists(gitDiffPath);
 
-          assert.ok(gitDiffExists, 'gitDiff.md file should exist when there are uncommitted changes');
+          assert.ok(
+            gitDiffExists,
+            'gitDiff.md file should exist when there are uncommitted changes',
+          );
 
           const content = await readFile(gitDiffPath, 'utf-8');
           assert.ok(content.trim().length > 0, 'gitDiff.md should not be empty');
 
           // Verify the content contains expected git diff information
           assert.ok(content.includes('# Git Diff Statistics'), 'gitDiff.md should contain header');
-          assert.ok(content.includes('package.json'), 'gitDiff.md should reference the modified package.json file');
+          assert.ok(
+            content.includes('package.json'),
+            'gitDiff.md should reference the modified package.json file',
+          );
         });
       }
     });

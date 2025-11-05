@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+import { spawn } from 'child_process';
 import { readFile, rm, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -54,13 +54,7 @@ async function cloneSparse(key, repoUrl, name, subpath, branch) {
   try {
     if (subpath === '.') {
       // Clone entire repo
-      await runCommand('git', [
-        'clone',
-        '--depth', '1',
-        '--branch', branch,
-        repoUrl,
-        targetDir
-      ]);
+      await runCommand('git', ['clone', '--depth', '1', '--branch', branch, repoUrl, targetDir]);
     } else {
       // Sparse checkout for subdirectory only
       await mkdir(targetDir, { recursive: true });
@@ -170,13 +164,13 @@ async function main() {
       // Apply any modifications after cloning
       if (repoConfig.modifications) {
         const baseDir = join(REPOS_DIR, key);
-        const targetDir = subpath && subpath !== '.'
-          ? join(baseDir, subpath)
-          : baseDir;
+        const targetDir = subpath && subpath !== '.' ? join(baseDir, subpath) : baseDir;
         await applyRepoModifications(targetDir, repoConfig.modifications);
       }
     } else {
-      console.warn(`Warning: Unknown repository type "${repoConfig.type}" for ${repoConfig.name}. Skipping.`);
+      console.warn(
+        `Warning: Unknown repository type "${repoConfig.type}" for ${repoConfig.name}. Skipping.`,
+      );
     }
   }
 

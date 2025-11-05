@@ -13,7 +13,7 @@
   },
   "express": {
     "name": "Express Prisma Example",
-    "notes":"used to test gitDiff functionality",
+    "notes": "used to test gitDiff functionality",
     "type": "clone",
     "repo": "https://github.com/prisma/prisma-examples",
     "path": "orm/express",
@@ -90,7 +90,17 @@
     "type": "generate",
     "generate": {
       "command": "npx",
-      "args": ["create-vue@latest", "vue-2", "--typescript", "--jsx", "--router", "--pinia", "--vitest", "--eslint", "--prettier"]
+      "args": [
+        "create-vue@latest",
+        "vue-2",
+        "--typescript",
+        "--jsx",
+        "--router",
+        "--pinia",
+        "--vitest",
+        "--eslint",
+        "--prettier"
+      ]
     },
     "assertions": {
       "shouldDetectFramework": "vue"
@@ -111,7 +121,16 @@
     "type": "generate",
     "generate": {
       "command": "npx",
-      "args": ["@angular/cli@latest", "new", "angular-2", "--standalone", "--routing", "--style=scss", "--strict", "--skip-git"]
+      "args": [
+        "@angular/cli@latest",
+        "new",
+        "angular-2",
+        "--standalone",
+        "--routing",
+        "--style=scss",
+        "--strict",
+        "--skip-git"
+      ]
     },
     "assertions": {
       "shouldDetectFramework": "angular"
@@ -152,7 +171,16 @@
     "type": "generate",
     "generate": {
       "command": "npx",
-      "args": ["create-next-app@latest", "nextjs-2", "--app", "--ts", "--tailwind", "--src-dir", "--no-git", "--yes"]
+      "args": [
+        "create-next-app@latest",
+        "nextjs-2",
+        "--app",
+        "--ts",
+        "--tailwind",
+        "--src-dir",
+        "--no-git",
+        "--yes"
+      ]
     },
     "assertions": {
       "shouldDetectFramework": "next.js, react"

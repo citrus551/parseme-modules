@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+import { spawn } from 'child_process';
 import { access, constants } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,7 +69,7 @@ async function main() {
   await runCommand(
     'node',
     ['--test', join(E2E_DIR, 'tests', 'test-repositories.test.js')],
-    E2E_DIR
+    E2E_DIR,
   );
 
   console.log('\n=========================================');

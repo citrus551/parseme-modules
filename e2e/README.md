@@ -5,6 +5,7 @@ End-to-end tests that validate parseme against a diverse set of real-world repos
 ## Overview
 
 These tests clone/generate example projects and run parseme to ensure:
+
 - Framework detection works correctly
 - API endpoints are discovered (when applicable)
 - Project structure is analyzed
@@ -14,55 +15,55 @@ These tests clone/generate example projects and run parseme to ensure:
 
 ### Backend Frameworks
 
-| Framework | Repository | Path |
-|-----------|------------|------|
-| NestJS | [nestjs/nest](https://github.com/nestjs/nest) | sample/01-cats-app |
-| Express.js | [prisma/prisma-examples](https://github.com/prisma/prisma-examples) | orm/express |
-| Express.js (generated) | `npx express-generator` | . |
-| Fastify | [fastify/demo](https://github.com/fastify/demo) | . |
+| Framework              | Repository                                                          | Path               |
+| ---------------------- | ------------------------------------------------------------------- | ------------------ |
+| NestJS                 | [nestjs/nest](https://github.com/nestjs/nest)                       | sample/01-cats-app |
+| Express.js             | [prisma/prisma-examples](https://github.com/prisma/prisma-examples) | orm/express        |
+| Express.js (generated) | `npx express-generator`                                             | .                  |
+| Fastify                | [fastify/demo](https://github.com/fastify/demo)                     | .                  |
 
 ### Frontend Frameworks
 
-| Framework | Repository | Path |
-|-----------|------------|------|
-| React.js (Next.js) | [ai-ng/2txt](https://github.com/ai-ng/2txt) | . |
-| React.js (generated) | `npx create-react-router@latest` | . |
-| Vue.js | [posva/pinia-colada](https://github.com/posva/pinia-colada) | . |
-| Vue.js (generated) | `npx create-vue@latest` | . |
-| Angular | [angular/examples](https://github.com/angular/examples) | walk-my-dog |
-| Angular (generated) | `@angular/cli new` | . |
-| Svelte | [hmmhmmhm/svelte-template](https://github.com/hmmhmmhm/svelte-template) | . |
+| Framework            | Repository                                                              | Path        |
+| -------------------- | ----------------------------------------------------------------------- | ----------- |
+| React.js (Next.js)   | [ai-ng/2txt](https://github.com/ai-ng/2txt)                             | .           |
+| React.js (generated) | `npx create-react-router@latest`                                        | .           |
+| Vue.js               | [posva/pinia-colada](https://github.com/posva/pinia-colada)             | .           |
+| Vue.js (generated)   | `npx create-vue@latest`                                                 | .           |
+| Angular              | [angular/examples](https://github.com/angular/examples)                 | walk-my-dog |
+| Angular (generated)  | `@angular/cli new`                                                      | .           |
+| Svelte               | [hmmhmmhm/svelte-template](https://github.com/hmmhmmhm/svelte-template) | .           |
 
 ### Fullstack Frameworks
 
-| Framework | Repository | Path |
-|-----------|------------|------|
-| Next.js | [vercel/next.js](https://github.com/vercel/next.js) | examples/hello-world |
-| Next.js (generated) | `npx create-next-app@latest` | . |
-| Nuxt.js | [zackha/habit](https://github.com/zackha/habit) | . |
+| Framework           | Repository                                          | Path                 |
+| ------------------- | --------------------------------------------------- | -------------------- |
+| Next.js             | [vercel/next.js](https://github.com/vercel/next.js) | examples/hello-world |
+| Next.js (generated) | `npx create-next-app@latest`                        | .                    |
+| Nuxt.js             | [zackha/habit](https://github.com/zackha/habit)     | .                    |
 
 ### NPM Packages & Libraries
 
-| Type | Repository | Path |
-|------|------------|------|
-| TypeScript utilities | [piotrwitek/utility-types](https://github.com/piotrwitek/utility-types) | . |
-| JavaScript helpers | [lodash/lodash](https://github.com/lodash/lodash) | . |
-| Node.js modules | [axios/axios](https://github.com/axios/axios) | . |
-| Monorepo packages | [lerna/lerna](https://github.com/lerna/lerna) | . |
+| Type                 | Repository                                                              | Path |
+| -------------------- | ----------------------------------------------------------------------- | ---- |
+| TypeScript utilities | [piotrwitek/utility-types](https://github.com/piotrwitek/utility-types) | .    |
+| JavaScript helpers   | [lodash/lodash](https://github.com/lodash/lodash)                       | .    |
+| Node.js modules      | [axios/axios](https://github.com/axios/axios)                           | .    |
+| Monorepo packages    | [lerna/lerna](https://github.com/lerna/lerna)                           | .    |
 
 ### Development Tools
 
-| Type | Repository | Path |
-|------|------------|------|
-| CLI tools | [lirantal/ls-mcp](https://github.com/lirantal/ls-mcp) | . |
-| Build plugins | [hannoeru/vite-plugin-pages](https://github.com/hannoeru/vite-plugin-pages) | . |
-| Desktop applications | [responsively-org/responsively-app](https://github.com/responsively-org/responsively-app) | . |
-| Testing utilities | [jestjs/jest](https://github.com/jestjs/jest) | . |
+| Type                 | Repository                                                                                | Path |
+| -------------------- | ----------------------------------------------------------------------------------------- | ---- |
+| CLI tools            | [lirantal/ls-mcp](https://github.com/lirantal/ls-mcp)                                     | .    |
+| Build plugins        | [hannoeru/vite-plugin-pages](https://github.com/hannoeru/vite-plugin-pages)               | .    |
+| Desktop applications | [responsively-org/responsively-app](https://github.com/responsively-org/responsively-app) | .    |
+| Testing utilities    | [jestjs/jest](https://github.com/jestjs/jest)                                             | .    |
 
 ### Other
 
-| Type | Repository | Path |
-|------|------------|------|
+| Type       | Repository                                                                                          | Path          |
+| ---------- | --------------------------------------------------------------------------------------------------- | ------------- |
 | Vanilla JS | [ymw0331/vanilla-javascript-20-projects](https://github.com/ymw0331/vanilla-javascript-20-projects) | 014-nasa-apod |
 
 ## Prerequisites
