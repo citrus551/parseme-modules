@@ -117,10 +117,10 @@ describe('E2E Test Repositories', () => {
       });
 
       test('should generate context', async () => {
-        // Build generate command args - use --no-git for generated projects by default
+        // Build generate command args - use --no-git-info and --no-git-files for generated projects
         const generateArgs = ['generate'];
         if (config.type === 'generate') {
-          generateArgs.push('--no-git');
+          generateArgs.push('--no-git-info', '--no-git-files');
         }
 
         const { code, stdout } = await runParseme(repoDir, generateArgs);
