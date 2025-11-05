@@ -5,6 +5,33 @@ Cross-project access via Cloud MCP**
 
 PARSEME analyzes your TypeScript/JavaScript projects and generates a PARSEME.md file—a README.md for AI agents. This file provides comprehensive context documentation that helps AI assistants understand your codebase structure, architecture, and patterns. By providing persistent, reusable context, PARSEME prevents AI agents from repeatedly analyzing your codebase from scratch—saving valuable tokens and improving efficiency for every interaction.
 
+## Table of Contents
+
+- [Development Status](#development-status)
+- [Features](#features)
+  - [What PARSEME Detects](#what-parseme-detects)
+  - [Language Support](#language-support)
+  - [Supported Projects](#supported-projects)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Automation Options](#automation-options)
+  - [Option 1: Manual Execution](#option-1-manual-execution)
+  - [Option 2: Automatic Local Generation](#option-2-automatic-local-generation)
+  - [Option 3: Automatic Local and Remote Generation (Advanced Git Hooks)](#option-3-automatic-local-and-remote-generation-advanced-git-hooks)
+  - [Option 4: GitHub Actions for Remote Generation paired with Local Generation](#option-4-github-actions-for-remote-generation-paired-with-local-generation)
+- [Configuration](#configuration)
+  - [Configuration File Formats & Priority](#configuration-file-formats--priority)
+  - [Configuration Priority](#configuration-priority)
+  - [Configuration Options](#configuration-options)
+  - [CLI Options](#cli-options)
+  - [Interactive Configuration](#interactive-configuration)
+- [CLI Commands](#cli-commands)
+- [Programmatic API](#programmatic-api)
+- [Output Format](#output-format)
+- [AI Agent Integration](#ai-agent-integration)
+- [Requirements](#requirements)
+- [License](#license)
+
 ## Development Status
 
 **This project is currently in active development.**
@@ -88,6 +115,8 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project like:
 - **Desktop apps** - Main processes, renderers, IPC handlers
 - **Testing utilities** - Test functions, mocks, utilities, custom matchers
 
+**Note:** PARSEME provides specialized analysis for **Express.js**, **NestJS**, and **Fastify**, including route detection, middleware identification, and decorator analysis. All other frameworks benefit from universal AST-based analysis.
+
 ## Installation
 
 ```bash
@@ -116,20 +145,8 @@ npm install --save-dev parseme
    - README section to help AI agents find context
    - AI agent configuration files to reference PARSEME.md
 
-2. **Add to your package.json scripts** (optional, for easier execution):
-
-   ```json
-   {
-     "scripts": {
-       "parseme": "parseme generate"
-     }
-   }
-   ```
-
-3. **Generate context**:
+2. **Generate context**:
    ```bash
-   npm run parseme
-   # or
    npx parseme generate
    # or use the alias
    npx parseme g
@@ -139,6 +156,316 @@ This creates:
 
 - `PARSEME.md` - Main overview with links to context files
 - `parseme-context/` - Structured data files (file list, AST structure, routes, git diff)
+
+## Automation Options
+
+PARSEME can be integrated into your workflow in several ways, from manual execution to fully automated generation. Choose the approach that best fits your needs:
+
+### Option 1: Manual Execution
+
+Run parseme manually whenever you need updated context.
+
+**Setup:**
+
+Add to your `package.json` scripts (optional, for convenience):
+
+```json
+{
+  "scripts": {
+    "parseme": "parseme generate"
+  }
+}
+```
+
+**Usage:**
+
+```bash
+npm run parseme
+# or directly
+npx parseme generate
+```
+
+**Best for:** Small projects, occasional updates, or when you prefer full control over when context is generated.
+
+---
+
+### Option 2: Automatic Local Generation
+
+Automatically generate parseme files locally after every commit. Files are committed to the repository.
+
+**Setup with Husky:**
+
+```bash
+# Install Husky (if not already installed)
+npm install --save-dev husky
+npx husky init
+
+# Create post-commit hook
+cat > .husky/post-commit << 'EOF'
+#!/bin/sh
+
+# Generate PARSEME files locally after commit
+npx parseme generate
+EOF
+
+# Make hook executable
+chmod +x .husky/post-commit
+```
+
+**Setup with manual git hooks:**
+
+```bash
+cat > .git/hooks/post-commit << 'EOF'
+#!/bin/sh
+
+npx parseme generate
+EOF
+
+chmod +x .git/hooks/post-commit
+```
+
+**How it works:**
+
+- After each commit, parseme automatically generates context files with full git info
+- Files are ready to be staged and committed with your next commit
+- Simple setup with minimal configuration
+
+**Best for:** Solo developers or small teams wanting automatic local updates with committed parseme files.
+
+**Note:** If using a custom `contextDir`, ensure the path is consistent across your team's configuration.
+
+---
+
+### Option 3: Automatic Local and Remote Generation (Advanced Git Hooks)
+
+Automatically update parseme files locally and remotely with git hooks. Keeps the remote version clean (without git-specific info) while maintaining full context locally. Uses multiple git hooks to manage local vs remote state.
+
+**Setup with Husky:**
+
+```bash
+# Install Husky (if not already installed)
+npm install --save-dev husky
+npx husky init
+
+# Create post-commit hook
+cat > .husky/post-commit << 'EOF'
+#!/bin/sh
+
+npx parseme generate
+EOF
+
+# Create pre-push hook
+cat > .husky/pre-push << 'EOF'
+#!/bin/sh
+
+# Regenerate without git info for clean remote state
+npx parseme generate --no-git-info
+
+# Stage parseme files
+git add parseme-context/ PARSEME.md
+
+# Amend the commit with updated parseme files
+git commit --amend --no-edit --no-verify
+EOF
+
+# Create post-push hook
+cat > .husky/post-push << 'EOF'
+#!/bin/sh
+
+# Regenerate with git info for local development
+npx parseme generate
+EOF
+
+# Make hooks executable
+chmod +x .husky/post-commit .husky/pre-push .husky/post-push
+```
+
+**Setup with manual git hooks:**
+
+```bash
+# Post-commit: Generate context with git info after each commit
+cat > .git/hooks/post-commit << 'EOF'
+#!/bin/sh
+
+npx parseme generate
+EOF
+
+# Pre-push: Regenerate without git info and amend before pushing
+cat > .git/hooks/pre-push << 'EOF'
+#!/bin/sh
+
+# Regenerate without git info for clean remote state
+npx parseme generate --no-git-info
+
+# Stage parseme files
+git add parseme-context/ PARSEME.md
+
+# Amend the commit with updated parseme files
+git commit --amend --no-edit --no-verify
+EOF
+
+# Post-push: Restore git info locally after push completes
+cat > .git/hooks/post-push << 'EOF'
+#!/bin/sh
+
+# Regenerate with git info for local development
+npx parseme generate
+EOF
+
+# Make hooks executable
+chmod +x .git/hooks/post-commit .git/hooks/pre-push .git/hooks/post-push
+```
+
+**How it works:**
+
+1. **post-commit**: Generates context files with full git info locally
+2. **pre-push**: Regenerates without git info and amends the commit before pushing
+3. **post-push**: Restores full git info locally after push completes
+
+The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook execution on the amend.
+
+**Best for:** Teams that want detailed local context for development while keeping clean, portable context in the repository.
+
+**Note:** If using a custom `contextDir`, update the `git add` path in the pre-push hook (e.g., `git add docs/context/ PARSEME.md`).
+
+---
+
+### Option 4: GitHub Actions for Remote Generation paired with Local Generation
+
+Use GitHub Actions to automatically manage remote parseme files while keeping them updated locally with git hooks. This is the recommended approach for teams using GitHub.
+
+**Setup:**
+
+**1. Add parseme files to `.gitignore`:**
+
+```gitignore
+# Parseme documentation (generated locally and by CI)
+parseme-context/
+PARSEME.md
+```
+
+**2. Create `.github/workflows/parseme-update.yml`:**
+
+```yaml
+name: Update PARSEME Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-parseme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
+
+    steps:
+      - name: Check if pusher is service account
+        id: check_pusher
+        run: |
+          if [ "${{ github.event.pusher.name }}" = "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}" ]; then
+            echo "is_bot=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_bot=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout code
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
+
+      - name: Setup Node.js
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Configure Git
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        run: |
+          git config user.name "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}"
+          git config user.email "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}@users.noreply.github.com"
+
+      - name: Install dependencies
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        run: npm ci
+
+      - name: Generate ParseMe documentation
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        run: npx parseme generate --no-git-info
+
+      - name: Force add parseme files (ignored in .gitignore)
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        run: git add -f parseme-context/ PARSEME.md
+
+      - name: Check for changes
+        if: steps.check_pusher.outputs.is_bot == 'false'
+        id: check_changes
+        run: |
+          if git diff --cached --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and amend
+        if: steps.check_pusher.outputs.is_bot == 'false' && steps.check_changes.outputs.changes == 'true'
+        run: |
+          git commit --amend --no-edit --no-verify
+          git push --force-with-lease
+```
+
+**3. Configure GitHub secrets:**
+
+- `GH_SERVICE_ACCOUNT_TOKEN`: A GitHub personal access token with repo write permissions
+- `GH_SERVICE_ACCOUNT_USERNAME`: The username of your service account (to prevent infinite loops)
+
+**4. Setup local git hooks with Husky:**
+
+```bash
+# Install Husky (if not already installed)
+npm install --save-dev husky
+npx husky init
+
+# Create post-commit hook
+cat > .husky/post-commit << 'EOF'
+#!/bin/sh
+
+# Generate PARSEME files locally after commit
+npx parseme generate
+EOF
+
+# Create post-merge hook
+cat > .husky/post-merge << 'EOF'
+#!/bin/sh
+
+# Untrack parseme files after merge/pull to keep them gitignored locally
+git rm --cached -r parseme-context/ PARSEME.md 2>/dev/null || true
+EOF
+
+# Make hooks executable
+chmod +x .husky/post-commit .husky/post-merge
+```
+
+**How it works:**
+
+1. **Local development**: Parseme files are generated locally after each commit with full git info
+2. **Ignored by git**: Files are listed in `.gitignore` so they're not committed manually
+3. **Remote updates**: GitHub Actions automatically generates and commits parseme files (without git info) when pushing to main
+4. **After pull/merge**: The post-merge hook ensures parseme files stay untracked locally, preventing conflicts
+
+**Best for:** Teams using GitHub that want automated CI-managed remote updates with local context for development.
+
+**Notes:**
+
+- The workflow only runs on the `main` branch (adjust as needed for your branching strategy)
+- If using a custom `contextDir`, update both the `.gitignore` entry, the workflow's `git add -f` path, and the post-merge hook's `git rm --cached -r` path accordingly
 
 ## Configuration
 
@@ -299,20 +626,38 @@ Toggle which sections to include in the output (all default to `true`):
 
 - `limits.maxFilesPerContext` - Maximum number of files to analyze (default: `5000`)
 
-## Output Format
+### CLI Options
 
-PARSEME always generates the following output files:
+#### Generate Command (`parseme generate` or `parseme g`)
 
-- `PARSEME.md` - Main overview with links to context files (Markdown)
-- Context directory (default: `parseme-context/`) with structured data files:
-  - `files.md` - Complete list of analyzed files (Markdown)
-  - `structure.json` - AST analysis with exports, imports, functions, and classes (JSON)
-  - `api-endpoints.json` - API routes with methods, paths, and handlers (JSON, only if routes detected)
-  - `dependencies.json` - Production dependencies with versions (JSON)
-  - `framework.json` - Framework details if detected (JSON, optional)
-  - `gitDiff.md` - Git diff statistics from generation time (Markdown, if git enabled)
+- `-c, --config <path>` - Config file path
+- `-o, --output <path>` - Output file path
+- `-r, --root <path>` - Root directory to analyze
+- `--context-dir <path>` - Context directory path (default: parseme-context)
+- `--file-types <types...>` - File types to analyze (e.g., ts tsx js jsx)
+- `--exclude <patterns...>` - Additional exclude patterns (glob, in git repositories on top of git-tracked files)
+- `--no-git-info` - Disable git info generation (keeps git for file discovery)
+- `--no-git-files` - Disable git for file discovery (uses filesystem crawling instead)
+- `--max-depth <number>` - Maximum directory depth
 
-The context directory location can be customized via the `contextDir` configuration option.
+#### Init Command (`parseme init` or `parseme i`)
+
+- `-f, --force` - Overwrite existing config
+- `--format <format>` - Config format: json, ts, or js (default: json)
+
+### Interactive Configuration
+
+When running `parseme init` interactively (TTY, not CI), you'll be prompted to configure:
+
+- **Context directory** - Where to store context files (default: `parseme-context`)
+- **Exclude patterns** - Comma-separated glob patterns (default: `node_modules/**`, `dist/**`, `.git/**` - in git repositories, additional patterns on top of git-tracked files)
+
+After initialization, setup tips are displayed:
+
+- Package.json script suggestion
+- Git hook integration suggestion
+- README.md section suggestion for AI agents
+- AI agent configuration files to reference PARSEME.md
 
 ## CLI Commands
 
@@ -356,61 +701,6 @@ npx parseme generate --no-git-info --no-git-files
 npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 ```
 
-### CLI Options
-
-#### Generate Command (`parseme generate` or `parseme g`)
-
-- `-c, --config <path>` - Config file path
-- `-o, --output <path>` - Output file path
-- `-r, --root <path>` - Root directory to analyze
-- `--context-dir <path>` - Context directory path (default: parseme-context)
-- `--file-types <types...>` - File types to analyze (e.g., ts tsx js jsx)
-- `--exclude <patterns...>` - Additional exclude patterns (glob, in git repositories on top of git-tracked files)
-- `--no-git-info` - Disable git info generation (keeps git for file discovery)
-- `--no-git-files` - Disable git for file discovery (uses filesystem crawling instead)
-- `--max-depth <number>` - Maximum directory depth
-
-#### Init Command (`parseme init` or `parseme i`)
-
-- `-f, --force` - Overwrite existing config
-- `--format <format>` - Config format: json, ts, or js (default: json)
-
-### Interactive Configuration
-
-When running `parseme init` interactively (TTY, not CI), you'll be prompted to configure:
-
-- **Context directory** - Where to store context files (default: `parseme-context`)
-- **Exclude patterns** - Comma-separated glob patterns (default: `node_modules/**`, `dist/**`, `.git/**` - in git repositories, additional patterns on top of git-tracked files)
-
-After initialization, setup tips are displayed:
-
-- Package.json script suggestion
-- Git hook integration suggestion
-- README.md section suggestion for AI agents
-- AI agent configuration files to reference PARSEME.md
-
-## Framework Support
-
-PARSEME automatically detects and provides specialized analysis for:
-
-### Express.js
-
-- Route detection (`app.get`, `router.post`, etc.)
-- Middleware identification
-- Request handler mapping
-
-### NestJS
-
-- Controller and decorator analysis
-- Module structure detection w
-- Dependency injection mapping
-
-### Fastify
-
-- Route registration detection
-- Plugin identification
-- Hook analysis
-
 ## Programmatic API
 
 You can also use PARSEME programmatically:
@@ -425,76 +715,18 @@ const context = await generator.generate();
 await generator.generateToFile('./output/PARSEME.md');
 ```
 
-## Git Hook Integration
+## Output Format
 
-Keep your AI context automatically updated by integrating parseme with git hooks. The recommended setup uses three hooks to ensure context files always have git info locally but stay clean on remote:
+PARSEME generates the following output files:
 
-### Recommended Hook Setup
+- `PARSEME.md` - Main overview with links to context files and project summary (Markdown)
+- Context directory (default: `parseme-context/`) with structured data files:
+  - `files.md` - Complete list of all project files (Markdown)
+  - `structure.json` - AST analysis with exports, imports, functions, classes, and route references (JSON)
+  - `routes.json` - API routes with methods, paths, and handlers (JSON, only if routes detected)
+  - `gitDiff.md` - Git diff statistics from generation time (Markdown, only if git is enabled and changes exist)
 
-#### Manual Setup
-
-```bash
-# 1. Post-commit: Generate context with git info after each commit
-cat > .git/hooks/post-commit << 'EOF'
-#!/bin/sh
-
-npx parseme generate
-EOF
-
-# 2. Pre-push: Regenerate without git info and amend before pushing
-cat > .git/hooks/pre-push << 'EOF'
-#!/bin/sh
-
-# Regenerate without git info for clean remote state
-npx parseme generate --no-git-info
-
-# Stage parseme files (parseme-context/ may be different if configured)
-git add parseme-context/ PARSEME.md
-
-# Amend the commit with updated parseme files
-git commit --amend --no-edit --no-verify
-EOF
-
-# 3. Post-push: Restore git info locally after push completes
-cat > .git/hooks/post-push << 'EOF'
-#!/bin/sh
-
-# Regenerate with git info for local development
-npx parseme generate
-EOF
-
-# Make hooks executable
-chmod +x .git/hooks/post-commit .git/hooks/pre-push .git/hooks/post-push
-```
-
-**Note:** If you've configured a custom `contextDir` (either in your config file or via the `--context-dir` CLI flag), update the `git add` path in the pre-push hook accordingly (e.g., `git add docs/context/ PARSEME.md`).
-
-### Using Husky
-
-```json
-// package.json
-{
-  "husky": {
-    "hooks": {
-      "post-commit": "npx parseme generate",
-      "pre-push": "npx parseme generate --no-git-info && git add parseme-context/ PARSEME.md && git commit --amend --no-edit --no-verify",
-      "post-push": "npx parseme generate"
-    }
-  }
-}
-```
-
-**Note:** If using a custom `contextDir`, update the `git add` path to match your configuration.
-
-### How It Works
-
-1. **post-commit**: After you commit, parseme generates context files with git info (current branch, recent commits, git diff) for local development
-2. **pre-push**: Before pushing, parseme regenerates without git info (`--no-git-info` flag) and amends the commit to keep remote clean
-3. **post-push**: After push completes, parseme regenerates with git info again so your local working copy maintains full context
-
-The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook execution on the amend.
-
-This automatically keeps your AI context files synchronized with your code while maintaining clean context on remote and detailed context locally!
+The context directory location can be customized via the `contextDir` configuration option.
 
 ## AI Agent Integration
 
@@ -530,7 +762,7 @@ This ensures AI assistants use your pre-generated context for efficient codebase
 
 ## Requirements
 
-- Node.js ≥20.19.5
+- Node.js ≥20.19.5 <21 || ≥22.21.1
 - npm ≥10.8.2
 
 ## License
