@@ -64,11 +64,11 @@ export class ContextBuilder {
 
     const mainContent =
       this.buildHeader(linkPath, hasRoutes) +
-      '\n\n\n' +
+      '\n\n' +
       this.buildProjectOverview(projectInfo) +
-      '\n\n\n' +
+      '\n\n' +
       this.buildSummarySection(linkPath, hasRoutes) +
-      '\n\n\n' +
+      '\n\n' +
       (gitInfo ? this.buildGitSection(gitInfo) : '');
     const contextFiles: {
       [key: string]: string;
@@ -109,9 +109,11 @@ export class ContextBuilder {
 6. Only dive deeper into specific files after reviewing this summary, that replaces the need for initial project exploration and significantly reduces token usage for project comprehension.`;
 
     return `## PARSEME - AI Agent Context
+
 Auto-generated project summary optimized for AI coding agents. This file provides complete project context without requiring full codebase traversal, designed for token efficiency.
 
 **Usage Instructions for AI Agents:**
+
 1. Read this PARSEME.md file completely first before accessing individual project files
 2. Basic project information, script availability and dependency information provides basic understanding of code base and tech stack without checking package.json
 3. Use the provided file list [${linkPath}/files.md](${linkPath}/files.md) to see all tracked files in the project
@@ -138,7 +140,7 @@ ${routesInstructions}`;
     // Add dependencies
     const deps = Object.keys(projectInfo.dependencies);
     if (deps.length > 0) {
-      content += '\n\n### Dependencies\n';
+      content += '\n### Dependencies\n\n';
       deps.forEach((dep) => {
         content += `- ${dep}\n`;
       });
@@ -146,7 +148,7 @@ ${routesInstructions}`;
 
     // Add available scripts
     if (projectInfo.scripts && Object.keys(projectInfo.scripts).length > 0) {
-      content += '\n### Available Scripts\n';
+      content += '\n### Available Scripts\n\n';
       Object.entries(projectInfo.scripts).forEach(([name, script]) => {
         content += `- **${name}**: \`${script}\`\n`;
       });
@@ -176,32 +178,37 @@ ${routesInstructions}`;
 - **Branch:** ${gitInfo.branch}
 - **Commit:** ${gitInfo.lastCommit}${gitInfo.origin ? `\n- **Origin:** ${gitInfo.origin}` : ''}
 
-### Git Diff Statistics`;
+### Git Diff Statistics
+`;
 
     const info =
       gitInfo.diffStat && gitInfo.diffStat.length > 0
         ? `Git diff statistics from the time of generation are available at [parseme-context/gitDiff.md](parseme-context/gitDiff.md) (relative to the commit mentioned above).
 
 **AI Agent Command:** To check for changes since generation, run:
+
 \`\`\`bash
 git diff --stat
 \`\`\`
+
 Compare the output with the baseline in [parseme-context/gitDiff.md](parseme-context/gitDiff.md) to detect any modifications.`
         : `Git diff statistics showed no changes at the time of generation relative to the commit mentioned above.`;
 
-    return base + '\n\n' + info;
+    return base + '\n' + info;
   }
 
   private buildSummarySection(linkPath: string, hasRoutes: boolean): string {
     let content = `## Project Files
+
 A complete list of all git-tracked files in the project (excluding files matching additional exclude patterns) is available at [${linkPath}/files.md](${linkPath}/files.md). This provides a quick overview of the project structure.
 
-
 ## Project Structure & AST
+
 Detailed structure and Abstract Syntax Tree data for all tracked files is available at [${linkPath}/structure.json](${linkPath}/structure.json). This includes file paths, types, imports, exports, functions, classes, interfaces, and routes for comprehensive code analysis without manual parsing.`;
 
     if (hasRoutes) {
-      content += `\n\n\n## API Routes
+      content += `\n\n## API Routes
+
 A comprehensive list of all discovered API routes is available at [${linkPath}/routes.json](${linkPath}/routes.json). This includes HTTP methods, paths, handler names, and source file locations for backend routes (Express, NestJS, and decorator-based routing).`;
     }
 
@@ -291,6 +298,7 @@ A comprehensive list of all discovered API routes is available at [${linkPath}/r
 
   private buildDetailedGit(gitInfo: GitInfo): string {
     let content = `# Git Diff Statistics
+
 `;
 
     content += gitInfo.diffStat;
