@@ -120,7 +120,7 @@ PARSEME aims to automatically analyse any JavaScript or TypeScript project like:
 ## Installation
 
 ```bash
-npm install --save-dev parseme
+npm install --save-dev @parseme/cli
 ```
 
 ## Quick Start
@@ -128,9 +128,9 @@ npm install --save-dev parseme
 1. **Initialize configuration**:
 
    ```bash
-   npx parseme init
+   npx @parseme/cli init
    # or use the alias
-   npx parseme i
+   npx @parseme/cli i
    ```
 
    You'll be prompted for:
@@ -147,9 +147,9 @@ npm install --save-dev parseme
 
 2. **Generate context**:
    ```bash
-   npx parseme generate
+   npx @parseme/cli generate
    # or use the alias
-   npx parseme g
+   npx @parseme/cli g
    ```
 
 This creates:
@@ -182,10 +182,8 @@ Add to your `package.json` scripts (optional, for convenience):
 ```bash
 npm run parseme
 # or directly
-npx parseme generate
+parseme generate
 ```
-
-**Best for:** Small projects, occasional updates, or when you prefer full control over when context is generated.
 
 ---
 
@@ -205,7 +203,7 @@ cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
 # Generate PARSEME files locally after commit
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Make hook executable
@@ -218,7 +216,7 @@ chmod +x .husky/post-commit
 cat > .git/hooks/post-commit << 'EOF'
 #!/bin/sh
 
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 chmod +x .git/hooks/post-commit
@@ -229,8 +227,6 @@ chmod +x .git/hooks/post-commit
 - After each commit, parseme automatically generates context files with full git info
 - Files are ready to be staged and committed with your next commit
 - Simple setup with minimal configuration
-
-**Best for:** Solo developers or small teams wanting automatic local updates with committed parseme files.
 
 **Note:** If using a custom `contextDir`, ensure the path is consistent across your team's configuration.
 
@@ -251,7 +247,7 @@ npx husky init
 cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Create pre-push hook
@@ -259,7 +255,7 @@ cat > .husky/pre-push << 'EOF'
 #!/bin/sh
 
 # Regenerate without git info for clean remote state
-npx parseme generate --no-git-info
+npx @parseme/cli generate --no-git-info
 
 # Stage parseme files
 git add parseme-context/ PARSEME.md
@@ -273,7 +269,7 @@ cat > .husky/post-push << 'EOF'
 #!/bin/sh
 
 # Regenerate with git info for local development
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Make hooks executable
@@ -287,7 +283,7 @@ chmod +x .husky/post-commit .husky/pre-push .husky/post-push
 cat > .git/hooks/post-commit << 'EOF'
 #!/bin/sh
 
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Pre-push: Regenerate without git info and amend before pushing
@@ -295,7 +291,7 @@ cat > .git/hooks/pre-push << 'EOF'
 #!/bin/sh
 
 # Regenerate without git info for clean remote state
-npx parseme generate --no-git-info
+npx @parseme/cli generate --no-git-info
 
 # Stage parseme files
 git add parseme-context/ PARSEME.md
@@ -309,7 +305,7 @@ cat > .git/hooks/post-push << 'EOF'
 #!/bin/sh
 
 # Regenerate with git info for local development
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Make hooks executable
@@ -323,8 +319,6 @@ chmod +x .git/hooks/post-commit .git/hooks/pre-push .git/hooks/post-push
 3. **post-push**: Restores full git info locally after push completes
 
 The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook execution on the amend.
-
-**Best for:** Teams that want detailed local context for development while keeping clean, portable context in the repository.
 
 **Note:** If using a custom `contextDir`, update the `git add` path in the pre-push hook (e.g., `git add docs/context/ PARSEME.md`).
 
@@ -398,7 +392,7 @@ jobs:
 
       - name: Generate ParseMe documentation
         if: steps.check_pusher.outputs.is_bot == 'false'
-        run: npx parseme generate --no-git-info
+        run: parseme generate --no-git-info
 
       - name: Force add parseme files (ignored in .gitignore)
         if: steps.check_pusher.outputs.is_bot == 'false'
@@ -438,7 +432,7 @@ cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
 # Generate PARSEME files locally after commit
-npx parseme generate
+npx @parseme/cli generate
 EOF
 
 # Create post-merge hook
@@ -460,8 +454,6 @@ chmod +x .husky/post-commit .husky/post-merge
 3. **Remote updates**: GitHub Actions automatically generates and commits parseme files (without git info) when pushing to main
 4. **After pull/merge**: The post-merge hook ensures parseme files stay untracked locally, preventing conflicts
 
-**Best for:** Teams using GitHub that want automated CI-managed remote updates with local context for development.
-
 **Notes:**
 
 - The workflow only runs on the `main` branch (adjust as needed for your branching strategy)
@@ -476,7 +468,7 @@ The `parseme init` command creates a minimal config with only your custom settin
 **Minimal config example** (created by `parseme init`):
 
 ```javascript
-/** @type {import('parseme').ParsemeConfigFile} */
+/** @type {import('@parseme/cli').ParsemeConfigFile} */
 const config = {
   contextDir: 'parseme-context',
   excludePatterns: ['node_modules/**', '.git/**'],
@@ -488,7 +480,7 @@ export default config;
 **Full config example** (all available options):
 
 ```javascript
-/** @type {import('parseme').ParsemeConfigFile} */
+/** @type {import('@parseme/cli').ParsemeConfigFile} */
 const config = {
   // Output settings
   outputPath: 'PARSEME.md',
@@ -551,7 +543,7 @@ PARSEME supports three configuration formats with the following priority:
 #### Example TypeScript Configuration
 
 ```typescript
-import type { ParsemeConfigFile } from 'parseme';
+import type { ParsemeConfigFile } from '@parseme/cli';
 
 const config: ParsemeConfigFile = {
   contextDir: 'parseme-context',
@@ -565,7 +557,7 @@ export default config;
 #### Example JavaScript Configuration
 
 ```javascript
-/** @type {import('parseme').ParsemeConfigFile} */
+/** @type {import('@parseme/cli').ParsemeConfigFile} */
 const config = {
   contextDir: 'parseme-context',
   excludePatterns: ['node_modules/**', 'dist/**', '.git/**'],
@@ -583,7 +575,7 @@ Configuration values are resolved in the following order (highest to lowest prio
 2. **Config file** - Based on file format priority above
 3. **Default values** - Built-in sensible defaults
 
-**Example**: `npx parseme --output custom.md` overrides `outputPath` from config file.
+**Example**: `parseme --output custom.md` overrides `outputPath` from config file.
 
 ### Configuration Options
 
@@ -663,42 +655,36 @@ After initialization, setup tips are displayed:
 
 ```bash
 # Generate context (auto-detects config file)
-npx parseme generate
-npx parseme g  # alias
+parseme generate
+parseme g  # alias
 
 # Initialize configuration (JSON by default)
-npx parseme init
-npx parseme i  # alias
+parseme init
+parseme i  # alias
 
 # Initialize with TypeScript format
-npx parseme init --format ts
+parseme init --format ts
 
 # Initialize with JavaScript format
-npx parseme init --format js
+parseme init --format js
 
 # Use custom config file
-npx parseme generate --config custom.config.js
-
-# If added to package.json scripts, use npm run
-npm run parseme
-
-# Auto-generate context with git hooks (when configured)
-# Runs automatically after each commit
+parseme generate --config custom.config.js
 
 # Override config with CLI flags
-npx parseme generate --output custom.md --context-dir docs/context --root ./src
+parseme generate --output custom.md --context-dir docs/context --root ./src
 
 # Disable git info generation (keeps git for file discovery)
-npx parseme generate --no-git-info
+parseme generate --no-git-info
 
 # Disable git for file discovery (keeps git info generation)
-npx parseme generate --no-git-files
+parseme generate --no-git-files
 
 # Disable both git info and git file discovery
-npx parseme generate --no-git-info --no-git-files
+parseme generate --no-git-info --no-git-files
 
 # Specify file types and exclude patterns
-npx parseme generate --file-types ts js --exclude "**/*.test.ts"
+parseme generate --file-types ts js --exclude "**/*.test.ts"
 ```
 
 ## Programmatic API
@@ -706,7 +692,7 @@ npx parseme generate --file-types ts js --exclude "**/*.test.ts"
 You can also use PARSEME programmatically:
 
 ```typescript
-import { ParsemeGenerator } from 'parseme';
+import { ParsemeGenerator } from '@parseme/cli';
 
 const generator = await ParsemeGenerator.fromConfig('./custom.config.js');
 const context = await generator.generate();
