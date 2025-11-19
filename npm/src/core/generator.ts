@@ -42,14 +42,14 @@ export class ParsemeGenerator {
     // Step 4: Get all project files (for file list output)
     const allFiles = await this.projectAnalyzer.getAllProjectFiles(configData.rootDir!);
 
-    // Step 5: Get git information if enabled
-    const gitInfo = configData.includeGitInfo
-      ? await this.gitAnalyzer.analyze(configData.rootDir!)
-      : null;
-
     // Calculate final output path for link generation
     const finalOutputPath =
       outputPath || configData.outputPath || join(configData.rootDir!, 'PARSEME.md');
+
+    // Step 5: Get git information if enabled
+    const gitInfo = configData.includeGitInfo
+      ? await this.gitAnalyzer.analyze(configData.rootDir!, finalOutputPath)
+      : null;
 
     // Step 6: Build the context output
     return this.contextBuilder.build({
