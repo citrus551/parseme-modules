@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 set -e  # Exit immediately if any command fails
 
 cd npm

@@ -202,6 +202,10 @@ npx husky init
 cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 # Generate PARSEME files locally after commit
 npx @parseme/cli generate
 EOF
@@ -247,12 +251,20 @@ npx husky init
 cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 npx @parseme/cli generate
 EOF
 
 # Create pre-push hook
 cat > .husky/pre-push << 'EOF'
 #!/bin/sh
+
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 # Regenerate without git info for clean remote state
 npx @parseme/cli generate --no-git-info
@@ -267,6 +279,10 @@ EOF
 # Create post-push hook
 cat > .husky/post-push << 'EOF'
 #!/bin/sh
+
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 # Regenerate with git info for local development
 npx @parseme/cli generate
@@ -326,19 +342,11 @@ The `--no-verify` flag in pre-push prevents an infinite loop by skipping hook ex
 
 ### Option 4: GitHub Actions for Remote Generation paired with Local Generation
 
-Use GitHub Actions to automatically manage remote parseme files while keeping them updated locally with git hooks. This is the recommended approach for teams using GitHub.
+Use GitHub Actions to automatically update PARSEME files on every push to main. This is the recommended approach for teams using GitHub.
 
 **Setup:**
 
-**1. Add parseme files to `.gitignore`:**
-
-```gitignore
-# Parseme documentation (generated locally and by CI)
-parseme-context/
-PARSEME.md
-```
-
-**2. Create `.github/workflows/parseme-update.yml`:**
+**1. Create `.github/workflows/parseme-update.yml`:**
 
 ```yaml
 name: Update PARSEME Documentation
@@ -346,7 +354,7 @@ name: Update PARSEME Documentation
 on:
   push:
     branches:
-      - main
+      - 'main'
 
 jobs:
   update-parseme:
@@ -357,49 +365,46 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
 
     steps:
-      - name: Check if pusher is service account
-        id: check_pusher
+      - name: Service Account Gate
         run: |
           if [ "${{ github.event.pusher.name }}" = "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}" ]; then
-            echo "is_bot=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_bot=false" >> $GITHUB_OUTPUT
+            echo "::notice::Skipping workflow - push was made by service account"
+            exit 1
           fi
 
       - name: Checkout code
-        if: steps.check_pusher.outputs.is_bot == 'false'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
 
       - name: Setup Node.js
-        if: steps.check_pusher.outputs.is_bot == 'false'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
 
       - name: Configure Git
-        if: steps.check_pusher.outputs.is_bot == 'false'
         run: |
           git config user.name "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}"
           git config user.email "${{ secrets.GH_SERVICE_ACCOUNT_USERNAME }}@users.noreply.github.com"
 
+      - name: Configure npm for GitHub Packages
+        run: |
+          npm config set @netgear:registry https://npm.pkg.github.com/
+          npm config set //npm.pkg.github.com/:_authToken "${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}"
+
       - name: Install dependencies
-        if: steps.check_pusher.outputs.is_bot == 'false'
         run: npm ci
 
-      - name: Generate ParseMe documentation
-        if: steps.check_pusher.outputs.is_bot == 'false'
-        run: parseme generate --no-git-info
+      - name: Generate PARSEME documentation
+        run: npx parseme generate --no-git-info
 
-      - name: Force add parseme files (ignored in .gitignore)
-        if: steps.check_pusher.outputs.is_bot == 'false'
-        run: git add -f parseme-context/ PARSEME.md
+      - name: Stage changes
+        run: |
+          git add PARSEME.md parseme-context/
 
       - name: Check for changes
-        if: steps.check_pusher.outputs.is_bot == 'false'
         id: check_changes
         run: |
           if git diff --cached --quiet; then
@@ -408,56 +413,87 @@ jobs:
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and amend
-        if: steps.check_pusher.outputs.is_bot == 'false' && steps.check_changes.outputs.changes == 'true'
+      - name: Commit
+        if: steps.check_changes.outputs.changes == 'true'
         run: |
-          git commit --amend --no-edit --no-verify
-          git push --force-with-lease
+          git commit -m "chore: Update PARSEME AI Agent Context [skip ci]" --no-verify
+          git push
 ```
 
-**3. Configure GitHub secrets:**
+**2. Configure GitHub secrets:**
 
 - `GH_SERVICE_ACCOUNT_TOKEN`: A GitHub personal access token with repo write permissions
-- `GH_SERVICE_ACCOUNT_USERNAME`: The username of your service account (to prevent infinite loops)
+- `GH_SERVICE_ACCOUNT_USERNAME`: The username of your service account
 
-**4. Setup local git hooks with Husky:**
+**3. Setup local git hooks with Husky:**
 
 ```bash
 # Install Husky (if not already installed)
 npm install --save-dev husky
 npx husky init
 
+# Create pre-commit hook
+cat > .husky/pre-commit << 'EOF'
+#!/bin/sh
+
+# Pre-commit hook to reset PARSEME files to prevent them from being committed
+for file in $(git ls-files parseme-context/ PARSEME.md 2>/dev/null); do
+    git restore --staged "$file" 2>/dev/null
+done
+EOF
+
 # Create post-commit hook
 cat > .husky/post-commit << 'EOF'
 #!/bin/sh
 
-# Generate PARSEME files locally after commit
-npx @parseme/cli generate
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Generate PARSEME files locally after commit for local AI agent usage
+npx @parseme/cli generate --no-git-info
 EOF
 
 # Create post-merge hook
 cat > .husky/post-merge << 'EOF'
 #!/bin/sh
 
-# Untrack parseme files after merge/pull to keep them gitignored locally
-git rm --cached -r parseme-context/ PARSEME.md 2>/dev/null || true
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Generate PARSEME files locally after merge for local AI agent usage
+npx @parseme/cli generate --no-git-info
+EOF
+
+# Create post-checkout hook
+cat > .husky/post-checkout << 'EOF'
+#!/bin/sh
+
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Generate PARSEME files locally after checkout for local AI agent usage
+npx @parseme/cli generate --no-git-info
 EOF
 
 # Make hooks executable
-chmod +x .husky/post-commit .husky/post-merge
+chmod +x .husky/pre-commit .husky/post-commit .husky/post-merge .husky/post-checkout
 ```
 
 **How it works:**
 
-1. **Local development**: Parseme files are generated locally after each commit with full git info
-2. **Ignored by git**: Files are listed in `.gitignore` so they're not committed manually
-3. **Remote updates**: GitHub Actions automatically generates and commits parseme files (without git info) when pushing to main
-4. **After pull/merge**: The post-merge hook ensures parseme files stay untracked locally, preventing conflicts
+1. **On push to main**: GitHub Actions detects the push
+2. **Service account check**: Workflow exits early if the push was made by the service account
+3. **Generate and commit**: Generates PARSEME files with `--no-git-info` flag and creates a new commit with `[skip ci]` message
+4. **Push changes**: The new commit is pushed back to the repository
+5. **Local hooks**: Pre-commit hook prevents PARSEME files from being committed manually, while post-commit/merge/checkout hooks regenerate them locally for AI agent usage
 
 **Notes:**
 
 - The workflow only runs on the `main` branch (adjust as needed for your branching strategy)
-- If using a custom `contextDir`, update both the `.gitignore` entry, the workflow's `git add -f` path, and the post-merge hook's `git rm --cached -r` path accordingly
+- If using a custom `contextDir`, update the paths in both the workflow and hooks accordingly
 
 ## Configuration
 
