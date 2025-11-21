@@ -16,7 +16,7 @@ async function promptForMissingConfig(config: ParsemeConfigFile): Promise<Parsem
   return { ...config };
 }
 
-program.name('parseme').description('AI Project Context Generator').version('0.1.1');
+program.name('parseme').description('AI Project Context Generator').version('0.1.2');
 
 // Generate command
 program
